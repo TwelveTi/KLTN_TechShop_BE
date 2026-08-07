@@ -14,7 +14,7 @@ const authMiddleware = async (req, res, next) => {
     const decoded = jwtUtils.verifyAccess(token);
 
     const user = await db.User.findByPk(decoded.id, {
-      attributes: ["id", "email", "fullName", "phone", "avatarUrl", "avatarPublicId", "role", "status"],
+      attributes: ["id", "email", "fullName", "phone", "avatarUrl", "avatarPublicId", "role", "status", "emailVerifiedAt"],
     });
 
     if (!user || user.status !== "ACTIVE") {
@@ -38,7 +38,23 @@ const authorizeRoles = (...roles) => {
   };
 };
 
+// Gate for features that should be restricted until the user verifies their
+// email. Use after authMiddleware, e.g. on checkout/order-create routes:
+//   router.post("/orders", authMiddleware, requireVerifiedEmail, ...)
+const requireVerifiedEmail = (req, res, next) => {
+  if (!req.user) {
+    return next(new AppError("Access token is required", 401));
+  }
+
+  if (!req.user.emailVerifiedAt) {
+    return next(new AppError("Please verify your email to use this feature", 403));
+  }
+
+  return next();
+};
+
 module.exports = {
   authMiddleware,
   authorizeRoles,
+  requireVerifiedEmail,
 };

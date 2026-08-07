@@ -10,6 +10,8 @@ const http = require("http");
 const APIResponse = require("./src/utils/ApiResponse");
 const logger = require("./src/utils/logger");
 const uploadService = require("./src/services/uploadService");
+const kafkaManager = require("./src/kafkas");
+const { passport } = require("./src/configs/passport");
 
 const app = express();
 const server = http.createServer(app);
@@ -30,6 +32,9 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Passport (stateless: we use session:false and JWT, so only initialize()).
+app.use(passport.initialize());
 
 async function cleanupProductImagesFromBody(req, reason) {
   if (req.method !== "POST" || req.originalUrl !== "/api/v1/admin/products") {
@@ -84,10 +89,35 @@ app.use(rateLimit({
 route(app);
 
 connectDB().then(async () => {
+  // Kafka is best-effort: if the broker is down, the API still serves requests
+  // (registration succeeds; only the async email pipeline is affected).
+  try {
+    await kafkaManager.init();
+  } catch (error) {
+    logger.error("Kafka initialization failed; continuing without Kafka", {
+      error: logger.serializeError(error),
+    });
+  }
+
   const port = process.env.PORT || 3000;
   const hostname = process.env.HOST_NAME || "localhost";
 
   server.listen(port, hostname, () => {
     console.log(`Server is running at http://${hostname}:${port}`);
   });
+});
+
+async function shutdown(signal) {
+  logger.warn("Shutting down server", { signal });
+
+  await kafkaManager.shutdown();
+
+  server.close(() => process.exit(0));
+
+  // Force exit if graceful shutdown hangs.
+  setTimeout(() => process.exit(1), 10000).unref();
+}
+
+["SIGINT", "SIGTERM"].forEach((signal) => {
+  process.on(signal, () => shutdown(signal));
 });
