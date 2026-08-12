@@ -42,6 +42,10 @@ function validate(fields, req, res, next) {
     if (field.maxLength && String(normalizedValue).length > field.maxLength) {
       errors.push(`${field.label} must be at most ${field.maxLength} characters`);
     }
+
+    if (field.pattern && !field.pattern.test(String(normalizedValue))) {
+      errors.push(field.patternMessage || `${field.label} is invalid`);
+    }
   });
 
   if (errors.length > 0) {
@@ -94,9 +98,78 @@ const validateUpdateProfile = (req, res, next) => {
   );
 };
 
+// Password policy is reused verbatim from register/login (min 6, max 72) so
+// reset/change never diverge from the sign-up rules.
+const PASSWORD_FIELD = (name, label) => ({
+  name,
+  label,
+  required: true,
+  type: "string",
+  minLength: 6,
+  maxLength: 72,
+});
+
+const OTP_PATTERN = /^\d{6}$/;
+
+const validateForgotPassword = (req, res, next) => {
+  return validate(
+    [{ name: "email", label: "Email", required: true, type: "email", maxLength: 255 }],
+    req,
+    res,
+    next,
+  );
+};
+
+const validateVerifyResetOtp = (req, res, next) => {
+  return validate(
+    [
+      { name: "email", label: "Email", required: true, type: "email", maxLength: 255 },
+      {
+        name: "otp",
+        label: "OTP",
+        required: true,
+        type: "string",
+        pattern: OTP_PATTERN,
+        patternMessage: "OTP must be a 6-digit code",
+      },
+    ],
+    req,
+    res,
+    next,
+  );
+};
+
+const validateResetPassword = (req, res, next) => {
+  return validate(
+    [
+      { name: "resetToken", label: "Reset token", required: true, type: "string", maxLength: 255 },
+      PASSWORD_FIELD("newPassword", "New password"),
+    ],
+    req,
+    res,
+    next,
+  );
+};
+
+const validateChangePassword = (req, res, next) => {
+  return validate(
+    [
+      PASSWORD_FIELD("currentPassword", "Current password"),
+      PASSWORD_FIELD("newPassword", "New password"),
+    ],
+    req,
+    res,
+    next,
+  );
+};
+
 module.exports = {
   validateRegister,
   validateLogin,
   validateLogout,
   validateUpdateProfile,
+  validateForgotPassword,
+  validateVerifyResetOtp,
+  validateResetPassword,
+  validateChangePassword,
 };

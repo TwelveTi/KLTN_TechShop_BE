@@ -1,33 +1,8 @@
-const db = require("../models");
+const orderRepository = require("../repositories/orderRepository");
 
 class OrderService {
   async getMyOrders(userId) {
-    const orders = await db.Order.findAll({
-      where: { userId },
-      include: [
-        {
-          model: db.OrderItem,
-          as: "items",
-          attributes: [
-            "id",
-            "productName",
-            "productSku",
-            "productImageUrl",
-            "variantName",
-            "unitPrice",
-            "quantity",
-            "totalPrice",
-          ],
-        },
-        {
-          model: db.UserAddress,
-          as: "address",
-          attributes: ["id", "receiverName", "receiverPhone", "province", "district", "ward", "addressLine"],
-          required: false,
-        },
-      ],
-      order: [["createdAt", "DESC"]],
-    });
+    const orders = await orderRepository.findAllByUserWithItems(userId);
 
     const statusSummary = orders.reduce((summary, order) => {
       summary[order.status] = (summary[order.status] || 0) + 1;

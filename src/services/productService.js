@@ -1,79 +1,10 @@
-const { Op } = require("sequelize");
-const db = require("../models");
 const AppError = require("../utils/AppError");
 const { slugify } = require("../utils/slug");
+const productRepository = require("../repositories/productRepository");
 
 class ProductService {
-  buildPagination(query) {
-    const page = Math.max(Number(query.page) || 1, 1);
-    const limit = Math.min(Math.max(Number(query.limit) || 12, 1), 100);
-    const offset = (page - 1) * limit;
-
-    return { page, limit, offset };
-  }
-
-  buildWhere(query) {
-    const where = {};
-
-    if (query.onlyActive) {
-      where.status = "ACTIVE";
-    } else if (query.status) {
-      where.status = query.status;
-    }
-
-    if (query.categoryId) {
-      where.categoryId = query.categoryId;
-    }
-
-    if (query.brandId) {
-      where.brandId = query.brandId;
-    }
-
-    if (query.keyword) {
-      where.name = { [Op.like]: `%${query.keyword}%` };
-    }
-
-    if (query.minPrice || query.maxPrice) {
-      where.basePrice = {};
-      if (query.minPrice) {
-        where.basePrice[Op.gte] = Number(query.minPrice);
-      }
-      if (query.maxPrice) {
-        where.basePrice[Op.lte] = Number(query.maxPrice);
-      }
-    }
-
-    return where;
-  }
-
-  buildOrder(sort) {
-    const sortMap = {
-      newest: [["createdAt", "DESC"]],
-      priceAsc: [["basePrice", "ASC"]],
-      priceDesc: [["basePrice", "DESC"]],
-      bestSelling: [["soldCount", "DESC"]],
-      rating: [["averageRating", "DESC"]],
-    };
-
-    return sortMap[sort] || sortMap.newest;
-  }
-
   async getAllProducts(query = {}) {
-    const { page, limit, offset } = this.buildPagination(query);
-
-    const { rows, count } = await db.Product.findAndCountAll({
-      where: this.buildWhere(query),
-      include: [
-        { model: db.Category, as: "category" },
-        { model: db.Brand, as: "brand" },
-        { model: db.ProductImage, as: "images" },
-        { model: db.ProductVariant, as: "variants" },
-      ],
-      distinct: true,
-      order: this.buildOrder(query.sort),
-      limit,
-      offset,
-    });
+    const { rows, count, page, limit } = await productRepository.findAndCountProducts(query);
 
     return {
       items: rows,
@@ -87,26 +18,8 @@ class ProductService {
   }
 
   async getProductById(id, options = {}) {
-    const where = { id };
-
-    if (options.onlyActive) {
-      where.status = "ACTIVE";
-    }
-
-    const product = await db.Product.findOne({
-      where,
-      include: [
-        { model: db.Category, as: "category" },
-        { model: db.Brand, as: "brand" },
-        { model: db.ProductImage, as: "images" },
-        { model: db.ProductVariant, as: "variants" },
-        {
-          model: db.ProductSpecification,
-          as: "specifications",
-          include: [{ model: db.SpecificationDefinition, as: "definition" }],
-        },
-        { model: db.Tag, as: "tags" },
-      ],
+    const product = await productRepository.findDetailById(id, {
+      onlyActive: Boolean(options.onlyActive),
     });
 
     if (!product) {
@@ -118,14 +31,14 @@ class ProductService {
 
   async assertProductRelations(data) {
     if (data.categoryId) {
-      const category = await db.Category.findByPk(data.categoryId);
+      const category = await productRepository.findCategoryById(data.categoryId);
       if (!category) {
         throw new AppError("Category not found", 404);
       }
     }
 
     if (data.brandId) {
-      const brand = await db.Brand.findByPk(data.brandId);
+      const brand = await productRepository.findBrandById(data.brandId);
       if (!brand) {
         throw new AppError("Brand not found", 404);
       }
@@ -137,13 +50,7 @@ class ProductService {
     let candidateSlug = baseSlug;
     let suffix = 1;
 
-    while (await db.Product.findOne({
-      where: {
-        slug: candidateSlug,
-        ...(currentProductId ? { id: { [Op.ne]: currentProductId } } : {}),
-      },
-      paranoid: false,
-    })) {
+    while (await productRepository.findBySlug(candidateSlug, { excludeId: currentProductId })) {
       suffix += 1;
       candidateSlug = `${baseSlug}-${suffix}`;
     }
@@ -153,9 +60,10 @@ class ProductService {
 
   async upsertSpecificationDefinition(categoryId, specification, transaction) {
     const key = slugify(specification.key || specification.name, "spec");
-    const [definition] = await db.SpecificationDefinition.findOrCreate({
-      where: { categoryId, key },
-      defaults: {
+    const [definition] = await productRepository.findOrCreateSpecificationDefinition(
+      categoryId,
+      key,
+      {
         categoryId,
         key,
         name: specification.name,
@@ -163,20 +71,20 @@ class ProductService {
         unit: specification.unit || null,
         sortOrder: specification.sortOrder || 0,
       },
-      transaction,
-    });
+      { transaction },
+    );
 
     return definition;
   }
 
   async replaceProductSpecifications(productId, categoryId, specifications = [], transaction) {
-    await db.ProductSpecification.destroy({ where: { productId }, transaction });
+    await productRepository.destroySpecificationsByProduct(productId, { transaction });
 
     const validSpecifications = specifications.filter((specification) => specification.name && specification.valueText);
 
     for (const specification of validSpecifications) {
       const definition = await this.upsertSpecificationDefinition(categoryId, specification, transaction);
-      await db.ProductSpecification.create(
+      await productRepository.createSpecification(
         {
           productId,
           specificationDefinitionId: definition.id,
@@ -187,13 +95,38 @@ class ProductService {
     }
   }
 
+  mapImageRows(images, productId) {
+    return images.map((image, index) => ({
+      productId,
+      imageUrl: image.imageUrl,
+      publicId: image.publicId || null,
+      altText: image.altText || null,
+      isPrimary: image.isPrimary || index === 0,
+      sortOrder: image.sortOrder || index,
+    }));
+  }
+
+  mapVariantRows(variants, productId) {
+    return variants.map((variant) => ({
+      productId,
+      sku: variant.sku,
+      variantName: variant.variantName,
+      attributes: variant.attributes || null,
+      price: variant.price || null,
+      salePrice: variant.salePrice || null,
+      stockQuantity: variant.stockQuantity || 0,
+      isDefault: variant.isDefault || false,
+      status: variant.status || "ACTIVE",
+    }));
+  }
+
   async createProduct(data) {
     await this.assertProductRelations(data);
 
-    const transaction = await db.sequelize.transaction();
+    const transaction = await productRepository.beginTransaction();
 
     try {
-      const product = await db.Product.create(
+      const product = await productRepository.createProduct(
         {
           categoryId: data.categoryId,
           brandId: data.brandId,
@@ -213,34 +146,11 @@ class ProductService {
       );
 
       if (Array.isArray(data.images) && data.images.length > 0) {
-        await db.ProductImage.bulkCreate(
-          data.images.map((image, index) => ({
-            productId: product.id,
-            imageUrl: image.imageUrl,
-            publicId: image.publicId || null,
-            altText: image.altText || null,
-            isPrimary: image.isPrimary || index === 0,
-            sortOrder: image.sortOrder || index,
-          })),
-          { transaction },
-        );
+        await productRepository.bulkCreateImages(this.mapImageRows(data.images, product.id), { transaction });
       }
 
       if (Array.isArray(data.variants) && data.variants.length > 0) {
-        await db.ProductVariant.bulkCreate(
-          data.variants.map((variant) => ({
-            productId: product.id,
-            sku: variant.sku,
-            variantName: variant.variantName,
-            attributes: variant.attributes || null,
-            price: variant.price || null,
-            salePrice: variant.salePrice || null,
-            stockQuantity: variant.stockQuantity || 0,
-            isDefault: variant.isDefault || false,
-            status: variant.status || "ACTIVE",
-          })),
-          { transaction },
-        );
+        await productRepository.bulkCreateVariants(this.mapVariantRows(data.variants, product.id), { transaction });
       }
 
       if (Array.isArray(data.specifications)) {
@@ -259,13 +169,14 @@ class ProductService {
     const product = await this.getProductById(id);
     await this.assertProductRelations(data);
     const oldImages = Array.isArray(data.images)
-      ? await db.ProductImage.findAll({ where: { productId: product.id } })
+      ? await productRepository.findImagesByProduct(product.id)
       : [];
 
-    const transaction = await db.sequelize.transaction();
+    const transaction = await productRepository.beginTransaction();
 
     try {
-      await product.update(
+      await productRepository.updateProduct(
+        product,
         {
           categoryId: data.categoryId ?? product.categoryId,
           brandId: data.brandId ?? product.brandId,
@@ -287,36 +198,13 @@ class ProductService {
       );
 
       if (Array.isArray(data.images)) {
-        await db.ProductImage.destroy({ where: { productId: product.id }, transaction });
-        await db.ProductImage.bulkCreate(
-          data.images.map((image, index) => ({
-            productId: product.id,
-            imageUrl: image.imageUrl,
-            publicId: image.publicId || null,
-            altText: image.altText || null,
-            isPrimary: image.isPrimary || index === 0,
-            sortOrder: image.sortOrder || index,
-          })),
-          { transaction },
-        );
+        await productRepository.destroyImagesByProduct(product.id, { transaction });
+        await productRepository.bulkCreateImages(this.mapImageRows(data.images, product.id), { transaction });
       }
 
       if (Array.isArray(data.variants)) {
-        await db.ProductVariant.destroy({ where: { productId: product.id }, force: true, transaction });
-        await db.ProductVariant.bulkCreate(
-          data.variants.map((variant) => ({
-            productId: product.id,
-            sku: variant.sku,
-            variantName: variant.variantName,
-            attributes: variant.attributes || null,
-            price: variant.price || null,
-            salePrice: variant.salePrice || null,
-            stockQuantity: variant.stockQuantity || 0,
-            isDefault: variant.isDefault || false,
-            status: variant.status || "ACTIVE",
-          })),
-          { transaction },
-        );
+        await productRepository.destroyVariantsByProduct(product.id, { transaction });
+        await productRepository.bulkCreateVariants(this.mapVariantRows(data.variants, product.id), { transaction });
       }
 
       if (Array.isArray(data.specifications)) {
@@ -338,9 +226,9 @@ class ProductService {
 
   async deleteProduct(id, uploadService) {
     const product = await this.getProductById(id);
-    const images = await db.ProductImage.findAll({ where: { productId: product.id } });
+    const images = await productRepository.findImagesByProduct(product.id);
 
-    await product.destroy();
+    await productRepository.destroyProduct(product);
 
     if (uploadService) {
       await uploadService.deleteMany(images.map((image) => image.publicId));

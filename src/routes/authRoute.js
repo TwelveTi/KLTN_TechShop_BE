@@ -6,8 +6,13 @@ const {
   validateLogin,
   validateLogout,
   validateUpdateProfile,
+  validateForgotPassword,
+  validateVerifyResetOtp,
+  validateResetPassword,
+  validateChangePassword,
 } = require("../middlewares/authValidation");
 const { authMiddleware } = require("../middlewares/authMiddleware");
+const passwordController = require("../controllers/passwordController");
 const { uploadAvatar } = require("../middlewares/uploadMiddleware");
 const { validateIdParam } = require("../middlewares/adminValidation");
 const asyncHandler = require("../utils/asyncHandler");
@@ -23,6 +28,13 @@ router.post("/auth/logout", validateLogout, asyncHandler(authController.logout))
 router.post("/auth/refresh", asyncHandler(authController.refresh));
 router.get("/auth/verify-email", asyncHandler(authController.verifyEmail));
 router.post("/auth/resend-verification", authMiddleware, asyncHandler(authController.resendVerification));
+// Password management: forgot / verify OTP / reset (public) + change (auth).
+router.post("/auth/forgot-password", validateForgotPassword, asyncHandler(passwordController.forgotPassword));
+router.post("/auth/resend-reset-otp", validateForgotPassword, asyncHandler(passwordController.resendResetOtp));
+router.post("/auth/verify-reset-otp", validateVerifyResetOtp, asyncHandler(passwordController.verifyResetOtp));
+router.post("/auth/reset-password", validateResetPassword, asyncHandler(passwordController.resetPassword));
+router.patch("/auth/change-password", authMiddleware, validateChangePassword, asyncHandler(passwordController.changePassword));
+
 router.get("/auth/me", authMiddleware, asyncHandler(authController.me));
 router.put("/auth/me", authMiddleware, validateUpdateProfile, asyncHandler(authController.updateMe));
 router.post("/auth/me/avatar", authMiddleware, uploadAvatar, asyncHandler(authController.uploadAvatar));

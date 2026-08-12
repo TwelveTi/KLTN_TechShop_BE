@@ -8,6 +8,7 @@ const adminUserRoute = require("./adminUserRoute");
 const adminCategoryRoute = require("./adminCategoryRoute");
 const adminBrandRoute = require("./adminBrandRoute");
 const adminProductRoute = require("./adminProductRoute");
+const adminOrderRoute = require("./adminOrderRoute");
 
 router.use(authMiddleware);
 router.use(checkRole(["ADMIN"]));
@@ -18,5 +19,6 @@ router.use(adminUserRoute);
 router.use(adminCategoryRoute);
 router.use(adminBrandRoute);
 router.use(adminProductRoute);
+router.use(adminOrderRoute);
 
 module.exports = router;

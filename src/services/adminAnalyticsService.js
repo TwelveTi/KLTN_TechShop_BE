@@ -1,5 +1,4 @@
-const { QueryTypes } = require("sequelize");
-const db = require("../models");
+const adminAnalyticsRepository = require("../repositories/adminAnalyticsRepository");
 
 class AdminAnalyticsService {
   getDateRange(query = {}) {
@@ -16,50 +15,11 @@ class AdminAnalyticsService {
     return { startDate, endDate };
   }
 
-  getPaidOrderWhereSql(alias = "o") {
-    return `
-      ${alias}.payment_status = 'PAID'
-      AND ${alias}.status NOT IN ('CANCELLED', 'REFUNDED')
-      AND COALESCE(${alias}.paid_at, ${alias}.created_at) BETWEEN :startDate AND :endDate
-    `;
-  }
-
   async getRevenueSummary(query = {}) {
     const { startDate, endDate } = this.getDateRange(query);
 
-    const [summary] = await db.sequelize.query(
-      `
-        SELECT
-          COALESCE(SUM(o.total_price), 0) AS totalRevenue,
-          COUNT(o.id) AS totalOrders,
-          COALESCE(AVG(o.total_price), 0) AS averageOrderValue,
-          COALESCE(SUM(o.discount_amount), 0) AS totalDiscount,
-          COALESCE(SUM(o.shipping_fee), 0) AS totalShippingFee
-        FROM orders o
-        WHERE ${this.getPaidOrderWhereSql("o")}
-      `,
-      {
-        replacements: { startDate, endDate },
-        type: QueryTypes.SELECT,
-      },
-    );
-
-    const [orderStatus] = await db.sequelize.query(
-      `
-        SELECT
-          COUNT(CASE WHEN status = 'PENDING' THEN 1 END) AS pendingOrders,
-          COUNT(CASE WHEN status = 'SHIPPING' THEN 1 END) AS shippingOrders,
-          COUNT(CASE WHEN status = 'DELIVERED' THEN 1 END) AS deliveredOrders,
-          COUNT(CASE WHEN status = 'CANCELLED' THEN 1 END) AS cancelledOrders,
-          COUNT(CASE WHEN status = 'REFUNDED' THEN 1 END) AS refundedOrders
-        FROM orders
-        WHERE created_at BETWEEN :startDate AND :endDate
-      `,
-      {
-        replacements: { startDate, endDate },
-        type: QueryTypes.SELECT,
-      },
-    );
+    const [summary] = await adminAnalyticsRepository.queryRevenueSummary(startDate, endDate);
+    const [orderStatus] = await adminAnalyticsRepository.queryOrderStatusCounts(startDate, endDate);
 
     return {
       startDate,
@@ -82,22 +42,7 @@ class AdminAnalyticsService {
   async getDailyRevenue(query = {}) {
     const { startDate, endDate } = this.getDateRange(query);
 
-    const rows = await db.sequelize.query(
-      `
-        SELECT
-          DATE(COALESCE(o.paid_at, o.created_at)) AS date,
-          COALESCE(SUM(o.total_price), 0) AS revenue,
-          COUNT(o.id) AS orders
-        FROM orders o
-        WHERE ${this.getPaidOrderWhereSql("o")}
-        GROUP BY DATE(COALESCE(o.paid_at, o.created_at))
-        ORDER BY date ASC
-      `,
-      {
-        replacements: { startDate, endDate },
-        type: QueryTypes.SELECT,
-      },
-    );
+    const rows = await adminAnalyticsRepository.queryDailyRevenue(startDate, endDate);
 
     return rows.map((row) => ({
       date: row.date,
@@ -111,22 +56,7 @@ class AdminAnalyticsService {
     const startDate = new Date(year, 0, 1);
     const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
 
-    const rows = await db.sequelize.query(
-      `
-        SELECT
-          MONTH(COALESCE(o.paid_at, o.created_at)) AS month,
-          COALESCE(SUM(o.total_price), 0) AS revenue,
-          COUNT(o.id) AS orders
-        FROM orders o
-        WHERE ${this.getPaidOrderWhereSql("o")}
-        GROUP BY MONTH(COALESCE(o.paid_at, o.created_at))
-        ORDER BY month ASC
-      `,
-      {
-        replacements: { startDate, endDate },
-        type: QueryTypes.SELECT,
-      },
-    );
+    const rows = await adminAnalyticsRepository.queryMonthlyRevenue(startDate, endDate);
 
     const revenueByMonth = Array.from({ length: 12 }, (_, index) => ({
       month: index + 1,
@@ -153,27 +83,7 @@ class AdminAnalyticsService {
     const { startDate, endDate } = this.getDateRange(query);
     const limit = Math.min(Math.max(Number(query.limit) || 10, 1), 50);
 
-    const rows = await db.sequelize.query(
-      `
-        SELECT
-          oi.product_id AS productId,
-          oi.product_name AS productName,
-          oi.product_sku AS productSku,
-          oi.product_image_url AS productImageUrl,
-          COALESCE(SUM(oi.quantity), 0) AS soldQuantity,
-          COALESCE(SUM(oi.total_price), 0) AS revenue
-        FROM order_items oi
-        INNER JOIN orders o ON o.id = oi.order_id
-        WHERE ${this.getPaidOrderWhereSql("o")}
-        GROUP BY oi.product_id, oi.product_name, oi.product_sku, oi.product_image_url
-        ORDER BY revenue DESC, soldQuantity DESC
-        LIMIT :limit
-      `,
-      {
-        replacements: { startDate, endDate, limit },
-        type: QueryTypes.SELECT,
-      },
-    );
+    const rows = await adminAnalyticsRepository.queryTopProducts(startDate, endDate, limit);
 
     return rows.map((row) => ({
       productId: row.productId,
@@ -188,26 +98,7 @@ class AdminAnalyticsService {
   async getRevenueByCategory(query = {}) {
     const { startDate, endDate } = this.getDateRange(query);
 
-    const rows = await db.sequelize.query(
-      `
-        SELECT
-          c.id AS categoryId,
-          c.name AS categoryName,
-          COALESCE(SUM(oi.quantity), 0) AS soldQuantity,
-          COALESCE(SUM(oi.total_price), 0) AS revenue
-        FROM order_items oi
-        INNER JOIN orders o ON o.id = oi.order_id
-        LEFT JOIN products p ON p.id = oi.product_id
-        LEFT JOIN categories c ON c.id = p.category_id
-        WHERE ${this.getPaidOrderWhereSql("o")}
-        GROUP BY c.id, c.name
-        ORDER BY revenue DESC
-      `,
-      {
-        replacements: { startDate, endDate },
-        type: QueryTypes.SELECT,
-      },
-    );
+    const rows = await adminAnalyticsRepository.queryRevenueByCategory(startDate, endDate);
 
     return rows.map((row) => ({
       categoryId: row.categoryId,
@@ -220,26 +111,7 @@ class AdminAnalyticsService {
   async getRevenueByBrand(query = {}) {
     const { startDate, endDate } = this.getDateRange(query);
 
-    const rows = await db.sequelize.query(
-      `
-        SELECT
-          b.id AS brandId,
-          b.name AS brandName,
-          COALESCE(SUM(oi.quantity), 0) AS soldQuantity,
-          COALESCE(SUM(oi.total_price), 0) AS revenue
-        FROM order_items oi
-        INNER JOIN orders o ON o.id = oi.order_id
-        LEFT JOIN products p ON p.id = oi.product_id
-        LEFT JOIN brands b ON b.id = p.brand_id
-        WHERE ${this.getPaidOrderWhereSql("o")}
-        GROUP BY b.id, b.name
-        ORDER BY revenue DESC
-      `,
-      {
-        replacements: { startDate, endDate },
-        type: QueryTypes.SELECT,
-      },
-    );
+    const rows = await adminAnalyticsRepository.queryRevenueByBrand(startDate, endDate);
 
     return rows.map((row) => ({
       brandId: row.brandId,

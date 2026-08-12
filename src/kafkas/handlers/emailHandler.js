@@ -18,6 +18,15 @@ async function handleEmailEvent(event) {
         });
         break;
 
+      case EMAIL_EVENTS.PASSWORD_RESET:
+        await emailService.sendPasswordReset({
+          to,
+          fullName: payload?.fullName,
+          otp: payload?.otp,
+          expiresMinutes: payload?.expiresMinutes,
+        });
+        break;
+
       default:
         logger.warn("Received unknown email event type", { type });
     }

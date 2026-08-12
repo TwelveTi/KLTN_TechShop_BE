@@ -1,11 +1,10 @@
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-const { Op } = require("sequelize");
-const db = require("../models");
 const AppError = require("../utils/AppError");
 const jwtUtils = require("../utils/jwt");
 const emailProducer = require("../kafkas/producers/emailProducer");
 const { isDisposableEmail } = require("../utils/disposableEmail");
+const authRepository = require("../repositories/authRepository");
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -48,7 +47,7 @@ class AuthService {
     });
   }
 
-  async createTokens(user, meta = {}, options = {}) {
+  async createTokens(user, meta = {}, { transaction } = {}) {
     const payload = {
       id: user.id,
       email: user.email,
@@ -61,7 +60,7 @@ class AuthService {
       tokenId: crypto.randomUUID(),
     });
 
-    await db.RefreshToken.create(
+    await authRepository.createRefreshToken(
       {
         userId: user.id,
         tokenHash: this.hashToken(refreshToken),
@@ -69,7 +68,7 @@ class AuthService {
         deviceInfo: meta.deviceInfo,
         ipAddress: meta.ipAddress,
       },
-      options,
+      { transaction },
     );
 
     return { accessToken, refreshToken };
@@ -100,8 +99,7 @@ class AuthService {
       };
     }
 
-    const existing = await db.User.findOne({
-      where: { email },
+    const existing = await authRepository.findUserByEmail(email, {
       paranoid: false,
       attributes: ["id"],
     });
@@ -136,21 +134,18 @@ class AuthService {
       throw new AppError("Disposable email addresses are not allowed", 400);
     }
 
-    const existingUser = await db.User.findOne({
-      where: { email: normalizedEmail },
-      paranoid: false,
-    });
+    const existingUser = await authRepository.findUserByEmail(normalizedEmail, { paranoid: false });
 
     if (existingUser) {
       throw new AppError("Email already exists", 409);
     }
 
-    const transaction = await db.sequelize.transaction();
+    const transaction = await authRepository.beginTransaction();
 
     try {
       const passwordHash = await bcrypt.hash(password, 10);
 
-      const user = await db.User.create(
+      const user = await authRepository.createUser(
         {
           email: normalizedEmail,
           fullName: fullName.trim(),
@@ -161,7 +156,7 @@ class AuthService {
         { transaction },
       );
 
-      await db.AuthProvider.create(
+      await authRepository.createAuthProvider(
         {
           userId: user.id,
           provider: "LOCAL",
@@ -171,8 +166,8 @@ class AuthService {
         { transaction },
       );
 
-      await db.Cart.create({ userId: user.id }, { transaction });
-      await db.Wishlist.create({ userId: user.id }, { transaction });
+      await authRepository.createCart(user.id, { transaction });
+      await authRepository.createWishlist(user.id, { transaction });
 
       await transaction.commit();
 
@@ -222,7 +217,7 @@ class AuthService {
       throw new AppError("Invalid or expired verification link", 400);
     }
 
-    const user = await db.User.findByPk(decoded.id);
+    const user = await authRepository.findUserById(decoded.id);
 
     if (!user) {
       throw new AppError("User not found", 404);
@@ -235,7 +230,7 @@ class AuthService {
     const alreadyVerified = Boolean(user.emailVerifiedAt);
 
     if (!alreadyVerified) {
-      await user.update({ emailVerifiedAt: new Date() });
+      await authRepository.updateUser(user, { emailVerifiedAt: new Date() });
     }
 
     // Clicking the verification link also signs the user in: issue a refresh
@@ -246,7 +241,7 @@ class AuthService {
   }
 
   async resendVerification(userId, meta = {}) {
-    const user = await db.User.findByPk(userId);
+    const user = await authRepository.findUserById(userId);
 
     if (!user) {
       throw new AppError("User not found", 404);
@@ -271,10 +266,7 @@ class AuthService {
     const normalizedEmail = email.toLowerCase().trim();
 
     // 1) Already linked to this Google account -> straight login.
-    const existingProvider = await db.AuthProvider.findOne({
-      where: { provider: "GOOGLE", providerUserId },
-      include: [{ model: db.User, as: "user" }],
-    });
+    const existingProvider = await authRepository.findGoogleProviderWithUser(providerUserId);
 
     if (existingProvider?.user) {
       const user = existingProvider.user;
@@ -284,8 +276,8 @@ class AuthService {
       }
 
       await Promise.all([
-        user.update({ lastLoginAt: new Date() }),
-        existingProvider.update({ lastUsedAt: new Date() }),
+        authRepository.updateUser(user, { lastLoginAt: new Date() }),
+        authRepository.updateAuthProvider(existingProvider, { lastUsedAt: new Date() }),
       ]);
 
       const tokens = await this.createTokens(user, meta);
@@ -293,10 +285,10 @@ class AuthService {
     }
 
     // 2) Not linked yet: link to an existing account by email, or create one.
-    const transaction = await db.sequelize.transaction();
+    const transaction = await authRepository.beginTransaction();
 
     try {
-      let user = await db.User.findOne({ where: { email: normalizedEmail }, transaction });
+      let user = await authRepository.findUserByEmail(normalizedEmail, { transaction });
 
       if (user) {
         if (user.status !== "ACTIVE") {
@@ -311,9 +303,9 @@ class AuthService {
         if (!user.avatarUrl && avatarUrl) {
           updates.avatarUrl = avatarUrl;
         }
-        await user.update(updates, { transaction });
+        await authRepository.updateUser(user, updates, { transaction });
       } else {
-        user = await db.User.create(
+        user = await authRepository.createUser(
           {
             email: normalizedEmail,
             fullName: (fullName || normalizedEmail).trim(),
@@ -325,11 +317,11 @@ class AuthService {
           { transaction },
         );
 
-        await db.Cart.create({ userId: user.id }, { transaction });
-        await db.Wishlist.create({ userId: user.id }, { transaction });
+        await authRepository.createCart(user.id, { transaction });
+        await authRepository.createWishlist(user.id, { transaction });
       }
 
-      await db.AuthProvider.create(
+      await authRepository.createAuthProvider(
         {
           userId: user.id,
           provider: "GOOGLE",
@@ -354,17 +346,7 @@ class AuthService {
     const { email, password } = credentials;
     const normalizedEmail = email.toLowerCase().trim();
 
-    const user = await db.User.findOne({
-      where: { email: normalizedEmail },
-      include: [
-        {
-          model: db.AuthProvider,
-          as: "authProviders",
-          where: { provider: "LOCAL" },
-          required: true,
-        },
-      ],
-    });
+    const user = await authRepository.findUserWithLocalProviderByEmail(normalizedEmail);
 
     if (!user || user.status !== "ACTIVE") {
       throw new AppError("Invalid email or password", 401);
@@ -378,8 +360,8 @@ class AuthService {
     }
 
     await Promise.all([
-      user.update({ lastLoginAt: new Date() }),
-      localProvider.update({ lastUsedAt: new Date() }),
+      authRepository.updateUser(user, { lastLoginAt: new Date() }),
+      authRepository.updateAuthProvider(localProvider, { lastUsedAt: new Date() }),
     ]);
 
     const tokens = await this.createTokens(user, meta);
@@ -391,7 +373,7 @@ class AuthService {
   }
 
   async getProfile(userId) {
-    const user = await db.User.findByPk(userId);
+    const user = await authRepository.findUserById(userId);
 
     if (!user) {
       throw new AppError("User not found", 404);
@@ -401,7 +383,7 @@ class AuthService {
   }
 
   async updateProfile(userId, data) {
-    const user = await db.User.findByPk(userId);
+    const user = await authRepository.findUserById(userId);
 
     if (!user) {
       throw new AppError("User not found", 404);
@@ -421,19 +403,19 @@ class AuthService {
       updates.avatarUrl = data.avatarUrl ? data.avatarUrl.trim() : null;
     }
 
-    await user.update(updates);
+    await authRepository.updateUser(user, updates);
 
     return this.toSafeUser(user);
   }
 
   async updateAvatar(userId, avatarData) {
-    const user = await db.User.findByPk(userId);
+    const user = await authRepository.findUserById(userId);
 
     if (!user) {
       throw new AppError("User not found", 404);
     }
 
-    await user.update({
+    await authRepository.updateUser(user, {
       avatarUrl: avatarData.avatarUrl,
       avatarPublicId: avatarData.avatarPublicId,
     });
@@ -446,15 +428,7 @@ class AuthService {
       return { message: "Logged out successfully" };
     }
 
-    await db.RefreshToken.update(
-      { revokedAt: new Date() },
-      {
-        where: {
-          tokenHash: this.hashToken(refreshToken),
-          revokedAt: null,
-        },
-      },
-    );
+    await authRepository.revokeByTokenHash(this.hashToken(refreshToken));
 
     return { message: "Logged out successfully" };
   }
@@ -472,23 +446,15 @@ class AuthService {
       throw new AppError("Invalid refresh token", 401);
     }
 
-    const transaction = await db.sequelize.transaction();
+    const transaction = await authRepository.beginTransaction();
     const now = new Date();
     const graceStartedAt = new Date(now.getTime() - REFRESH_TOKEN_REUSE_GRACE_MS);
 
     try {
-      const storedRefreshToken = await db.RefreshToken.findOne({
-        where: {
-          tokenHash: this.hashToken(refreshToken),
-          expiresAt: { [Op.gt]: now },
-          [Op.or]: [
-            { revokedAt: null },
-            { revokedAt: { [Op.gt]: graceStartedAt } },
-          ],
-        },
-        transaction,
-        lock: transaction.LOCK.UPDATE,
-      });
+      const storedRefreshToken = await authRepository.findRefreshTokenForRotation(
+        this.hashToken(refreshToken),
+        { now, graceStartedAt, transaction, lock: true },
+      );
 
       if (!storedRefreshToken) {
         throw new AppError("Invalid refresh token", 401);
@@ -498,7 +464,7 @@ class AuthService {
         throw new AppError("Invalid refresh token", 401);
       }
 
-      const user = await db.User.findByPk(decoded.id, { transaction });
+      const user = await authRepository.findUserById(decoded.id, { transaction });
 
       if (!user || user.status !== "ACTIVE") {
         throw new AppError("Unauthorized", 401);
@@ -521,7 +487,7 @@ class AuthService {
       }
 
       if (!storedRefreshToken.revokedAt) {
-        await storedRefreshToken.update({ revokedAt: now }, { transaction });
+        await authRepository.updateRefreshToken(storedRefreshToken, { revokedAt: now }, { transaction });
       }
 
       const tokens = await this.createTokens(

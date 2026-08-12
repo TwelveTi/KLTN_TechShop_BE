@@ -384,6 +384,22 @@ const validateDeleteUploadedImage = (req, res, next) => {
   return next();
 };
 
+const ORDER_STATUS_VALUES = ["PENDING", "PAID", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED", "REFUNDED"];
+
+const validateUpdateOrderStatus = (req, res, next) => {
+  const errors = [];
+
+  if (!req.body.status) {
+    errors.push("Status is required");
+  } else if (!ORDER_STATUS_VALUES.includes(req.body.status)) {
+    errors.push(`Status must be one of: ${ORDER_STATUS_VALUES.join(", ")}`);
+  }
+
+  validateOptionalString(req.body, "note", "Note", errors, 1000);
+
+  return sendFirstError(errors, next);
+};
+
 module.exports = {
   validateIdParam,
   validateCreateUser,
@@ -394,4 +410,5 @@ module.exports = {
   validateUpdateProduct,
   validateDeleteUploadedImage,
   validateRevenueQuery,
+  validateUpdateOrderStatus,
 };

@@ -1,5 +1,6 @@
 const adminService = require("../services/adminService");
 const adminAnalyticsService = require("../services/adminAnalyticsService");
+const adminOrderService = require("../services/adminOrderService");
 const uploadService = require("../services/uploadService");
 const APIResponse = require("../utils/ApiResponse");
 const logger = require("../utils/logger");
@@ -8,6 +9,26 @@ class AdminController {
   async getAllUsers(req, res) {
     const result = await adminService.getAllUsers(req.query);
     return APIResponse.success(res, "Get users successfully", result);
+  }
+
+  // ── Orders ────────────────────────────────────────────────────────────────
+  async getAllOrders(req, res) {
+    const result = await adminOrderService.getAllOrders(req.query);
+    return APIResponse.success(res, "Get orders successfully", result);
+  }
+
+  async getOrderById(req, res) {
+    const order = await adminOrderService.getOrderById(req.params.id);
+    return APIResponse.success(res, "Get order successfully", order);
+  }
+
+  async updateOrderStatus(req, res) {
+    const order = await adminOrderService.updateOrderStatus(
+      req.params.id,
+      { status: req.body.status, note: req.body.note },
+      req.user.id,
+    );
+    return APIResponse.success(res, "Order status updated successfully", order);
   }
 
   async getUserById(req, res) {

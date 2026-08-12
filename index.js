@@ -89,8 +89,14 @@ app.use(rateLimit({
 route(app);
 
 connectDB().then(async () => {
+  const port = process.env.PORT || 3000;
+  const hostname = process.env.HOST_NAME || "localhost";
+
+  server.listen(port, hostname, () => {
+    console.log(`Server is running at http://${hostname}:${port}`);
+  });
+
   // Kafka is best-effort: if the broker is down, the API still serves requests
-  // (registration succeeds; only the async email pipeline is affected).
   try {
     await kafkaManager.init();
   } catch (error) {
@@ -98,13 +104,6 @@ connectDB().then(async () => {
       error: logger.serializeError(error),
     });
   }
-
-  const port = process.env.PORT || 3000;
-  const hostname = process.env.HOST_NAME || "localhost";
-
-  server.listen(port, hostname, () => {
-    console.log(`Server is running at http://${hostname}:${port}`);
-  });
 });
 
 async function shutdown(signal) {

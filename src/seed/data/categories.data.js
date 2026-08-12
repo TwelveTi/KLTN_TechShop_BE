@@ -1,0 +1,115 @@
+/**
+ * Seed data for Categories (hierarchical)
+ */
+
+const categoriesData = [
+  {
+    key: "laptop",
+    name: "Laptops & Máy Tính",
+    slug: "laptop-may-tinh",
+    description: "Laptop chính hãng cao cấp cho văn phòng, đồ họa và gaming",
+    imageUrl: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&auto=format&fit=crop&q=80",
+    isActive: true,
+    sortOrder: 1,
+    children: [
+      {
+        key: "laptopGaming",
+        name: "Laptop Gaming",
+        slug: "laptop-gaming",
+        description: "Laptop cấu hình khủng với GPU RTX thế hệ mới dành cho game thủ",
+        imageUrl: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=500&auto=format&fit=crop&q=80",
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        key: "laptopOffice",
+        name: "Laptop Văn Phòng & Doanh Nhân",
+        slug: "laptop-van-phong",
+        description: "Laptop mỏng nhẹ, pin trâu, thiết kế sang trọng cho công việc",
+        imageUrl: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500&auto=format&fit=crop&q=80",
+        isActive: true,
+        sortOrder: 2,
+      },
+      {
+        key: "macbook",
+        name: "MacBook",
+        slug: "macbook",
+        description: "Các dòng Apple MacBook Air và MacBook Pro chip M series",
+        imageUrl: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&auto=format&fit=crop&q=80",
+        isActive: true,
+        sortOrder: 3,
+      },
+    ],
+  },
+  {
+    key: "smartphoneTablet",
+    name: "Điện Thoại & Tablet",
+    slug: "dien-thoai-tablet",
+    description: "Điện thoại thông minh, máy tính bảng hàng đầu từ Apple, Samsung, Xiaomi",
+    imageUrl: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&auto=format&fit=crop&q=80",
+    isActive: true,
+    sortOrder: 2,
+    children: [
+      {
+        key: "smartphone",
+        name: "Smartphone Flagship",
+        slug: "smartphone",
+        description: "Điện thoại thông minh cao cấp chụp ảnh đỉnh cao và hiệu năng vượt trội",
+        imageUrl: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500&auto=format&fit=crop&q=80",
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        key: "tablet",
+        name: "Máy Tính Bảng (Tablet)",
+        slug: "may-tinh-bang",
+        description: "iPad, Galaxy Tab phục vụ học tập, làm việc sáng tạo và giải trí",
+        imageUrl: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500&auto=format&fit=crop&q=80",
+        isActive: true,
+        sortOrder: 2,
+      },
+    ],
+  },
+  {
+    key: "audio",
+    name: "Âm Thanh & Tai Nghe",
+    slug: "am-thanh-tai-nghe",
+    description: "Tai nghe chống ồn không dây, loa Bluetooth chất âm audiophile đỉnh cao",
+    imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=80",
+    isActive: true,
+    sortOrder: 3,
+    children: [],
+  },
+  {
+    key: "smartwatch",
+    name: "Đồng Hồ Thông Minh",
+    slug: "dong-ho-thong-minh",
+    description: "Smartwatch theo dõi sức khỏe, định vị GPS thể thao chuyên nghiệp",
+    imageUrl: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&auto=format&fit=crop&q=80",
+    isActive: true,
+    sortOrder: 4,
+    children: [],
+  },
+  {
+    key: "accessories",
+    name: "Phụ Kiện & Màn Hình",
+    slug: "phu-kien-man-hinh",
+    description: "Chuột, bàn phím cơ, màn hình đồ họa/gaming, củ cáp sạc nhanh GaN",
+    imageUrl: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&auto=format&fit=crop&q=80",
+    isActive: true,
+    sortOrder: 5,
+    children: [],
+  },
+  {
+    key: "smartHome",
+    name: "Nhà Thông Minh (Smart Home)",
+    slug: "nha-thong-minh",
+    description: "Thiết bị thông minh, camera an ninh, robot hút bụi và cảm biến tự động",
+    imageUrl: "https://images.unsplash.com/photo-1558002038-1055907df827?w=500&auto=format&fit=crop&q=80",
+    isActive: false, // Inactive category to test admin category filter
+    sortOrder: 6,
+    children: [],
+  },
+];
+
+module.exports = categoriesData;

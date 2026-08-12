@@ -1,8 +1,7 @@
-const bcrypt = require("bcryptjs");
-const { Op } = require("sequelize");
-const db = require("../models");
 const AppError = require("../utils/AppError");
 const { slugify } = require("../utils/slug");
+const { hashPassword } = require("../utils/passwordCrypto");
+const adminRepository = require("../repositories/adminRepository");
 
 class AdminService {
   buildPagination(query) {
@@ -28,24 +27,13 @@ class AdminService {
   async getAllUsers(query = {}) {
     const { page, limit, offset } = this.buildPagination(query);
 
-    const { rows, count } = await db.User.findAndCountAll({
-      attributes: { exclude: ["deletedAt"] },
-      order: [["createdAt", "DESC"]],
-      limit,
-      offset,
-    });
+    const { rows, count } = await adminRepository.findAndCountUsers({ limit, offset });
 
     return this.buildPagedResult(rows, count, page, limit);
   }
 
   async getUserById(id) {
-    const user = await db.User.findByPk(id, {
-      include: [
-        { model: db.AuthProvider, as: "authProviders", attributes: { exclude: ["passwordHash"] } },
-        { model: db.Cart, as: "cart" },
-        { model: db.Wishlist, as: "wishlist" },
-      ],
-    });
+    const user = await adminRepository.findUserByIdWithRelations(id);
 
     if (!user) {
       throw new AppError("User not found", 404);
@@ -55,19 +43,16 @@ class AdminService {
   }
 
   async createUser(data) {
-    const existingUser = await db.User.findOne({
-      where: { email: data.email },
-      paranoid: false,
-    });
+    const existingUser = await adminRepository.findUserByEmail(data.email, { paranoid: false });
 
     if (existingUser) {
       throw new AppError("Email already exists", 409);
     }
 
-    const transaction = await db.sequelize.transaction();
+    const transaction = await adminRepository.beginTransaction();
 
     try {
-      const user = await db.User.create(
+      const user = await adminRepository.createUser(
         {
           email: data.email,
           fullName: data.fullName,
@@ -78,18 +63,18 @@ class AdminService {
         { transaction },
       );
 
-      await db.AuthProvider.create(
+      await adminRepository.createAuthProvider(
         {
           userId: user.id,
           provider: "LOCAL",
           providerEmail: data.email,
-          passwordHash: await bcrypt.hash(data.password, 10),
+          passwordHash: await hashPassword(data.password),
         },
         { transaction },
       );
 
-      await db.Cart.create({ userId: user.id }, { transaction });
-      await db.Wishlist.create({ userId: user.id }, { transaction });
+      await adminRepository.createCart(user.id, { transaction });
+      await adminRepository.createWishlist(user.id, { transaction });
 
       await transaction.commit();
 
@@ -103,7 +88,7 @@ class AdminService {
   async updateUser(id, data) {
     const user = await this.getUserById(id);
 
-    await user.update({
+    await adminRepository.updateUser(user, {
       email: data.email ?? user.email,
       fullName: data.fullName ?? user.fullName,
       phone: data.phone ?? user.phone,
@@ -118,16 +103,13 @@ class AdminService {
 
   async deleteUser(id) {
     const user = await this.getUserById(id);
-    await user.destroy();
+    await adminRepository.destroyUser(user);
 
     return { message: "User deleted successfully" };
   }
 
   async getAllCategories() {
-    return db.Category.findAll({
-      include: [{ model: db.Category, as: "children" }],
-      order: [["sortOrder", "ASC"], ["createdAt", "DESC"]],
-    });
+    return adminRepository.findAllCategories();
   }
 
   async buildUniqueCategorySlug(name, currentCategoryId = null, requestedSlug = null) {
@@ -135,13 +117,7 @@ class AdminService {
     let candidateSlug = baseSlug;
     let suffix = 1;
 
-    while (await db.Category.findOne({
-      where: {
-        slug: candidateSlug,
-        ...(currentCategoryId ? { id: { [Op.ne]: currentCategoryId } } : {}),
-      },
-      paranoid: false,
-    })) {
+    while (await adminRepository.findCategoryBySlug(candidateSlug, { excludeId: currentCategoryId })) {
       suffix += 1;
       candidateSlug = `${baseSlug}-${suffix}`;
     }
@@ -154,13 +130,7 @@ class AdminService {
     let candidateSlug = baseSlug;
     let suffix = 1;
 
-    while (await db.Brand.findOne({
-      where: {
-        slug: candidateSlug,
-        ...(currentBrandId ? { id: { [Op.ne]: currentBrandId } } : {}),
-      },
-      paranoid: false,
-    })) {
+    while (await adminRepository.findBrandBySlug(candidateSlug, { excludeId: currentBrandId })) {
       suffix += 1;
       candidateSlug = `${baseSlug}-${suffix}`;
     }
@@ -169,7 +139,7 @@ class AdminService {
   }
 
   async createCategory(data) {
-    return db.Category.create({
+    return adminRepository.createCategory({
       parentId: data.parentId || null,
       name: data.name,
       slug: await this.buildUniqueCategorySlug(data.name, null, data.slug),
@@ -182,7 +152,7 @@ class AdminService {
   }
 
   async updateCategory(id, data) {
-    const category = await db.Category.findByPk(id);
+    const category = await adminRepository.findCategoryById(id);
 
     if (!category) {
       throw new AppError("Category not found", 404);
@@ -197,27 +167,27 @@ class AdminService {
       ),
     };
 
-    await category.update(nextData);
+    await adminRepository.updateCategory(category, nextData);
     return category;
   }
 
   async deleteCategory(id) {
-    const category = await db.Category.findByPk(id);
+    const category = await adminRepository.findCategoryById(id);
 
     if (!category) {
       throw new AppError("Category not found", 404);
     }
 
-    await category.destroy();
+    await adminRepository.destroyCategory(category);
     return { message: "Category deleted successfully" };
   }
 
   async getAllBrands() {
-    return db.Brand.findAll({ order: [["createdAt", "DESC"]] });
+    return adminRepository.findAllBrands();
   }
 
   async createBrand(data) {
-    return db.Brand.create({
+    return adminRepository.createBrand({
       name: data.name,
       slug: await this.buildUniqueBrandSlug(data.name, null, data.slug),
       logoUrl: data.logoUrl || null,
@@ -228,7 +198,7 @@ class AdminService {
   }
 
   async updateBrand(id, data) {
-    const brand = await db.Brand.findByPk(id);
+    const brand = await adminRepository.findBrandById(id);
 
     if (!brand) {
       throw new AppError("Brand not found", 404);
@@ -243,22 +213,20 @@ class AdminService {
       ),
     };
 
-    await brand.update(nextData);
+    await adminRepository.updateBrand(brand, nextData);
     return brand;
   }
 
   async deleteBrand(id) {
-    const brand = await db.Brand.findByPk(id);
+    const brand = await adminRepository.findBrandById(id);
 
     if (!brand) {
       throw new AppError("Brand not found", 404);
     }
 
-    await brand.destroy();
+    await adminRepository.destroyBrand(brand);
     return { message: "Brand deleted successfully" };
   }
-
 }
 
 module.exports = new AdminService();
-

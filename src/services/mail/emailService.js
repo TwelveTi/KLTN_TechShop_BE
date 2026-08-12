@@ -1,5 +1,6 @@
 const { sendMail } = require("./mailer");
 const { accountVerificationTemplate } = require("./templates/accountVerification");
+const { passwordResetTemplate } = require("./templates/passwordReset");
 
 // APP_URL is the backend's public base URL. The verify link points at the
 // backend, which then verifies the token and redirects to the frontend home.
@@ -16,6 +17,16 @@ class EmailService {
 
     const verifyUrl = buildVerifyUrl(verifyToken);
     const { subject, html, text } = accountVerificationTemplate({ fullName, verifyUrl });
+
+    await sendMail({ to, subject, html, text });
+  }
+
+  async sendPasswordReset({ to, fullName, otp, expiresMinutes }) {
+    if (!to || !otp) {
+      throw new Error("sendPasswordReset requires 'to' and 'otp'");
+    }
+
+    const { subject, html, text } = passwordResetTemplate({ fullName, otp, expiresMinutes });
 
     await sendMail({ to, subject, html, text });
   }

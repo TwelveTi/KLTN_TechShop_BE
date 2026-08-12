@@ -1,42 +1,34 @@
-const db = require("../models");
 const AppError = require("../utils/AppError");
+const addressRepository = require("../repositories/addressRepository");
 
 class AddressService {
   async getMyAddresses(userId) {
-    return db.UserAddress.findAll({
-      where: { userId },
-      order: [["isDefault", "DESC"], ["createdAt", "DESC"]],
-    });
+    return addressRepository.findAllByUser(userId);
   }
 
+  // Input is already validated + trimmed by validateCreateAddress middleware,
+  // so the service only orchestrates the transaction and the default-address
+  // business rule.
   async createMyAddress(userId, data) {
-    const requiredFields = ["receiverName", "receiverPhone", "province", "district", "ward", "addressLine"];
-
-    requiredFields.forEach((field) => {
-      if (!data[field] || !String(data[field]).trim()) {
-        throw new AppError(`${field} is required`, 400);
-      }
-    });
-
-    const transaction = await db.sequelize.transaction();
+    const transaction = await addressRepository.beginTransaction();
 
     try {
-      const addressCount = await db.UserAddress.count({ where: { userId }, transaction });
+      const addressCount = await addressRepository.countByUser(userId, { transaction });
       const shouldSetDefault = Boolean(data.isDefault) || addressCount === 0;
 
       if (shouldSetDefault) {
-        await db.UserAddress.update({ isDefault: false }, { where: { userId }, transaction });
+        await addressRepository.clearDefaultForUser(userId, { transaction });
       }
 
-      const address = await db.UserAddress.create(
+      const address = await addressRepository.create(
         {
           userId,
-          receiverName: data.receiverName.trim(),
-          receiverPhone: data.receiverPhone.trim(),
-          province: data.province.trim(),
-          district: data.district.trim(),
-          ward: data.ward.trim(),
-          addressLine: data.addressLine.trim(),
+          receiverName: data.receiverName,
+          receiverPhone: data.receiverPhone,
+          province: data.province,
+          district: data.district,
+          ward: data.ward,
+          addressLine: data.addressLine,
           postalCode: data.postalCode || null,
           isDefault: shouldSetDefault,
         },
@@ -52,17 +44,17 @@ class AddressService {
   }
 
   async setDefaultAddress(userId, addressId) {
-    const address = await db.UserAddress.findOne({ where: { id: addressId, userId } });
+    const address = await addressRepository.findByIdForUser(addressId, userId);
 
     if (!address) {
       throw new AppError("Address not found", 404);
     }
 
-    const transaction = await db.sequelize.transaction();
+    const transaction = await addressRepository.beginTransaction();
 
     try {
-      await db.UserAddress.update({ isDefault: false }, { where: { userId }, transaction });
-      await address.update({ isDefault: true }, { transaction });
+      await addressRepository.clearDefaultForUser(userId, { transaction });
+      await addressRepository.update(address, { isDefault: true }, { transaction });
       await transaction.commit();
       return address;
     } catch (error) {
@@ -72,7 +64,7 @@ class AddressService {
   }
 
   async deleteMyAddress(userId, addressId) {
-    const address = await db.UserAddress.findOne({ where: { id: addressId, userId } });
+    const address = await addressRepository.findByIdForUser(addressId, userId);
 
     if (!address) {
       throw new AppError("Address not found", 404);
@@ -82,7 +74,7 @@ class AddressService {
       throw new AppError("Default address cannot be deleted", 400);
     }
 
-    await address.destroy();
+    await addressRepository.destroy(address);
     return { message: "Address deleted successfully" };
   }
 }

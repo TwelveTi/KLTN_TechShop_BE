@@ -1,28 +1,16 @@
-const { Op } = require("sequelize");
-const db = require("../models");
 const AppError = require("../utils/AppError");
 const { hashToken } = require("../utils/tokenHash");
 const { parseUserAgent } = require("../utils/userAgent");
+const sessionRepository = require("../repositories/sessionRepository");
 
 // A "session/device" is one row in refresh_tokens. It is ACTIVE when it has not
 // been revoked and has not expired. The session matching the caller's refresh
 // cookie is flagged as `current`.
 class SessionService {
-  activeWhere(userId, now = new Date()) {
-    return {
-      userId,
-      revokedAt: null,
-      expiresAt: { [Op.gt]: now },
-    };
-  }
-
   async listSessions(userId, currentRefreshToken) {
     const currentHash = currentRefreshToken ? hashToken(currentRefreshToken) : null;
 
-    const sessions = await db.RefreshToken.findAll({
-      where: this.activeWhere(userId),
-      order: [["createdAt", "DESC"]],
-    });
+    const sessions = await sessionRepository.findActiveByUser(userId);
 
     return sessions.map((session) => {
       const device = parseUserAgent(session.deviceInfo);
@@ -42,9 +30,7 @@ class SessionService {
   }
 
   async revokeSession(userId, sessionId, currentRefreshToken) {
-    const session = await db.RefreshToken.findOne({
-      where: { id: sessionId, userId },
-    });
+    const session = await sessionRepository.findByIdForUser(sessionId, userId);
 
     if (!session) {
       throw new AppError("Session not found", 404);
@@ -54,7 +40,7 @@ class SessionService {
     const isCurrent = currentHash ? session.tokenHash === currentHash : false;
 
     if (!session.revokedAt) {
-      await session.update({ revokedAt: new Date() });
+      await sessionRepository.revoke(session);
     }
 
     return { isCurrent };
@@ -67,17 +53,7 @@ class SessionService {
     }
 
     const currentHash = hashToken(currentRefreshToken);
-    const now = new Date();
-
-    const [revokedCount] = await db.RefreshToken.update(
-      { revokedAt: now },
-      {
-        where: {
-          ...this.activeWhere(userId, now),
-          tokenHash: { [Op.ne]: currentHash },
-        },
-      },
-    );
+    const revokedCount = await sessionRepository.revokeOthers(userId, currentHash);
 
     return { revokedCount };
   }
