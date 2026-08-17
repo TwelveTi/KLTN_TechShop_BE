@@ -5,7 +5,6 @@ const {
   validateRegister,
   validateLogin,
   validateLogout,
-  validateUpdateProfile,
   validateForgotPassword,
   validateVerifyResetOtp,
   validateResetPassword,
@@ -13,7 +12,6 @@ const {
 } = require("../middlewares/authValidation");
 const { authMiddleware } = require("../middlewares/authMiddleware");
 const passwordController = require("../controllers/passwordController");
-const { uploadAvatar } = require("../middlewares/uploadMiddleware");
 const { validateIdParam } = require("../middlewares/adminValidation");
 const asyncHandler = require("../utils/asyncHandler");
 const sessionController = require("../controllers/sessionController");
@@ -35,9 +33,8 @@ router.post("/auth/verify-reset-otp", validateVerifyResetOtp, asyncHandler(passw
 router.post("/auth/reset-password", validateResetPassword, asyncHandler(passwordController.resetPassword));
 router.patch("/auth/change-password", authMiddleware, validateChangePassword, asyncHandler(passwordController.changePassword));
 
-router.get("/auth/me", authMiddleware, asyncHandler(authController.me));
-router.put("/auth/me", authMiddleware, validateUpdateProfile, asyncHandler(authController.updateMe));
-router.post("/auth/me/avatar", authMiddleware, uploadAvatar, asyncHandler(authController.uploadAvatar));
+// Profile reads/writes live in userRoute (`/users/me`) — this router only owns
+// credentials and the session lifecycle.
 
 // Session / device management (all require a valid access token).
 router.get("/auth/sessions", authMiddleware, asyncHandler(sessionController.getSessions));

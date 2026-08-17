@@ -6,11 +6,6 @@ const APIResponse = require("../utils/ApiResponse");
 const logger = require("../utils/logger");
 
 class AdminController {
-  async getAllUsers(req, res) {
-    const result = await adminService.getAllUsers(req.query);
-    return APIResponse.success(res, "Get users successfully", result);
-  }
-
   // ── Orders ────────────────────────────────────────────────────────────────
   async getAllOrders(req, res) {
     const result = await adminOrderService.getAllOrders(req.query);
@@ -29,26 +24,6 @@ class AdminController {
       req.user.id,
     );
     return APIResponse.success(res, "Order status updated successfully", order);
-  }
-
-  async getUserById(req, res) {
-    const user = await adminService.getUserById(req.params.id);
-    return APIResponse.success(res, "Get user successfully", user);
-  }
-
-  async createUser(req, res) {
-    const user = await adminService.createUser(req.body);
-    return APIResponse.success(res, "User created successfully", user, 201);
-  }
-
-  async updateUser(req, res) {
-    const user = await adminService.updateUser(req.params.id, req.body);
-    return APIResponse.success(res, "User updated successfully", user);
-  }
-
-  async deleteUser(req, res) {
-    const result = await adminService.deleteUser(req.params.id);
-    return APIResponse.success(res, result.message);
   }
 
   async getAllCategories(req, res) {

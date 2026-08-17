@@ -4,7 +4,12 @@ const AppError = require("../utils/AppError");
 const jwtUtils = require("../utils/jwt");
 const emailProducer = require("../kafkas/producers/emailProducer");
 const { isDisposableEmail } = require("../utils/disposableEmail");
+const { toSafeUser } = require("../utils/userSerializer");
 const authRepository = require("../repositories/authRepository");
+// Account creation belongs to the user module; auth only drives the session on
+// top of it. This is the one place a service reaches for another service, and
+// it is deliberately one-way (userService never calls authService).
+const userService = require("./userService");
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -21,22 +26,6 @@ class AuthService {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_EXPIRES_IN_DAYS);
     return expiresAt;
-  }
-
-  toSafeUser(user) {
-    return {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      phone: user.phone,
-      avatarUrl: user.avatarUrl,
-      role: user.role,
-      status: user.status,
-      emailVerifiedAt: user.emailVerifiedAt,
-      lastLoginAt: user.lastLoginAt,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-    };
   }
 
   createAccessToken(user) {
@@ -130,44 +119,25 @@ class AuthService {
     const normalizedEmail = email.toLowerCase().trim();
 
     // Enforce the same rules as the live check so the API can't be bypassed.
+    // This is specific to public sign-up: an admin may create any address.
     if (isDisposableEmail(normalizedEmail)) {
       throw new AppError("Disposable email addresses are not allowed", 400);
-    }
-
-    const existingUser = await authRepository.findUserByEmail(normalizedEmail, { paranoid: false });
-
-    if (existingUser) {
-      throw new AppError("Email already exists", 409);
     }
 
     const transaction = await authRepository.beginTransaction();
 
     try {
-      const passwordHash = await bcrypt.hash(password, 10);
-
-      const user = await authRepository.createUser(
+      const user = await userService.provisionUser(
         {
           email: normalizedEmail,
-          fullName: fullName.trim(),
-          phone: phone || null,
+          fullName,
+          phone,
+          password,
           role: "CUSTOMER",
           status: "ACTIVE",
         },
-        { transaction },
+        transaction,
       );
-
-      await authRepository.createAuthProvider(
-        {
-          userId: user.id,
-          provider: "LOCAL",
-          providerEmail: normalizedEmail,
-          passwordHash,
-        },
-        { transaction },
-      );
-
-      await authRepository.createCart(user.id, { transaction });
-      await authRepository.createWishlist(user.id, { transaction });
 
       await transaction.commit();
 
@@ -179,7 +149,7 @@ class AuthService {
       // Registration does NOT sign the user in. No access/refresh token is
       // issued here: the user is expected to verify their email and then log in.
       return {
-        user: this.toSafeUser(user),
+        user: toSafeUser(user),
       };
     } catch (error) {
       await transaction.rollback();
@@ -237,7 +207,7 @@ class AuthService {
     // token so the frontend can pick up the session right after the redirect.
     const { refreshToken } = await this.createTokens(user, meta);
 
-    return { user: this.toSafeUser(user), alreadyVerified, refreshToken };
+    return { user: toSafeUser(user), alreadyVerified, refreshToken };
   }
 
   async resendVerification(userId, meta = {}) {
@@ -281,7 +251,7 @@ class AuthService {
       ]);
 
       const tokens = await this.createTokens(user, meta);
-      return { user: this.toSafeUser(user), ...tokens };
+      return { user: toSafeUser(user), ...tokens };
     }
 
     // 2) Not linked yet: link to an existing account by email, or create one.
@@ -305,20 +275,19 @@ class AuthService {
         }
         await authRepository.updateUser(user, updates, { transaction });
       } else {
-        user = await authRepository.createUser(
+        // No password: the GOOGLE provider row below is this account's only
+        // credential, so provisionUser skips the LOCAL one.
+        user = await userService.provisionUser(
           {
             email: normalizedEmail,
-            fullName: (fullName || normalizedEmail).trim(),
+            fullName: fullName || normalizedEmail,
             role: "CUSTOMER",
             status: "ACTIVE",
             emailVerifiedAt: new Date(), // Google email is already verified
-            avatarUrl: avatarUrl || null,
+            avatarUrl,
           },
-          { transaction },
+          transaction,
         );
-
-        await authRepository.createCart(user.id, { transaction });
-        await authRepository.createWishlist(user.id, { transaction });
       }
 
       await authRepository.createAuthProvider(
@@ -335,7 +304,7 @@ class AuthService {
       await transaction.commit();
 
       const tokens = await this.createTokens(user, meta);
-      return { user: this.toSafeUser(user), ...tokens };
+      return { user: toSafeUser(user), ...tokens };
     } catch (error) {
       await transaction.rollback();
       throw error;
@@ -367,60 +336,9 @@ class AuthService {
     const tokens = await this.createTokens(user, meta);
 
     return {
-      user: this.toSafeUser(user),
+      user: toSafeUser(user),
       ...tokens,
     };
-  }
-
-  async getProfile(userId) {
-    const user = await authRepository.findUserById(userId);
-
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
-
-    return this.toSafeUser(user);
-  }
-
-  async updateProfile(userId, data) {
-    const user = await authRepository.findUserById(userId);
-
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
-
-    const updates = {};
-
-    if (data.fullName !== undefined) {
-      updates.fullName = data.fullName.trim();
-    }
-
-    if (data.phone !== undefined) {
-      updates.phone = data.phone ? data.phone.trim() : null;
-    }
-
-    if (data.avatarUrl !== undefined) {
-      updates.avatarUrl = data.avatarUrl ? data.avatarUrl.trim() : null;
-    }
-
-    await authRepository.updateUser(user, updates);
-
-    return this.toSafeUser(user);
-  }
-
-  async updateAvatar(userId, avatarData) {
-    const user = await authRepository.findUserById(userId);
-
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
-
-    await authRepository.updateUser(user, {
-      avatarUrl: avatarData.avatarUrl,
-      avatarPublicId: avatarData.avatarPublicId,
-    });
-
-    return this.toSafeUser(user);
   }
 
   async logout(refreshToken) {
@@ -480,7 +398,7 @@ class AuthService {
         await transaction.commit();
 
         return {
-          user: this.toSafeUser(user),
+          user: toSafeUser(user),
           accessToken,
           refreshToken: null,
         };
@@ -502,7 +420,7 @@ class AuthService {
       await transaction.commit();
 
       return {
-        user: this.toSafeUser(user),
+        user: toSafeUser(user),
         ...tokens,
       };
     } catch (error) {

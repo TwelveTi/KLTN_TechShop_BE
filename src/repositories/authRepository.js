@@ -1,8 +1,8 @@
 const { Op } = require("sequelize");
 const db = require("../models");
 
-// Data-access for authentication: users, auth providers, refresh tokens, and the
-// cart/wishlist rows bootstrapped on account creation.
+// Data-access for authentication: session-scoped reads of users, auth providers
+// and refresh tokens. Creating an account is userRepository's job.
 class AuthRepository {
   beginTransaction() {
     return db.sequelize.transaction();
@@ -37,10 +37,8 @@ class AuthRepository {
     });
   }
 
-  createUser(data, { transaction } = {}) {
-    return db.User.create(data, { transaction });
-  }
-
+  // Account creation lives in userRepository — auth only reads users and stamps
+  // session-lifecycle fields (lastLoginAt, emailVerifiedAt) on them.
   updateUser(user, changes, { transaction } = {}) {
     return user.update(changes, { transaction });
   }
@@ -59,15 +57,6 @@ class AuthRepository {
 
   updateAuthProvider(provider, changes, { transaction } = {}) {
     return provider.update(changes, { transaction });
-  }
-
-  // ---- Cart / Wishlist bootstrap ----
-  createCart(userId, { transaction } = {}) {
-    return db.Cart.create({ userId }, { transaction });
-  }
-
-  createWishlist(userId, { transaction } = {}) {
-    return db.Wishlist.create({ userId }, { transaction });
   }
 
   // ---- Refresh tokens ----

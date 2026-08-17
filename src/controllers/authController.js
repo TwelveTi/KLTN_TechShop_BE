@@ -1,5 +1,4 @@
 const authService = require("../services/authService");
-const uploadService = require("../services/uploadService");
 const {
   clearRefreshTokenCookie,
   getRefreshTokenFromCookie,
@@ -42,27 +41,6 @@ class AuthController {
     const result = await authService.checkEmailAvailability(req.query.email);
 
     return APIResponse.success(res, "Email check", result);
-  }
-
-  async me(req, res) {
-    const user = await authService.getProfile(req.user.id);
-
-    return APIResponse.success(res, "Get profile successfully", user);
-  }
-
-  async updateMe(req, res) {
-    const user = await authService.updateProfile(req.user.id, req.body);
-
-    return APIResponse.success(res, "Update profile successfully", user);
-  }
-
-  async uploadAvatar(req, res) {
-    const avatar = await uploadService.uploadAvatar(req.file, req.user.avatarPublicId, {
-      requestId: req.id,
-    });
-    const user = await authService.updateAvatar(req.user.id, avatar);
-
-    return APIResponse.success(res, "Upload avatar successfully", user);
   }
 
   async refresh(req, res) {

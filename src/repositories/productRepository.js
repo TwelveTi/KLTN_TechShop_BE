@@ -49,10 +49,19 @@ class ProductRepository {
     if (UUID_RE.test(catParam)) {
       return catParam;
     }
+    // Prefer an EXACT slug match first. Otherwise a fuzzy variant (e.g. the
+    // seed-prefix strip) can resolve to a duplicate/stray empty category that
+    // shares the name, returning zero products for a category that has some.
+    const exact = await db.Category.findOne({
+      where: { slug: catParam },
+      attributes: ["id"],
+    });
+    if (exact) {
+      return exact.id;
+    }
     const cat = await db.Category.findOne({
       where: {
         [Op.or]: [
-          { slug: catParam },
           { slug: `seed-${catParam}` },
           { slug: catParam.replace(/^seed-/, "") },
           { name: { [Op.like]: `%${catParam}%` } },

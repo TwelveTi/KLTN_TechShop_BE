@@ -1,58 +1,11 @@
 const { Op } = require("sequelize");
 const db = require("../models");
 
-// Data-access for admin management of users, categories and brands.
+// Data-access for admin management of categories and brands. Users are owned by
+// userRepository, shared with the customer-facing profile endpoints.
 class AdminRepository {
   beginTransaction() {
     return db.sequelize.transaction();
-  }
-
-  // ---- Users ----
-  findAndCountUsers({ limit, offset } = {}) {
-    return db.User.findAndCountAll({
-      attributes: { exclude: ["deletedAt"] },
-      order: [["createdAt", "DESC"]],
-      limit,
-      offset,
-    });
-  }
-
-  findUserByIdWithRelations(id) {
-    return db.User.findByPk(id, {
-      include: [
-        { model: db.AuthProvider, as: "authProviders", attributes: { exclude: ["passwordHash"] } },
-        { model: db.Cart, as: "cart" },
-        { model: db.Wishlist, as: "wishlist" },
-      ],
-    });
-  }
-
-  findUserByEmail(email, { paranoid = true } = {}) {
-    return db.User.findOne({ where: { email }, paranoid });
-  }
-
-  createUser(data, { transaction } = {}) {
-    return db.User.create(data, { transaction });
-  }
-
-  createAuthProvider(data, { transaction } = {}) {
-    return db.AuthProvider.create(data, { transaction });
-  }
-
-  createCart(userId, { transaction } = {}) {
-    return db.Cart.create({ userId }, { transaction });
-  }
-
-  createWishlist(userId, { transaction } = {}) {
-    return db.Wishlist.create({ userId }, { transaction });
-  }
-
-  updateUser(user, changes, { transaction } = {}) {
-    return user.update(changes, { transaction });
-  }
-
-  destroyUser(user, { transaction } = {}) {
-    return user.destroy({ transaction });
   }
 
   // ---- Categories ----

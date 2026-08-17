@@ -1,4 +1,5 @@
 const authRoute = require("./authRoute");
+const userRoute = require("./userRoute");
 const productRoute = require("./productRoute");
 const reviewRoute = require("./reviewRoute");
 const orderRoute = require("./orderRoute");
@@ -14,6 +15,7 @@ const API_PREFIX = "/api/v1";
 
 function route(app) {
   app.use(API_PREFIX, authRoute);
+  app.use(API_PREFIX, userRoute);
   app.use(API_PREFIX, productRoute);
   app.use(API_PREFIX, reviewRoute);
   app.use(API_PREFIX, orderRoute);
