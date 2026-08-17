@@ -30,6 +30,7 @@ db.WishlistItem = require("./wishlistItemModel")(sequelize, Sequelize.DataTypes)
 db.Order = require("./orderModel")(sequelize, Sequelize.DataTypes);
 db.OrderItem = require("./orderItemModel")(sequelize, Sequelize.DataTypes);
 db.OrderStatusHistory = require("./orderStatusHistoryModel")(sequelize, Sequelize.DataTypes);
+db.OrderIdempotency = require("./orderIdempotencyModel")(sequelize, Sequelize.DataTypes);
 db.Payment = require("./paymentModel")(sequelize, Sequelize.DataTypes);
 db.Review = require("./reviewModel")(sequelize, Sequelize.DataTypes);
 

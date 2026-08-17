@@ -100,6 +100,10 @@ class AdminOrderService {
       // Keep the payment/timestamp side-effects consistent with the lifecycle.
       if (status === "CANCELLED" && !order.cancelledAt) {
         updates.cancelledAt = new Date();
+        // Stock was reserved when the order was placed, so cancelling has to
+        // give it back — otherwise every cancelled order permanently shrinks
+        // the sellable inventory.
+        await this.restoreStock(order.id, transaction);
       }
       if (status === "PAID" && !order.paidAt) {
         updates.paidAt = new Date();
@@ -125,6 +129,35 @@ class AdminOrderService {
     } catch (error) {
       await transaction.rollback();
       throw error;
+    }
+  }
+
+  // Returns an order's reserved units to the product (or variant) they came
+  // from. Lines whose product has since been deleted carry a NULL id — the FK
+  // is ON DELETE SET NULL — and are skipped rather than failing the cancel.
+  async restoreStock(orderId, transaction) {
+    const items = await adminOrderRepository.findOrderItems(orderId, { transaction });
+
+    for (const item of items) {
+      if (item.variantId) {
+        const variant = await adminOrderRepository.findVariantForUpdate(item.variantId, item.productId, {
+          transaction,
+        });
+
+        if (variant) {
+          await adminOrderRepository.incrementVariantStock(variant, item.quantity, { transaction });
+        }
+
+        continue;
+      }
+
+      if (item.productId) {
+        const product = await adminOrderRepository.findProductForUpdate(item.productId, { transaction });
+
+        if (product) {
+          await adminOrderRepository.incrementProductStock(product, item.quantity, { transaction });
+        }
+      }
     }
   }
 }

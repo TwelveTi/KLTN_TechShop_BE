@@ -102,6 +102,43 @@ class AdminOrderRepository {
   createStatusHistory(data, { transaction } = {}) {
     return db.OrderStatusHistory.create(data, { transaction });
   }
+
+  // ── Stock release ─────────────────────────────────────────────────────────
+  // Cancelling an order hands its reserved units back to the catalogue.
+
+  findOrderItems(orderId, { transaction } = {}) {
+    return db.OrderItem.findAll({
+      where: { orderId },
+      attributes: ["id", "productId", "variantId", "quantity"],
+      // Same ordering order creation uses, so a cancel and a concurrent
+      // checkout take their row locks in the same sequence and cannot deadlock.
+      order: [
+        ["productId", "ASC"],
+        ["variantId", "ASC"],
+      ],
+      transaction,
+    });
+  }
+
+  findProductForUpdate(productId, { transaction }) {
+    return db.Product.findByPk(productId, { transaction, lock: transaction.LOCK.UPDATE });
+  }
+
+  findVariantForUpdate(variantId, productId, { transaction }) {
+    return db.ProductVariant.findOne({
+      where: { id: variantId, productId },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+  }
+
+  incrementProductStock(product, quantity, { transaction }) {
+    return product.increment("stockQuantity", { by: quantity, transaction });
+  }
+
+  incrementVariantStock(variant, quantity, { transaction }) {
+    return variant.increment("stockQuantity", { by: quantity, transaction });
+  }
 }
 
 module.exports = new AdminOrderRepository();

@@ -1,79 +1,31 @@
 const AppError = require("../utils/AppError");
 const cartRepository = require("../repositories/cartRepository");
+const pricing = require("../utils/pricing");
 
 // Cart pricing and stock are ALWAYS resolved from the database. Any price,
 // subtotal or total sent by the frontend is ignored on purpose.
+//
+// The money/stock rules themselves live in utils/pricing so that order creation
+// prices a line exactly the way the cart displayed it.
 class CartService {
   toNumber(value) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : 0;
+    return pricing.toNumber(value);
   }
 
   roundMoney(value) {
-    return Math.round(this.toNumber(value) * 100) / 100;
+    return pricing.roundMoney(value);
   }
 
-  // Resolve the effective unit price for a product (optionally a variant).
-  // A variant may define its own price/salePrice; when it does not, it inherits
-  // the parent product's values. A sale price only applies when it is a valid
-  // positive value below the base price.
   resolveUnitPrice(product, variant) {
-    let basePrice;
-    let salePrice;
-
-    if (variant) {
-      basePrice = variant.price != null ? this.toNumber(variant.price) : this.toNumber(product.basePrice);
-      if (variant.salePrice != null) {
-        salePrice = this.toNumber(variant.salePrice);
-      } else if (variant.price != null) {
-        // Variant defines its own price but no sale: do not inherit product sale.
-        salePrice = null;
-      } else {
-        salePrice = product.salePrice != null ? this.toNumber(product.salePrice) : null;
-      }
-    } else {
-      basePrice = this.toNumber(product.basePrice);
-      salePrice = product.salePrice != null ? this.toNumber(product.salePrice) : null;
-    }
-
-    const hasValidSale = salePrice != null && salePrice > 0 && salePrice < basePrice;
-    const unitPrice = hasValidSale ? salePrice : basePrice;
-
-    return {
-      basePrice: this.roundMoney(basePrice),
-      salePrice: hasValidSale ? this.roundMoney(salePrice) : null,
-      unitPrice: this.roundMoney(unitPrice),
-    };
+    return pricing.resolveUnitPrice(product, variant);
   }
 
   resolveStock(product, variant) {
-    return variant ? variant.stockQuantity : product.stockQuantity;
+    return pricing.resolveStock(product, variant);
   }
 
-  // Pick the best image for a cart line: prefer a variant image, then the
-  // product's primary image, then the lowest sortOrder, then any image.
   resolveImageUrl(product, variant) {
-    const pickPrimary = (images) => {
-      if (!Array.isArray(images) || images.length === 0) {
-        return null;
-      }
-      const sorted = [...images].sort((a, b) => {
-        if (a.isPrimary !== b.isPrimary) {
-          return a.isPrimary ? -1 : 1;
-        }
-        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
-      });
-      return sorted[0]?.imageUrl || null;
-    };
-
-    if (variant) {
-      const variantImage = pickPrimary(variant.images);
-      if (variantImage) {
-        return variantImage;
-      }
-    }
-
-    return pickPrimary(product?.images);
+    return pricing.resolveImageUrl(product, variant);
   }
 
   async getOrCreateCart(userId, transaction, { lock = false } = {}) {
