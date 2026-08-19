@@ -32,6 +32,8 @@ db.OrderItem = require("./orderItemModel")(sequelize, Sequelize.DataTypes);
 db.OrderStatusHistory = require("./orderStatusHistoryModel")(sequelize, Sequelize.DataTypes);
 db.OrderIdempotency = require("./orderIdempotencyModel")(sequelize, Sequelize.DataTypes);
 db.Payment = require("./paymentModel")(sequelize, Sequelize.DataTypes);
+db.Discount = require("./discountModel")(sequelize, Sequelize.DataTypes);
+db.DiscountUsage = require("./discountUsageModel")(sequelize, Sequelize.DataTypes);
 db.Review = require("./reviewModel")(sequelize, Sequelize.DataTypes);
 
 db.SearchHistory = require("./searchHistoryModel")(sequelize, Sequelize.DataTypes);

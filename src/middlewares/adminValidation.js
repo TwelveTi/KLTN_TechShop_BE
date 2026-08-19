@@ -1,4 +1,5 @@
 const AppError = require("../utils/AppError");
+const { DATA_TYPES: SPEC_DATA_TYPES } = require("../utils/specValue");
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -187,17 +188,82 @@ const validateSpecifications = (specifications, errors) => {
     }
 
     specification.name = normalizeString(specification.name);
-    specification.valueText = normalizeString(specification.valueText);
+
+    // `valueText` is what the existing admin form sends; `value` is accepted as
+    // an alias so a typed client (or the spec import) can post a real number or
+    // boolean instead of a string. Only strings get trimmed — coercing a 0 or a
+    // false into "" here would drop legitimate values.
+    if (specification.value === undefined && specification.valueText !== undefined) {
+      specification.value = specification.valueText;
+    }
+
+    if (typeof specification.value === "string") {
+      specification.value = specification.value.trim();
+    }
 
     if (!specification.name) {
       errors.push(`Specification ${index + 1} name is required`);
     }
 
-    if (!specification.valueText) {
+    if (specification.value === undefined || specification.value === null || specification.value === "") {
       errors.push(`Specification ${index + 1} value is required`);
+    }
+
+    if (specification.dataType !== undefined && !SPEC_DATA_TYPES.includes(specification.dataType)) {
+      errors.push(`Specification ${index + 1} dataType must be one of: ${SPEC_DATA_TYPES.join(", ")}`);
+    }
+
+    if (specification.definitionId !== undefined && specification.definitionId !== null) {
+      if (!uuidRegex.test(String(specification.definitionId))) {
+        errors.push(`Specification ${index + 1} definitionId must be a valid id`);
+      }
     }
   });
 };
+
+// Admin CRUD on a category's specification definitions. `isCreate` makes name
+// and dataType mandatory; an update may send any subset.
+const validateSpecificationDefinition =
+  ({ isCreate }) =>
+  (req, res, next) => {
+    const errors = [];
+
+    if (isCreate || req.body.name !== undefined) {
+      requireString(req.body, "name", "Specification name", errors, 150);
+    }
+
+    if (req.body.key !== undefined) {
+      validateOptionalString(req.body, "key", "Specification key", errors, 100);
+    }
+
+    if (req.body.dataType !== undefined) {
+      if (!SPEC_DATA_TYPES.includes(req.body.dataType)) {
+        errors.push(`dataType must be one of: ${SPEC_DATA_TYPES.join(", ")}`);
+      }
+    } else if (isCreate) {
+      req.body.dataType = "STRING";
+    }
+
+    validateOptionalString(req.body, "unit", "Unit", errors, 50);
+
+    ["isFilterable", "isComparable"].forEach((field) => {
+      if (req.body[field] !== undefined && typeof req.body[field] !== "boolean") {
+        errors.push(`${field} must be true or false`);
+      }
+    });
+
+    if (req.body.sortOrder !== undefined) {
+      const sortOrder = Number(req.body.sortOrder);
+
+      if (!Number.isInteger(sortOrder) || sortOrder < 0) {
+        errors.push("sortOrder must be an integer greater than or equal to 0");
+      } else {
+        req.body.sortOrder = sortOrder;
+      }
+    }
+
+    return sendFirstError(errors, next);
+  };
 
 const sendFirstError = (errors, next) => {
   if (errors.length > 0) {
@@ -408,6 +474,7 @@ module.exports = {
   validateBrand,
   validateProduct,
   validateUpdateProduct,
+  validateSpecificationDefinition,
   validateDeleteUploadedImage,
   validateRevenueQuery,
   validateUpdateOrderStatus,

@@ -42,6 +42,28 @@ class ProductController {
     const result = await productService.deleteProduct(req.params.id, uploadService);
     return APIResponse.success(res, result.message);
   }
+
+  // ── Specification definitions (admin) ─────────────────────────────────────
+
+  async getSpecificationDefinitions(req, res) {
+    const definitions = await productService.getDefinitionsByCategory(req.params.categoryId);
+    return APIResponse.success(res, "Get specification definitions successfully", definitions);
+  }
+
+  async createSpecificationDefinition(req, res) {
+    const definition = await productService.createSpecificationDefinition(req.params.categoryId, req.body);
+    return APIResponse.success(res, "Specification definition created successfully", definition, 201);
+  }
+
+  async updateSpecificationDefinition(req, res) {
+    const definition = await productService.updateSpecificationDefinition(req.params.id, req.body);
+    return APIResponse.success(res, "Specification definition updated successfully", definition);
+  }
+
+  async deleteSpecificationDefinition(req, res) {
+    await productService.deleteSpecificationDefinition(req.params.id);
+    return APIResponse.success(res, "Specification definition deleted successfully");
+  }
 }
 
 module.exports = new ProductController();

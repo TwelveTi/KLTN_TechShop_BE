@@ -8,6 +8,7 @@ const adminUserRoute = require("./adminUserRoute");
 const adminCategoryRoute = require("./adminCategoryRoute");
 const adminBrandRoute = require("./adminBrandRoute");
 const adminProductRoute = require("./adminProductRoute");
+const adminSpecificationRoute = require("./adminSpecificationRoute");
 const adminOrderRoute = require("./adminOrderRoute");
 
 router.use(authMiddleware);
@@ -19,6 +20,7 @@ router.use(adminUserRoute);
 router.use(adminCategoryRoute);
 router.use(adminBrandRoute);
 router.use(adminProductRoute);
+router.use(adminSpecificationRoute);
 router.use(adminOrderRoute);
 
 module.exports = router;

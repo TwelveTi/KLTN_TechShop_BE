@@ -252,6 +252,69 @@ class ProductRepository {
       transaction,
     });
   }
+
+  // ── Specification definitions (admin) ─────────────────────────────────────
+  // The per-category "schema" of a product's technical specs. Managing these
+  // explicitly is what lets an admin reuse an existing definition instead of
+  // typing a near-duplicate name that would create a second one.
+
+  findDefinitionsByCategory(categoryId, { transaction } = {}) {
+    return db.SpecificationDefinition.findAll({
+      where: { categoryId },
+      order: [
+        ["sortOrder", "ASC"],
+        ["name", "ASC"],
+      ],
+      transaction,
+    });
+  }
+
+  findDefinitionById(id, { transaction } = {}) {
+    return db.SpecificationDefinition.findByPk(id, { transaction });
+  }
+
+  findDefinitionByKey(categoryId, key, { excludeId = null, transaction } = {}) {
+    const where = { categoryId, key };
+
+    if (excludeId) {
+      where.id = { [Op.ne]: excludeId };
+    }
+
+    return db.SpecificationDefinition.findOne({ where, transaction });
+  }
+
+  createDefinition(data, { transaction } = {}) {
+    return db.SpecificationDefinition.create(data, { transaction });
+  }
+
+  updateDefinition(definition, changes, { transaction } = {}) {
+    return definition.update(changes, { transaction });
+  }
+
+  destroyDefinition(definition, { transaction } = {}) {
+    return definition.destroy({ transaction });
+  }
+
+  // Every stored value of one definition. Needed when the admin changes a
+  // definition's dataType: the existing rows have to be re-parsed into the new
+  // column, or the change has to be refused.
+  findSpecificationsByDefinition(definitionId, { transaction } = {}) {
+    return db.ProductSpecification.findAll({
+      where: { specificationDefinitionId: definitionId },
+      transaction,
+    });
+  }
+
+  updateSpecification(specification, changes, { transaction } = {}) {
+    return specification.update(changes, { transaction });
+  }
+
+  countSpecificationsByDefinition(definitionId, { transaction } = {}) {
+    return db.ProductSpecification.count({
+      where: { specificationDefinitionId: definitionId },
+      transaction,
+    });
+  }
 }
 
 module.exports = new ProductRepository();
