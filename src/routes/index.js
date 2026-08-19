@@ -1,9 +1,11 @@
 const authRoute = require("./authRoute");
 const userRoute = require("./userRoute");
 const productRoute = require("./productRoute");
+const catalogRoute = require("./catalogRoute");
 const reviewRoute = require("./reviewRoute");
 const orderRoute = require("./orderRoute");
 const paymentRoute = require("./paymentRoute");
+const discountRoute = require("./discountRoute");
 const cartRoute = require("./cartRoute");
 const addressRoute = require("./addressRoute");
 const adminRoute = require("./adminRoute");
@@ -18,9 +20,11 @@ function route(app) {
   app.use(API_PREFIX, authRoute);
   app.use(API_PREFIX, userRoute);
   app.use(API_PREFIX, productRoute);
+  app.use(API_PREFIX, catalogRoute);
   app.use(API_PREFIX, reviewRoute);
   app.use(API_PREFIX, orderRoute);
   app.use(API_PREFIX, paymentRoute);
+  app.use(API_PREFIX, discountRoute);
   app.use(API_PREFIX, cartRoute);
   app.use(API_PREFIX, addressRoute);
   app.use(API_PREFIX, adminRoute);

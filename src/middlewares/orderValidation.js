@@ -7,6 +7,8 @@ const MAX_QUANTITY = 999;
 const MAX_LINES = 50;
 const MAX_NOTE_LENGTH = 500;
 const MAX_IDEMPOTENCY_KEY_LENGTH = 100;
+const MAX_DISCOUNT_CODE_LENGTH = 50;
+const DISCOUNT_CODE_PATTERN = /^[A-Z0-9][A-Z0-9_-]*$/;
 
 const sendFirstError = (errors, next) => {
   if (errors.length > 0) {
@@ -71,6 +73,19 @@ const validateCreateOrder = (req, res, next) => {
 
   if (req.body.deliveryMethodId !== undefined && req.body.deliveryMethodId !== null) {
     req.body.deliveryMethodId = String(req.body.deliveryMethodId).trim() || undefined;
+  }
+
+  // Optional. Codes are stored uppercase so "sale10" matches "SALE10".
+  if (req.body.discountCode !== undefined && req.body.discountCode !== null && req.body.discountCode !== "") {
+    const code = String(req.body.discountCode).trim().toUpperCase();
+
+    if (code.length > MAX_DISCOUNT_CODE_LENGTH || !DISCOUNT_CODE_PATTERN.test(code)) {
+      errors.push("Discount code format is invalid");
+    }
+
+    req.body.discountCode = code;
+  } else {
+    req.body.discountCode = null;
   }
 
   if (req.body.note !== undefined && req.body.note !== null && req.body.note !== "") {

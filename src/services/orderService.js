@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const AppError = require("../utils/AppError");
 const orderRepository = require("../repositories/orderRepository");
+const discountService = require("./discountService");
 const pricing = require("../utils/pricing");
 
 // Delivery options. The frontend renders these too, but the money that ends up
@@ -180,6 +181,9 @@ class OrderService {
       addressId: payload.addressId,
       paymentMethod: payload.paymentMethod,
       deliveryMethodId: payload.deliveryMethodId || DEFAULT_DELIVERY_METHOD_ID,
+      // Part of the key: the same basket with and without a voucher is two
+      // different orders, and must not collapse into one.
+      discountCode: payload.discountCode || null,
       items: [...payload.items]
         .map((item) => `${item.productId}:${item.variantId || ""}:${item.quantity}`)
         .sort(),
@@ -265,7 +269,7 @@ class OrderService {
   }
 
   async createOrderOnce(userId, payload, idempotencyKey) {
-    const { addressId, paymentMethod, deliveryMethodId, note, items } = payload;
+    const { addressId, paymentMethod, deliveryMethodId, note, items, discountCode } = payload;
 
     if (!PAYMENT_METHODS.includes(paymentMethod)) {
       throw new AppError("Payment method is not supported", 400);
@@ -297,8 +301,29 @@ class OrderService {
       }
 
       const subtotalPrice = pricing.roundMoney(lines.reduce((sum, line) => sum + line.totalPrice, 0));
+
+      // The voucher row is locked here, inside the same transaction that holds
+      // the stock locks, so a usage-limited code cannot be over-redeemed by
+      // concurrent checkouts. Locking AFTER the product rows keeps the lock
+      // order the same everywhere (products -> discount), which is what stops a
+      // cancel running next to a checkout from deadlocking.
+      let discountAmount = 0;
+      let appliedDiscount = null;
+
+      if (discountCode) {
+        appliedDiscount = await discountService.applyToOrder({
+          code: discountCode,
+          userId,
+          subtotal: subtotalPrice,
+          transaction,
+        });
+        discountAmount = appliedDiscount.discountAmount;
+      }
+
+      // Shipping is charged on the pre-discount subtotal: a voucher reduces what
+      // is paid for goods, it does not buy free delivery. A FREESHIP code would
+      // be its own discountType.
       const shippingFee = this.resolveShippingFee(subtotalPrice, deliveryMethod);
-      const discountAmount = 0;
       const totalPrice = pricing.roundMoney(subtotalPrice + shippingFee - discountAmount);
 
       const orderCode = await this.generateOrderCode(new Date(), { transaction });
@@ -326,6 +351,12 @@ class OrderService {
         lines.map((line) => ({ orderId: order.id, ...line.snapshot })),
         { transaction },
       );
+
+      // Deferred until the order id exists. Writes the redemption row and bumps
+      // the voucher's usedCount, both still under the lock taken above.
+      if (appliedDiscount) {
+        await appliedDiscount.commit(order.id);
+      }
 
       // Stock is reserved at checkout, not at payment: the customer who
       // completed the form owns the units. It is returned on cancellation.
@@ -419,6 +450,10 @@ class OrderService {
       );
 
       await this.restoreStockForOrder(order.id, transaction);
+
+      // Same lock order as creation (products first, then the voucher) so a
+      // cancel and a concurrent checkout cannot deadlock against each other.
+      await discountService.releaseForOrder(order.id, transaction);
 
       await orderRepository.createStatusHistory(
         {
