@@ -4,16 +4,17 @@ const APIResponse = require("../utils/ApiResponse");
 
 class ProductController {
   async getAllProducts(req, res) {
-    const result = await productService.getAllProducts({
-      ...req.query,
-      onlyActive: true,
-    });
+    const result = await productService.getAllProducts(
+      { ...req.query, onlyActive: true },
+      { userId: req.user?.id || null, sessionId: req.sessionKey || null },
+    );
     return APIResponse.success(res, "Get products successfully", result);
   }
 
   async getProductById(req, res) {
     const product = await productService.getProductById(req.params.id, {
       onlyActive: true,
+      viewer: { userId: req.user?.id || null, sessionId: req.sessionKey || null },
     });
     return APIResponse.success(res, "Get product successfully", product);
   }

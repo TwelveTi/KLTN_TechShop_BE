@@ -1,6 +1,7 @@
 const AppError = require("../utils/AppError");
 const cartRepository = require("../repositories/cartRepository");
 const pricing = require("../utils/pricing");
+const behaviorService = require("./behaviorService");
 
 // Cart pricing and stock are ALWAYS resolved from the database. Any price,
 // subtotal or total sent by the frontend is ignored on purpose.
@@ -171,6 +172,17 @@ class CartService {
       }
 
       await transaction.commit();
+
+      // Tracked after the commit: a strong intent signal, but not one worth
+      // failing an add-to-cart over.
+      await behaviorService.track({
+        userId,
+        behaviorType: "ADD_TO_CART",
+        productId: product.id,
+        categoryId: product.categoryId || null,
+        metadata: { quantity, variantId: variantId || null },
+      });
+
       return this.getMyCart(userId);
     } catch (error) {
       await transaction.rollback();

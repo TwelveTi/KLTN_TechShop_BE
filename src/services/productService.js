@@ -2,10 +2,24 @@ const AppError = require("../utils/AppError");
 const { slugify } = require("../utils/slug");
 const { buildSpecValue, inferDataType, SpecValueError } = require("../utils/specValue");
 const productRepository = require("../repositories/productRepository");
+const behaviorService = require("./behaviorService");
 
 class ProductService {
-  async getAllProducts(query = {}) {
+  async getAllProducts(query = {}, viewer = null) {
     const { rows, count, page, limit } = await productRepository.findAndCountProducts(query);
+
+    // A keyword search is the clearest statement of intent a shopper makes, so
+    // it is recorded server-side rather than trusted to the client. Tracking
+    // never throws, so a listing is returned even if the write fails.
+    if (viewer && query.keyword && String(query.keyword).trim()) {
+      await behaviorService.trackSearch({
+        userId: viewer.userId || null,
+        sessionId: viewer.sessionId || null,
+        keyword: query.keyword,
+        filters: { category: query.category || query.categoryId || null, brand: query.brand || null },
+        resultCount: count,
+      });
+    }
 
     return {
       items: rows,
@@ -25,6 +39,18 @@ class ProductService {
 
     if (!product) {
       throw new AppError("Product not found", 404);
+    }
+
+    // VIEW_PRODUCT is deduplicated inside behaviorService, so a refresh or a
+    // second tab does not drown the signal in copies of the same event.
+    if (options.viewer) {
+      await behaviorService.track({
+        userId: options.viewer.userId || null,
+        sessionId: options.viewer.sessionId || null,
+        behaviorType: "VIEW_PRODUCT",
+        productId: product.id,
+        categoryId: product.categoryId || null,
+      });
     }
 
     return product;

@@ -1,0 +1,635 @@
+const AppError = require("../utils/AppError");
+const recommendationRepository = require("../repositories/recommendationRepository");
+const { computeContentSimilarity, priceOf } = require("../utils/similarity");
+const logger = require("../utils/logger");
+
+/**
+ * The recommendation engine.
+ *
+ * Five scoring components are computed independently, each normalised to [0, 1],
+ * then combined by the weights below (README section 6). Keeping them separate
+ * is what makes the evaluation chapter possible: each component can be run alone
+ * and compared against the hybrid, and every recommendation can say which
+ * component won — that reason is what the AI explanation feature reads.
+ */
+const HYBRID_WEIGHTS = {
+  userPreference: 0.35,
+  searchHistory: 0.25,
+  purchaseHistory: 0.2,
+  productSimilarity: 0.1,
+  popularity: 0.1,
+};
+
+// Bumped whenever the formula changes, and stored on every result. Without it,
+// numbers measured before and after a tweak are silently incomparable.
+const ALGORITHM_VERSION = "hybrid-v1";
+
+// Which component produced a product's score, in the order a person would find
+// most convincing as an explanation.
+const REASON_CODES = {
+  userPreference: "MATCHES_YOUR_TASTE",
+  searchHistory: "MATCHES_YOUR_SEARCH",
+  purchaseHistory: "LIKE_WHAT_YOU_BOUGHT",
+  productSimilarity: "SIMILAR_TO_VIEWED",
+  popularity: "POPULAR_NOW",
+};
+
+const RECENCY_WINDOW_DAYS = 90;
+const CACHE_MINUTES = 15;
+const DEFAULT_LIMIT = 12;
+
+// Behaviour types that mean "already dealt with this product" — recommending
+// something a shopper just bought is the most visible way to look broken.
+const SATISFIED_TYPES = ["PURCHASE"];
+
+class RecommendationService {
+  // ── Normalisation helpers ─────────────────────────────────────────────────
+
+  // Scores are only comparable once they are on the same scale, so every
+  // component is divided by the best value seen in this run rather than by an
+  // absolute constant that would drift as the catalogue grows.
+  normalise(scores) {
+    const max = Math.max(...Object.values(scores), 0);
+
+    if (max <= 0) {
+      return {};
+    }
+
+    const out = {};
+    Object.entries(scores).forEach(([id, value]) => {
+      out[id] = value / max;
+    });
+    return out;
+  }
+
+  // ── 1. Rule-based / user preference ───────────────────────────────────────
+
+  /**
+   * Scores a product against the shopper's stored preference profile:
+   * preferred category, preferred brand, and whether it sits in their budget.
+   *
+   * This is the "rule-based" algorithm from README 6: a laptop shopper who buys
+   * Asus around 20M gets Asus laptops in that band ranked first.
+   */
+  scoreUserPreference(products, profile) {
+    if (!profile) {
+      return {};
+    }
+
+    const categoryRank = new Map((profile.preferredCategories || []).map((c, i) => [c.id, i]));
+    const brandRank = new Map((profile.preferredBrands || []).map((b, i) => [b.id, i]));
+    const min = profile.minPrice === null ? null : Number(profile.minPrice);
+    const max = profile.maxPrice === null ? null : Number(profile.maxPrice);
+
+    const scores = {};
+
+    products.forEach((product) => {
+      let score = 0;
+
+      // Rank-decayed, not binary: the top preferred category counts for more
+      // than the fifth one.
+      if (categoryRank.has(product.categoryId)) {
+        score += 0.45 / (categoryRank.get(product.categoryId) + 1);
+      }
+      if (brandRank.has(product.brandId)) {
+        score += 0.35 / (brandRank.get(product.brandId) + 1);
+      }
+
+      if (min !== null && max !== null) {
+        const price = priceOf(product);
+        if (price >= min && price <= max) {
+          score += 0.2;
+        } else {
+          // Just outside the band still counts for something — budgets are soft.
+          const distance = price < min ? min - price : price - max;
+          const span = Math.max(max - min, 1);
+          score += 0.2 * Math.max(0, 1 - distance / span) * 0.5;
+        }
+      }
+
+      if (score > 0) {
+        scores[product.id] = score;
+      }
+    });
+
+    return this.normalise(scores);
+  }
+
+  // ── 2. Search history ─────────────────────────────────────────────────────
+
+  /**
+   * Matches recent search keywords against product names.
+   *
+   * Recency-weighted: what someone searched yesterday says more than what they
+   * searched two months ago. Token-based rather than substring so "laptop gaming"
+   * matches a "Gaming Laptop" whose words are in the other order.
+   */
+  scoreSearchHistory(products, keywords) {
+    if (!keywords || keywords.length === 0) {
+      return {};
+    }
+
+    const tokenised = keywords.map((entry, index) => ({
+      // Weight decays with position; the list arrives newest-first.
+      weight: 1 / (index + 1),
+      tokens: String(entry.keyword || "")
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter((token) => token.length > 2),
+    }));
+
+    const scores = {};
+
+    products.forEach((product) => {
+      const haystack = String(product.name || "").toLowerCase();
+      let score = 0;
+
+      tokenised.forEach(({ weight, tokens }) => {
+        if (tokens.length === 0) {
+          return;
+        }
+        const hits = tokens.filter((token) => haystack.includes(token)).length;
+        if (hits > 0) {
+          score += weight * (hits / tokens.length);
+        }
+      });
+
+      if (score > 0) {
+        scores[product.id] = score;
+      }
+    });
+
+    return this.normalise(scores);
+  }
+
+  // ── 3. Purchase history ───────────────────────────────────────────────────
+
+  /**
+   * Products resembling what the shopper has already bought — same category or
+   * brand, similar price.
+   *
+   * Distinct from `productSimilarity` below, which keys off what was VIEWED.
+   * Purchases are a far stronger statement of taste, which is why they carry
+   * twice the weight.
+   */
+  scorePurchaseHistory(products, purchasedProducts) {
+    if (purchasedProducts.length === 0) {
+      return {};
+    }
+
+    const scores = {};
+
+    products.forEach((product) => {
+      let best = 0;
+
+      purchasedProducts.forEach((bought) => {
+        if (bought.id === product.id) {
+          return;
+        }
+        const { score } = computeContentSimilarity(product, bought);
+        best = Math.max(best, score);
+      });
+
+      if (best > 0) {
+        scores[product.id] = best;
+      }
+    });
+
+    return this.normalise(scores);
+  }
+
+  // ── 4. Product similarity (content-based, from the precomputed matrix) ────
+
+  /**
+   * Leans on the offline `ProductSimilarity` matrix, seeded from what the shopper
+   * recently viewed. Reading a precomputed matrix keeps the request cheap; the
+   * expensive O(n^2) pass runs in `rebuildSimilarityMatrix`.
+   */
+  scoreProductSimilarity(products, similarityRows, viewedRank) {
+    if (similarityRows.length === 0) {
+      return {};
+    }
+
+    const candidateIds = new Set(products.map((p) => p.id));
+    const scores = {};
+
+    similarityRows.forEach((row) => {
+      if (!candidateIds.has(row.similarProductId)) {
+        return;
+      }
+
+      // A product similar to something viewed recently beats one similar to
+      // something viewed weeks ago.
+      const recency = 1 / ((viewedRank.get(row.productId) ?? 20) + 1);
+      const contribution = Number(row.score) * recency;
+
+      scores[row.similarProductId] = Math.max(scores[row.similarProductId] || 0, contribution);
+    });
+
+    return this.normalise(scores);
+  }
+
+  // ── 5. Popularity ─────────────────────────────────────────────────────────
+
+  /**
+   * The cold-start fallback and the "trending" rail: what everyone is buying.
+   *
+   * Sales dominate, ratings adjust, views break ties. `log1p` compresses the
+   * long tail so one runaway bestseller cannot flatten every other product's
+   * score to nothing.
+   */
+  scorePopularity(products) {
+    const scores = {};
+
+    products.forEach((product) => {
+      const sold = Math.log1p(Number(product.soldCount) || 0);
+      const views = Math.log1p(Number(product.viewCount) || 0);
+      const rating = Number(product.averageRating) || 0;
+      const reviews = Math.log1p(Number(product.reviewCount) || 0);
+
+      // A 5-star average from two reviews should not outrank 4.5 from two
+      // hundred, so the rating is scaled by how much evidence backs it.
+      const ratingSignal = (rating / 5) * Math.min(1, reviews / Math.log1p(50));
+
+      const score = sold * 0.6 + ratingSignal * 0.25 + views * 0.15 + (product.isFeatured ? 0.1 : 0);
+
+      if (score > 0) {
+        scores[product.id] = score;
+      }
+    });
+
+    return this.normalise(scores);
+  }
+
+  // ── Hybrid ────────────────────────────────────────────────────────────────
+
+  /**
+   * Weighted sum of the five components.
+   *
+   * Every candidate also records which component contributed most, so the result
+   * can explain itself. A product that only ever scored on `popularity` is
+   * honestly labelled POPULAR_NOW rather than dressed up as personalisation.
+   */
+  combine(products, components, { excludeIds = new Set() } = {}) {
+    const ranked = [];
+
+    products.forEach((product) => {
+      if (excludeIds.has(product.id)) {
+        return;
+      }
+
+      let total = 0;
+      let bestKey = null;
+      let bestContribution = 0;
+      const parts = {};
+
+      Object.entries(HYBRID_WEIGHTS).forEach(([key, weight]) => {
+        const raw = components[key]?.[product.id] || 0;
+        const contribution = raw * weight;
+
+        total += contribution;
+        parts[key] = Math.round(raw * 10000) / 10000;
+
+        if (contribution > bestContribution) {
+          bestContribution = contribution;
+          bestKey = key;
+        }
+      });
+
+      if (total <= 0) {
+        return;
+      }
+
+      ranked.push({
+        productId: product.id,
+        score: Math.round(total * 10000) / 10000,
+        reasonCode: bestKey ? REASON_CODES[bestKey] : "POPULAR_NOW",
+        reasonMetadata: { parts, dominant: bestKey, algorithmVersion: ALGORITHM_VERSION },
+      });
+    });
+
+    // Product id breaks ties so equal scores rank deterministically — otherwise
+    // two runs on the same data could report different precision.
+    ranked.sort((a, b) => b.score - a.score || a.productId.localeCompare(b.productId));
+
+    return ranked;
+  }
+
+  // ── Orchestration ─────────────────────────────────────────────────────────
+
+  /**
+   * @param {Object} options
+   * @param {string|null} options.userId
+   * @param {string|null} options.sessionId
+   * @param {number} options.limit
+   * @param {string|null} options.strategy  force a single component: 'popularity',
+   *        'userPreference', … Used by the evaluation to compare one algorithm
+   *        against the hybrid.
+   */
+  async getForUser({ userId = null, sessionId = null, limit = DEFAULT_LIMIT, strategy = null, persist = true }) {
+    const products = await recommendationRepository.findScorableProducts();
+
+    if (products.length === 0) {
+      return { items: [], strategy: "empty-catalogue", algorithmVersion: ALGORITHM_VERSION };
+    }
+
+    // An anonymous visitor has no history to personalise from, so popularity is
+    // the honest answer rather than a pretend-personalised list.
+    if (!userId) {
+      const popularity = this.scorePopularity(products);
+      const ranked = this.combine(products, { popularity }).slice(0, limit);
+
+      return {
+        items: this.decorate(ranked, products),
+        strategy: "popularity",
+        algorithmVersion: ALGORITHM_VERSION,
+        personalised: false,
+      };
+    }
+
+    const since = new Date(Date.now() - RECENCY_WINDOW_DAYS * 86400000);
+
+    const [profile, behaviors, keywords] = await Promise.all([
+      recommendationRepository.findProfile(userId),
+      recommendationRepository.findRecentBehaviors(userId, { since }),
+      recommendationRepository.findRecentKeywords(userId),
+    ]);
+
+    const productById = new Map(products.map((p) => [p.id, p]));
+
+    const purchasedIds = [
+      ...new Set(behaviors.filter((b) => SATISFIED_TYPES.includes(b.behaviorType)).map((b) => b.productId)),
+    ];
+    const viewedIds = [
+      ...new Set(behaviors.filter((b) => b.behaviorType === "VIEW_PRODUCT").map((b) => b.productId)),
+    ];
+    const viewedRank = new Map(viewedIds.map((id, index) => [id, index]));
+
+    // Facets are needed for the content-based comparison against past purchases.
+    const facetIds = [...new Set([...products.map((p) => p.id), ...purchasedIds])];
+    const { tagsByProduct, specsByProduct } = await recommendationRepository.findProductFacets(facetIds);
+
+    const withFacets = (product) => ({
+      ...product,
+      tagIds: tagsByProduct[product.id] || [],
+      specs: specsByProduct[product.id] || {},
+    });
+
+    const candidates = products.map(withFacets);
+    const purchasedProducts = purchasedIds.map((id) => productById.get(id)).filter(Boolean).map(withFacets);
+
+    const similarityRows =
+      viewedIds.length > 0
+        ? await recommendationRepository.findSimilarToMany(viewedIds.slice(0, 20))
+        : [];
+
+    const components = {
+      userPreference: this.scoreUserPreference(candidates, profile),
+      searchHistory: this.scoreSearchHistory(candidates, keywords),
+      purchaseHistory: this.scorePurchaseHistory(candidates, purchasedProducts),
+      productSimilarity: this.scoreProductSimilarity(candidates, similarityRows, viewedRank),
+      popularity: this.scorePopularity(candidates),
+    };
+
+    // Single-component mode for the evaluation: zero out everything else so the
+    // weights cannot leak in.
+    const effective = strategy
+      ? Object.fromEntries(Object.keys(components).map((key) => [key, key === strategy ? components[key] : {}]))
+      : components;
+
+    if (strategy && !components[strategy]) {
+      throw new AppError(`Unknown strategy "${strategy}"`, 400);
+    }
+
+    let ranked = this.combine(candidates, effective, { excludeIds: new Set(purchasedIds) });
+
+    // A brand-new shopper produces no signal at all; fall back rather than
+    // returning an empty rail.
+    let usedStrategy = strategy || "hybrid";
+    if (ranked.length === 0) {
+      ranked = this.combine(candidates, { popularity: components.popularity });
+      usedStrategy = "popularity-fallback";
+    }
+
+    ranked = ranked.slice(0, limit);
+
+    if (persist) {
+      await this.persist({ userId, sessionId, ranked, recommendationType: "PERSONALIZED_HOME" });
+    }
+
+    return {
+      items: this.decorate(ranked, candidates),
+      strategy: usedStrategy,
+      algorithmVersion: ALGORITHM_VERSION,
+      personalised: usedStrategy !== "popularity-fallback",
+      weights: strategy ? { [strategy]: 1 } : HYBRID_WEIGHTS,
+    };
+  }
+
+  /** "Related products" for a product page, straight off the similarity matrix. */
+  async getSimilarProducts(productId, { limit = DEFAULT_LIMIT } = {}) {
+    const product = await recommendationRepository.findProductById(productId);
+
+    if (!product) {
+      throw new AppError("Product not found", 404);
+    }
+
+    const rows = await recommendationRepository.findSimilarTo(productId, { limit: limit * 2 });
+
+    // The matrix can be stale relative to the catalogue, so an inactive or
+    // deleted product must not surface.
+    const activeProducts = await recommendationRepository.findScorableProducts();
+    const active = new Set(activeProducts.map((p) => p.id));
+
+    const ranked = rows
+      .filter((row) => active.has(row.similarProductId))
+      .slice(0, limit)
+      .map((row) => ({
+        productId: row.similarProductId,
+        score: Number(row.score),
+        reasonCode: "SIMILAR_TO_THIS",
+        reasonMetadata: { sourceProductId: productId, similarityType: row.similarityType },
+      }));
+
+    return { items: this.decorate(ranked, activeProducts), algorithmVersion: ALGORITHM_VERSION };
+  }
+
+  // Attach the product fields a storefront rail needs to render.
+  // Takes the catalogue it was scored against rather than re-reading it: the
+  // caller already has it, and a second query per request adds latency for
+  // nothing.
+  decorate(ranked, products) {
+    if (ranked.length === 0) {
+      return [];
+    }
+
+    const byId = new Map(products.map((p) => [p.id, p]));
+
+    return ranked
+      .map((entry, index) => {
+        const product = byId.get(entry.productId);
+        if (!product) {
+          return null;
+        }
+        return {
+          rankPosition: index + 1,
+          score: entry.score,
+          reasonCode: entry.reasonCode,
+          reasonMetadata: entry.reasonMetadata,
+          product: {
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            basePrice: Number(product.basePrice),
+            salePrice: product.salePrice === null ? null : Number(product.salePrice),
+            averageRating: Number(product.averageRating) || 0,
+            reviewCount: product.reviewCount,
+          },
+        };
+      })
+      .filter(Boolean);
+  }
+
+  // Stored so outcomes (click / cart / purchase) can be attributed back to the
+  // recommendation that produced them — the raw material of the evaluation.
+  async persist({ userId, sessionId, ranked, recommendationType }) {
+    if (ranked.length === 0) {
+      return null;
+    }
+
+    try {
+      return await recommendationRepository.createResultWithItems(
+        {
+          userId,
+          sessionId,
+          recommendationType,
+          algorithmVersion: ALGORITHM_VERSION,
+          context: { weights: HYBRID_WEIGHTS },
+          expiresAt: new Date(Date.now() + CACHE_MINUTES * 60000),
+        },
+        ranked.map((entry, index) => ({
+          productId: entry.productId,
+          rankPosition: index + 1,
+          score: entry.score,
+          reasonCode: entry.reasonCode,
+          reasonMetadata: entry.reasonMetadata,
+        })),
+      );
+    } catch (error) {
+      // Losing the audit trail must not cost the shopper their recommendations.
+      logger.warn("Failed to persist a recommendation result", { error: logger.serializeError(error) });
+      return null;
+    }
+  }
+
+  /** Record that a shown recommendation was acted on. */
+  async recordOutcome(itemId, outcome, userId) {
+    const item = await recommendationRepository.findItemById(itemId);
+
+    if (!item) {
+      throw new AppError("Recommendation item not found", 404);
+    }
+
+    // A shopper may only report outcomes on their own recommendations.
+    if (item.recommendation?.userId && userId && item.recommendation.userId !== userId) {
+      throw new AppError("Recommendation item not found", 404);
+    }
+
+    const field = { CLICK: "clickedAt", ADD_TO_CART: "addedToCartAt", PURCHASE: "purchasedAt" }[outcome];
+
+    if (!field) {
+      throw new AppError("Unknown outcome", 400);
+    }
+
+    // First occurrence wins: overwriting would lose the time-to-action.
+    if (item[field]) {
+      return { itemId, outcome, alreadyRecorded: true };
+    }
+
+    await recommendationRepository.updateItem(item, { [field]: new Date() });
+
+    return { itemId, outcome, alreadyRecorded: false };
+  }
+
+  // ── Offline similarity matrix ─────────────────────────────────────────────
+
+  /**
+   * Recomputes the content-based similarity matrix.
+   *
+   * O(n^2) over the catalogue, which is why it is a batch job and not part of a
+   * request. Only the top `perProduct` neighbours above `minScore` are stored —
+   * keeping the full matrix would be mostly noise and would grow quadratically.
+   */
+  async rebuildSimilarityMatrix({ perProduct = 12, minScore = 0.15 } = {}) {
+    const products = await recommendationRepository.findScorableProducts();
+
+    if (products.length < 2) {
+      return { products: products.length, pairs: 0 };
+    }
+
+    const { tagsByProduct, specsByProduct } = await recommendationRepository.findProductFacets(
+      products.map((p) => p.id),
+    );
+
+    const enriched = products.map((product) => ({
+      ...product,
+      tagIds: tagsByProduct[product.id] || [],
+      specs: specsByProduct[product.id] || {},
+    }));
+
+    const rows = [];
+
+    enriched.forEach((source) => {
+      const neighbours = [];
+
+      enriched.forEach((other) => {
+        if (other.id === source.id) {
+          return;
+        }
+        const { score } = computeContentSimilarity(source, other);
+        if (score >= minScore) {
+          neighbours.push({ id: other.id, score });
+        }
+      });
+
+      neighbours
+        .sort((a, b) => b.score - a.score)
+        .slice(0, perProduct)
+        .forEach((neighbour) => {
+          rows.push({
+            productId: source.id,
+            similarProductId: neighbour.id,
+            similarityType: "CONTENT",
+            score: neighbour.score,
+            calculatedAt: new Date(),
+          });
+        });
+    });
+
+    const stored = await recommendationRepository.replaceSimilarities(rows, { similarityType: "CONTENT" });
+
+    return { products: products.length, pairs: stored, perProduct, minScore };
+  }
+
+  async getOutcomeStats(options = {}) {
+    const raw = await recommendationRepository.getOutcomeStats(options);
+
+    const shown = Number(raw.shown) || 0;
+    const clicked = Number(raw.clicked) || 0;
+    const addedToCart = Number(raw.addedToCart) || 0;
+    const purchased = Number(raw.purchased) || 0;
+    const rate = (value) => (shown === 0 ? 0 : Math.round((value / shown) * 10000) / 10000);
+
+    return {
+      shown,
+      clicked,
+      addedToCart,
+      purchased,
+      clickThroughRate: rate(clicked),
+      cartRate: rate(addedToCart),
+      conversionRate: rate(purchased),
+    };
+  }
+}
+
+module.exports = new RecommendationService();

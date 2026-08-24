@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
     "seed": "node src/seed/index.js",
-    "seed:reset": "node src/seed/index.js --reset"
+    "seed:reset": "node src/seed/index.js --reset",
+    "simulate": "node src/seed/simulate/index.js",
+    "simulate:reset": "node src/seed/simulate/index.js --reset"
   },
   "keywords": [
     "techshop",

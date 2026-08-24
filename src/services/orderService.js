@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const AppError = require("../utils/AppError");
 const orderRepository = require("../repositories/orderRepository");
 const discountService = require("./discountService");
+const behaviorService = require("./behaviorService");
 const pricing = require("../utils/pricing");
 
 // Delivery options. The frontend renders these too, but the money that ends up
@@ -415,6 +416,20 @@ class OrderService {
       }
 
       await transaction.commit();
+
+      // Recorded AFTER the commit, never inside the transaction: a tracking
+      // failure must not roll back an order the customer has paid for.
+      // PURCHASE is the heaviest signal the recommender has.
+      await behaviorService.trackPurchase({
+        userId,
+        orderId: order.id,
+        lines: lines.map((line) => ({
+          productId: line.product.id,
+          categoryId: line.product.categoryId || null,
+          quantity: line.quantity,
+          unitPrice: line.unitPrice,
+        })),
+      });
 
       return orderRepository.findOrderByIdWithItems(order.id);
     } catch (error) {
