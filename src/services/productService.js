@@ -443,8 +443,19 @@ class ProductService {
         await productRepository.bulkCreateVariants(this.mapVariantRows(data.variants, product.id), { transaction });
       }
 
+      // An empty array means "the client sent no specifications", NOT "delete
+      // every specification". A client that saves a product without having
+      // loaded its specs first would otherwise wipe the whole spec sheet with no
+      // error and no trace — which is exactly what the admin form did, because
+      // `GET /admin/products` does not join specifications at all.
+      //
+      // Clearing every spec is still possible, it just has to be asked for.
       if (Array.isArray(data.specifications)) {
-        await this.replaceProductSpecifications(product.id, data.categoryId ?? product.categoryId, data.specifications, transaction);
+        const isClearRequest = data.specifications.length === 0;
+
+        if (!isClearRequest || data.clearSpecifications === true) {
+          await this.replaceProductSpecifications(product.id, data.categoryId ?? product.categoryId, data.specifications, transaction);
+        }
       }
 
       await transaction.commit();

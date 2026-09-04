@@ -18,6 +18,9 @@ class RecommendationController {
   async getSimilarProducts(req, res) {
     const result = await recommendationService.getSimilarProducts(req.params.id, {
       limit: req.query.limit,
+      // Optional: a guest still gets the rail, it just is not attributed.
+      userId: req.user?.id || null,
+      sessionId: req.sessionKey || null,
     });
 
     return APIResponse.success(res, "Get similar products successfully", result);

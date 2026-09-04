@@ -8,6 +8,7 @@
     "start": "nodemon index.js",
     "seed": "node src/seed/index.js",
     "seed:reset": "node src/seed/index.js --reset",
+    "seed:catalog": "node src/seed/catalog.js",
     "simulate": "node src/seed/simulate/index.js",
     "simulate:reset": "node src/seed/simulate/index.js --reset"
   },
@@ -19,6 +20,7 @@
   "author": "TwelveTi",
   "license": "ISC",
   "dependencies": {
+    "@google/genai": "^2.21.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "cors": "^2.8.6",

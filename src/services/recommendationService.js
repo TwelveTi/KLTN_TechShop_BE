@@ -340,7 +340,10 @@ class RecommendationService {
       const ranked = this.combine(products, { popularity }).slice(0, limit);
 
       return {
-        items: this.decorate(ranked, products),
+        // Not persisted, so no outcome ids: an anonymous rail would create a
+        // result row on every homepage hit, and there is no user to attribute
+        // it to afterwards.
+        items: await this.decorate(ranked),
         strategy: "popularity",
         algorithmVersion: ALGORITHM_VERSION,
         personalised: false,
@@ -413,12 +416,12 @@ class RecommendationService {
 
     ranked = ranked.slice(0, limit);
 
-    if (persist) {
-      await this.persist({ userId, sessionId, ranked, recommendationType: "PERSONALIZED_HOME" });
-    }
+    const itemIdByProductId = persist
+      ? await this.persist({ userId, sessionId, ranked, recommendationType: "PERSONALIZED_HOME" })
+      : new Map();
 
     return {
-      items: this.decorate(ranked, candidates),
+      items: await this.decorate(ranked, { itemIdByProductId }),
       strategy: usedStrategy,
       algorithmVersion: ALGORITHM_VERSION,
       personalised: usedStrategy !== "popularity-fallback",
@@ -426,8 +429,14 @@ class RecommendationService {
     };
   }
 
-  /** "Related products" for a product page, straight off the similarity matrix. */
-  async getSimilarProducts(productId, { limit = DEFAULT_LIMIT } = {}) {
+  /**
+   * "Related products" for a product page, straight off the similarity matrix.
+   *
+   * Persisted like the personalised rail whenever we know who is looking, so a
+   * click on this rail is measured the same way — the evaluation chapter needs
+   * both surfaces, not just the homepage.
+   */
+  async getSimilarProducts(productId, { limit = DEFAULT_LIMIT, userId = null, sessionId = null, persist = true } = {}) {
     const product = await recommendationRepository.findProductById(productId);
 
     if (!product) {
@@ -451,27 +460,49 @@ class RecommendationService {
         reasonMetadata: { sourceProductId: productId, similarityType: row.similarityType },
       }));
 
-    return { items: this.decorate(ranked, activeProducts), algorithmVersion: ALGORITHM_VERSION };
+    const itemIdByProductId =
+      persist && (userId || sessionId)
+        ? await this.persist({ userId, sessionId, ranked, recommendationType: "SIMILAR_PRODUCTS" })
+        : new Map();
+
+    return {
+      items: await this.decorate(ranked, { itemIdByProductId }),
+      algorithmVersion: ALGORITHM_VERSION,
+    };
   }
 
-  // Attach the product fields a storefront rail needs to render.
-  // Takes the catalogue it was scored against rather than re-reading it: the
-  // caller already has it, and a second query per request adds latency for
-  // nothing.
-  decorate(ranked, products) {
+  /**
+   * Attach everything a storefront rail needs to render a card, plus the id the
+   * client reports outcomes against.
+   *
+   * One extra query per request, by primary key, over at most `limit` rows. An
+   * earlier version reused the already-loaded scoring catalogue to avoid it —
+   * but that catalogue carries no image, brand or category name, so the rail had
+   * nothing to draw with, and it carried no item id, so
+   * `POST /recommendations/items/:itemId/outcome` could never be called. The
+   * query buys back both.
+   */
+  async decorate(ranked, { itemIdByProductId = new Map() } = {}) {
     if (ranked.length === 0) {
       return [];
     }
 
-    const byId = new Map(products.map((p) => [p.id, p]));
+    const cards = await recommendationRepository.findProductCards(ranked.map((entry) => entry.productId));
 
     return ranked
       .map((entry, index) => {
-        const product = byId.get(entry.productId);
+        const product = cards.get(entry.productId);
         if (!product) {
           return null;
         }
+
+        const images = product.images || [];
+        const primaryImage = images.find((image) => image.isPrimary) || images[0] || null;
+
         return {
+          // Null when the rail was not persisted (anonymous visitors): there is
+          // no row to attribute an outcome to, and the client must not invent one.
+          itemId: itemIdByProductId.get(entry.productId) || null,
           rankPosition: index + 1,
           score: entry.score,
           reasonCode: entry.reasonCode,
@@ -480,25 +511,41 @@ class RecommendationService {
             id: product.id,
             name: product.name,
             slug: product.slug,
+            shortDescription: product.shortDescription,
             basePrice: Number(product.basePrice),
             salePrice: product.salePrice === null ? null : Number(product.salePrice),
+            status: product.status,
+            stockQuantity: Number(product.stockQuantity) || 0,
             averageRating: Number(product.averageRating) || 0,
-            reviewCount: product.reviewCount,
+            reviewCount: Number(product.reviewCount) || 0,
+            isFeatured: Boolean(product.isFeatured),
+            imageUrl: primaryImage ? primaryImage.imageUrl : null,
+            category: product.category
+              ? { id: product.category.id, name: product.category.name, slug: product.category.slug }
+              : null,
+            brand: product.brand
+              ? { id: product.brand.id, name: product.brand.name, slug: product.brand.slug }
+              : null,
           },
         };
       })
       .filter(Boolean);
   }
 
-  // Stored so outcomes (click / cart / purchase) can be attributed back to the
-  // recommendation that produced them — the raw material of the evaluation.
+  /**
+   * Stored so outcomes (click / cart / purchase) can be attributed back to the
+   * recommendation that produced them — the raw material of the evaluation.
+   *
+   * Returns `productId → itemId` so `decorate` can hand each card the id the
+   * client will report against.
+   */
   async persist({ userId, sessionId, ranked, recommendationType }) {
     if (ranked.length === 0) {
-      return null;
+      return new Map();
     }
 
     try {
-      return await recommendationRepository.createResultWithItems(
+      const { items } = await recommendationRepository.createResultWithItems(
         {
           userId,
           sessionId,
@@ -515,10 +562,13 @@ class RecommendationService {
           reasonMetadata: entry.reasonMetadata,
         })),
       );
+
+      return new Map(items.map((item) => [item.productId, item.id]));
     } catch (error) {
       // Losing the audit trail must not cost the shopper their recommendations.
+      // The rail still renders; its cards simply carry no outcome id.
       logger.warn("Failed to persist a recommendation result", { error: logger.serializeError(error) });
-      return null;
+      return new Map();
     }
   }
 

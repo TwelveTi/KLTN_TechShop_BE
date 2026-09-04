@@ -20,9 +20,14 @@ router.get(
   asyncHandler(recommendationController.getForMe),
 );
 
+// Same optional identity as the rail above — not to gate the response (a guest
+// sees the same neighbours) but so a click on this rail can be attributed to
+// whoever made it.
 router.get(
   "/recommendations/products/:id/similar",
   validateIdParam(),
+  optionalAuth,
+  attachSessionId,
   validateRecommendationQuery,
   asyncHandler(recommendationController.getSimilarProducts),
 );

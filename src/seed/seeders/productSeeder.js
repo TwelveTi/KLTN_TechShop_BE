@@ -96,9 +96,12 @@ async function seedProducts(taxonomies, transaction) {
                 productId: product.id,
                 specificationDefinitionId: def.id,
                 valueText: spec.valueText,
-                valueNumber: spec.valueNumber || null,
-                valueBoolean: spec.valueBoolean || null,
-                valueJson: spec.valueJson || null,
+                // `??` not `||`: a BOOLEAN spec that is legitimately `false`
+                // ("Không áp dụng" for ANC) would otherwise be stored as NULL,
+                // which reads as "unknown" instead of "no".
+                valueNumber: spec.valueNumber ?? null,
+                valueBoolean: spec.valueBoolean ?? null,
+                valueJson: spec.valueJson ?? null,
               },
               { transaction },
             );

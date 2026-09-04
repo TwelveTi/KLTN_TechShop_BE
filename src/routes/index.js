@@ -4,6 +4,7 @@ const productRoute = require("./productRoute");
 const catalogRoute = require("./catalogRoute");
 const behaviorRoute = require("./behaviorRoute");
 const recommendationRoute = require("./recommendationRoute");
+const aiRoute = require("./aiRoute");
 const reviewRoute = require("./reviewRoute");
 const orderRoute = require("./orderRoute");
 const paymentRoute = require("./paymentRoute");
@@ -25,6 +26,7 @@ function route(app) {
   app.use(API_PREFIX, catalogRoute);
   app.use(API_PREFIX, behaviorRoute);
   app.use(API_PREFIX, recommendationRoute);
+  app.use(API_PREFIX, aiRoute);
   app.use(API_PREFIX, reviewRoute);
   app.use(API_PREFIX, orderRoute);
   app.use(API_PREFIX, paymentRoute);
