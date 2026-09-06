@@ -3,13 +3,15 @@ const { Type } = require("@google/genai");
 const aiRepository = require("../repositories/aiRepository");
 const { getAgent } = require("./ai/prompts");
 const {
-  MODEL,
   TEMPERATURE,
   MAX_OUTPUT_TOKENS,
   THINKING_LEVEL,
   MAX_TOOL_TURNS,
   isConfigured,
   getClient,
+  classifyError,
+  markCooldown,
+  resolveModelChain,
 } = require("../configs/geminiConfig");
 const AppError = require("../utils/AppError");
 const logger = require("../utils/logger");
@@ -144,11 +146,16 @@ class AiService {
       content: message,
     });
 
-    const { answer, products, toolCalls, usage } = await this.runToolLoop({
+    const { answer, products, toolCalls, toolRecords, usage, model } = await this.runWithFallback({
       contents,
-      conversationId: conversation.id,
       conversationType: conversation.conversationType,
     });
+
+    // Lưu lượng tool ghi TRƯỚC câu trả lời để thứ tự thời gian trong hội thoại
+    // phản ánh đúng thứ tự đã xảy ra: hỏi → tra cứu → trả lời.
+    for (const record of toolRecords) {
+      await aiRepository.createMessage({ conversationId: conversation.id, ...record });
+    }
 
     const assistantMessage = await aiRepository.createMessage({
       conversationId: conversation.id,
@@ -157,7 +164,10 @@ class AiService {
       // The product ids are stored beside the text so a later evaluation can ask
       // what the answer was built from without re-parsing Vietnamese prose.
       structuredData: { productIds: products.map((product) => product.id), toolCalls },
-      modelName: MODEL,
+      // Model THỰC SỰ đã trả lời, không phải model được cấu hình. Có fallback
+      // rồi mà vẫn ghi hằng số là nói dối về chính phép chạy — và đây là cột
+      // chương Đánh giá đọc để biết số đo thuộc về model nào.
+      modelName: model,
       promptTokens: usage.promptTokens,
       completionTokens: usage.completionTokens,
     });
@@ -175,8 +185,119 @@ class AiService {
       grounding: {
         toolCalls,
         productCount: products.length,
+        model,
       },
     };
+  }
+
+  /**
+   * Chạy vòng tool trên model chính, rơi sang model dự phòng khi cần.
+   *
+   * Chạy lại NGUYÊN vòng chứ không đổi model giữa chừng. Lý do: một câu hỏi tốn
+   * nhiều lượt `generateContent`, và `contents` tích luỹ function call cùng
+   * `thoughtSignature` do model cũ sinh ra. Đưa đống đó cho một model khác là
+   * trông chờ vào thứ không có gì bảo đảm. Chạy lại tốn thêm vài giây, đổi lại
+   * mỗi câu trả lời được sinh trọn vẹn bởi đúng một model — cũng là điều kiện để
+   * `modelName` ghi xuống có nghĩa.
+   *
+   * Chạy lại an toàn vì vòng lặp KHÔNG còn ghi gì xuống DB; `runTool` chỉ trả
+   * bản ghi về cho `ask()` ghi một lượt sau cùng.
+   */
+  async runWithFallback({ contents, conversationType }) {
+    const chain = resolveModelChain();
+    let lastError = null;
+
+    for (const model of chain) {
+      try {
+        // Bản sao cho mỗi lần thử: vòng lặp ĐẨY THÊM vào `contents` (lượt của
+        // model, kết quả tool, câu nhắc trả lời). Dùng chung một mảng thì lần
+        // thử thứ hai bắt đầu từ đống rác của lần thứ nhất.
+        return await this.runToolLoop({ contents: [...contents], conversationType, model });
+      } catch (error) {
+        const { kind, tryNextModel } = classifyError(error);
+        lastError = error;
+
+        if (!tryNextModel) break;
+
+        markCooldown(model, kind);
+        logger.warn("Gemini model unavailable, trying next", {
+          model,
+          kind,
+          remaining: chain.slice(chain.indexOf(model) + 1),
+        });
+      }
+    }
+
+    throw toAppError(lastError) || lastError;
+  }
+
+  /** Hội thoại của người gọi, cho trang quản lý lịch sử tư vấn. */
+  async listConversations({ userId = null, sessionId = null }) {
+    // Khách vãng lai chưa có session key thì không có gì để liệt kê — và truy
+    // vấn với `sessionId = null` sẽ khớp mọi hội thoại mồ côi của người khác.
+    if (!userId && !sessionId) {
+      return { items: [] };
+    }
+
+    const rows = await aiRepository.findConversations({ userId, sessionId });
+
+    return { items: rows };
+  }
+
+  /** Toàn bộ lượt hỏi đáp của một hội thoại, kèm sản phẩm từng lượt đã gợi ý. */
+  async getConversation({ userId = null, sessionId = null, conversationId }) {
+    const conversation = await this.assertOwnership({ userId, sessionId, conversationId });
+    const { messages, productsByMessage } = await aiRepository.findConversationMessages(conversation.id);
+
+    return {
+      conversation: {
+        id: conversation.id,
+        title: conversation.title,
+        conversationType: conversation.conversationType,
+        createdAt: conversation.createdAt,
+        updatedAt: conversation.updatedAt,
+      },
+      messages: messages.map((message) => ({
+        id: message.id,
+        role: message.role,
+        content: message.content,
+        createdAt: message.createdAt,
+        products: productsByMessage[message.id] || [],
+        // Lưu lượng tool đã ghi lúc trả lời — nhờ vậy mở lại hội thoại cũ vẫn
+        // xem được AI đã tra những gì, không chỉ xem được ngay lúc vừa hỏi.
+        toolCalls: message.structuredData?.toolCalls || [],
+      })),
+    };
+  }
+
+  async closeConversation({ userId = null, sessionId = null, conversationId }) {
+    await this.assertOwnership({ userId, sessionId, conversationId });
+    await aiRepository.closeConversation(conversationId);
+
+    return { conversationId };
+  }
+
+  /**
+   * Chủ sở hữu hội thoại, hoặc 404.
+   *
+   * Trả 404 chứ không 403 cho hội thoại của người khác: 403 xác nhận rằng id đó
+   * CÓ TỒN TẠI, tức là biến endpoint thành công cụ dò id hợp lệ.
+   */
+  async assertOwnership({ userId, sessionId, conversationId }) {
+    const conversation = await aiRepository.findConversation(conversationId);
+
+    if (!conversation) {
+      throw new AppError("Conversation not found", 404);
+    }
+
+    const ownedByUser = userId && conversation.userId === userId;
+    const ownedBySession = !conversation.userId && sessionId && conversation.sessionId === sessionId;
+
+    if (!ownedByUser && !ownedBySession) {
+      throw new AppError("Conversation not found", 404);
+    }
+
+    return conversation;
   }
 
   /**
@@ -189,18 +310,7 @@ class AiService {
    */
   async resolveConversation({ userId, sessionId, conversationId, message }) {
     if (conversationId) {
-      const existing = await aiRepository.findConversation(conversationId);
-
-      if (!existing) {
-        throw new AppError("Conversation not found", 404);
-      }
-
-      const ownedByUser = userId && existing.userId === userId;
-      const ownedBySession = !existing.userId && sessionId && existing.sessionId === sessionId;
-
-      if (!ownedByUser && !ownedBySession) {
-        throw new AppError("Conversation not found", 404);
-      }
+      const existing = await this.assertOwnership({ userId, sessionId, conversationId });
 
       if (existing.status === "CLOSED") {
         throw new AppError("Conversation is closed", 409);
@@ -227,7 +337,7 @@ class AiService {
    * the shopper always gets prose instead of a turn that silently ends on an
    * unanswered tool call.
    */
-  async runToolLoop({ contents, conversationId, conversationType }) {
+  async runToolLoop({ contents, conversationType, model }) {
     const client = getClient();
     const agent = getAgent(conversationType);
     const systemInstruction = agent.buildSystemInstruction(await loadVocabulary());
@@ -241,19 +351,48 @@ class AiService {
 
     let products = [];
     const toolCalls = [];
+    // Bản ghi TOOL chờ ghi xuống DB. Gom ở đây chứ không ghi ngay, vì vòng lặp
+    // này có thể bị chạy lại nguyên vẹn trên model dự phòng.
+    const toolRecords = [];
     const usage = { promptTokens: 0, completionTokens: 0 };
     let turn = 0;
 
     while (true) {
       const toolsExhausted = turn >= MAX_TOOL_TURNS;
 
-      const response = await client.models.generateContent({
-        model: MODEL,
-        contents,
-        config: toolsExhausted
-          ? baseConfig
-          : { ...baseConfig, tools: [{ functionDeclarations: [SEARCH_PRODUCTS_TOOL] }] },
-      });
+      // Dropping `tools` is not enough to stop the model calling one: it has a
+      // transcript full of tool calls to imitate, and it will emit another,
+      // leaving `response.text` empty and the shopper with a canned apology.
+      // `mode: NONE` closes that door, and the nudge tells it the search phase
+      // is over so it answers from what it already has.
+      if (toolsExhausted) {
+        contents.push({
+          role: "user",
+          parts: [
+            {
+              text: "Đã tìm xong. Hãy trả lời ngay bây giờ bằng dữ liệu đã có ở trên, không gọi thêm tool nữa.",
+            },
+          ],
+        });
+      }
+
+      let response;
+
+      try {
+        response = await client.models.generateContent({
+          model,
+          contents,
+          config: toolsExhausted
+            ? { ...baseConfig, toolConfig: { functionCallingConfig: { mode: "NONE" } } }
+            : { ...baseConfig, tools: [{ functionDeclarations: [SEARCH_PRODUCTS_TOOL] }] },
+        });
+      } catch (error) {
+        // Ném NGUYÊN lỗi của SDK: `ask()` mới là nơi quyết định thử model khác
+        // hay dừng, và nó cần chuỗi lỗi gốc để phân loại. Dịch sang AppError ở
+        // đây là làm mất thông tin đó ngay trước chỗ cần dùng.
+        logger.error("Gemini call failed", { model, error: logger.serializeError(error) });
+        throw error;
+      }
 
       usage.promptTokens += response.usageMetadata?.promptTokenCount || 0;
       // Thinking tokens are reported separately but billed as output, and on
@@ -271,7 +410,9 @@ class AiService {
           answer: response.text || "Xin lỗi, hiện tại tôi chưa trả lời được câu hỏi này.",
           products,
           toolCalls,
+          toolRecords,
           usage,
+          model,
         };
       }
 
@@ -284,9 +425,10 @@ class AiService {
       const responseParts = [];
 
       for (const call of calls) {
-        const result = await this.runTool(call, conversationId);
+        const result = await this.runTool(call);
         products = result.products.length > 0 ? result.products : products;
         toolCalls.push({ name: call.name, args: call.args || {}, resultCount: result.products.length });
+        if (result.record) toolRecords.push(result.record);
 
         responseParts.push({
           functionResponse: {
@@ -302,8 +444,17 @@ class AiService {
     }
   }
 
-  /** Executes one tool call and persists it as a TOOL message. */
-  async runTool(call, conversationId) {
+  /**
+   * Executes one tool call and RETURNS what should be persisted for it.
+   *
+   * Ghi vào cơ sở dữ liệu ở đây thì vòng lặp không chạy lại được: fallback sang
+   * model khác chạy lại cả vòng, và mỗi lần chạy lại sẽ nhân đôi dòng `TOOL`.
+   * Nên nó chỉ trả dữ liệu về, `ask()` ghi một lượt sau khi đã có câu trả lời.
+   *
+   * Đổi vậy còn sửa một lỗi âm thầm đang có: câu hỏi hỏng giữa chừng trước đây
+   * để lại tin nhắn `TOOL` mồ côi trong một hội thoại không có lượt trả lời nào.
+   */
+  async runTool(call) {
     if (call.name !== SEARCH_PRODUCTS_TOOL.name) {
       return {
         products: [],
@@ -334,18 +485,19 @@ class AiService {
       payload = { error: "Product search failed", products: [], count: 0 };
     }
 
-    await aiRepository.createMessage({
-      conversationId,
-      role: "TOOL",
-      content: JSON.stringify(args),
-      structuredData: {
-        tool: call.name,
-        args,
-        productIds: products.map((product) => product.id),
+    return {
+      products,
+      payload,
+      record: {
+        role: "TOOL",
+        content: JSON.stringify(args),
+        structuredData: {
+          tool: call.name,
+          args,
+          productIds: products.map((product) => product.id),
+        },
       },
-    });
-
-    return { products, payload };
+    };
   }
 }
 
@@ -402,6 +554,57 @@ const toModelView = (product) => ({
     return acc;
   }, {}),
 });
+
+// ── Lỗi từ nhà cung cấp ─────────────────────────────────────────────────────
+
+/**
+ * Dịch lỗi của SDK Gemini thành lỗi của API này.
+ *
+ * Không dịch thì mọi thứ rơi vào `errorHandler` như một 500 vô danh, và người
+ * dùng đọc được "máy chủ đang bận" trong khi sự thật là hết hạn mức miễn phí
+ * trong ngày — một thứ thử lại bao nhiêu lần cũng vô ích. Đây là lỗi ĐÃ XẢY RA
+ * lúc chạy thử, không phải phòng xa.
+ *
+ * SDK ném lỗi với `message` là nguyên văn JSON của Google, nên mã lỗi được đọc
+ * từ đó thay vì từ một trường có sẵn.
+ */
+/**
+ * Câu chữ cho người dùng, theo phân loại lỗi của nhà cung cấp.
+ *
+ * Việc NHẬN DẠNG lỗi nằm ở `geminiConfig.classifyError` — đó là kiến thức về
+ * Gemini, và cũng chính là thứ quyết định có thử model dự phòng hay không. Ở đây
+ * chỉ dịch phân loại thành câu chữ và mã HTTP, nên hai nơi không thể lệch nhau
+ * khi Google đổi định dạng lỗi.
+ */
+const ERROR_MESSAGES = {
+  quotaDaily: [
+    "Trợ lý đã dùng hết lượt hỏi miễn phí trong ngày hôm nay. Bạn quay lại vào ngày mai nhé.",
+    429,
+  ],
+  quotaMinute: [
+    "Trợ lý đang nhận quá nhiều câu hỏi. Bạn đợi khoảng một phút rồi hỏi lại nhé.",
+    429,
+  ],
+  modelMissing: ["Trợ lý chưa được cấu hình đúng trên máy chủ này", 503],
+  auth: ["Trợ lý chưa được cấu hình đúng trên máy chủ này", 503],
+  // Chỉ tới được đây khi MỌI model dự phòng đều quá tải cùng lúc — hiếm, và
+  // khác hẳn "chưa cấu hình": lần này thử lại thật sự có ích.
+  overloaded: ["Trợ lý đang quá tải. Bạn thử lại sau một chút nhé.", 503],
+};
+
+/**
+ * Lỗi của nhà cung cấp → lỗi của API này.
+ *
+ * Không dịch thì mọi thứ rơi vào `errorHandler` như một 500 vô danh, và người
+ * dùng đọc được "máy chủ đang bận" trong khi sự thật là hết hạn mức miễn phí
+ * trong ngày — một thứ thử lại bao nhiêu lần cũng vô ích. Trả `null` cho lỗi lạ
+ * để nơi gọi ném nguyên bản gốc thay vì che nó bằng một thông điệp đoán mò.
+ */
+const toAppError = (error) => {
+  const mapped = ERROR_MESSAGES[classifyError(error).kind];
+
+  return mapped ? new AppError(mapped[0], mapped[1]) : null;
+};
 
 // ── Argument hygiene ────────────────────────────────────────────────────────
 

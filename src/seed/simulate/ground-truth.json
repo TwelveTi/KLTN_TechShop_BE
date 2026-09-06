@@ -1,1002 +1,980 @@
 {
-  "generatedAt": "2026-08-20T09:46:59.982Z",
+  "generatedAt": "2026-09-04T08:04:07.814Z",
   "seed": 42,
   "users": 60,
   "days": 90,
   "personas": [
     {
-      "userId": "2fa6058a-e65d-43b3-a1b1-29ff862278ba",
+      "userId": "a08db55c-64dc-4b22-83af-c6bf3d961abe",
       "key": "FOCUSED_BUYER_001",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "f23b91d8-5ef4-454c-a828-5f056aef7607",
-        "brandId": "a76f238a-d05a-4945-a051-f39782d56692",
-        "minPrice": 10493000,
-        "maxPrice": 19487000,
+        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
+        "brandId": "6995a277-1596-4a2a-b9b8-04da7095c013",
+        "minPrice": 13993000,
+        "maxPrice": 25987000,
         "targetProductIds": [
-          "1fa73d5e-333f-45e1-8b1c-cdfbad67625d",
-          "233d33d3-485b-4c47-a36a-ab36ebb44ffc",
-          "592d3086-d21f-412a-bc74-0f4a49831f99",
-          "5a32a174-a627-4ea5-a6a9-77a86434132d",
-          "5dc80384-1d82-43de-91db-6598d1a63588",
-          "c02ddd77-e284-4a94-91f4-3d15a96748ed",
-          "c5372cad-5348-4e78-aa8c-87e9501886e4"
+          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
+          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
+          "6b22d954-c816-439b-a380-7d850aa2dc22"
         ]
       }
     },
     {
-      "userId": "cc2692f2-0a5f-42c9-a712-39cb2b585f01",
+      "userId": "c23345c6-1c9c-4144-a868-591816e9e00e",
       "key": "FOCUSED_BUYER_002",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
-        "brandId": "e01b1936-a0ac-4771-8635-53a15cfbc18f",
-        "minPrice": 4403000,
-        "maxPrice": 8177000,
+        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
+        "brandId": "6b579b29-5b8e-4caa-8b0e-205d1b9d0474",
+        "minPrice": 20993000,
+        "maxPrice": 38987000,
         "targetProductIds": [
-          "40a82da6-be75-416e-bc9c-5d51cccda869",
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "b9d46eea-6b0d-4ed5-a521-b84af9e486c8",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
+          "659d117c-1447-4aac-9a30-e9d314b182ea"
         ]
       }
     },
     {
-      "userId": "2732e5a2-85c8-4baf-a0aa-0de1405a901b",
+      "userId": "91756f28-e696-44c9-9e06-208abe16a973",
       "key": "FOCUSED_BUYER_003",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "bd8d3303-7068-44bc-b674-5bb17a92cdc5",
-        "brandId": "06f8a66a-d3db-46a0-b019-da1cb86623ba",
-        "minPrice": 1743000,
-        "maxPrice": 3237000,
+        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
+        "brandId": "855e9708-03b0-4edb-9bba-4e62e4d6294c",
+        "minPrice": 27293000,
+        "maxPrice": 50687000,
         "targetProductIds": [
-          "595b3132-d96d-4edf-8b15-b6c30f49c1cb",
-          "943eb4d6-4c03-471d-9a6d-7f770f421afd",
-          "9a581150-c996-4a52-803b-59144f6a4849",
-          "c5f60fed-0d20-4cc7-a015-8a63b4635844",
-          "ec452563-3920-4f1a-97d6-60a3a7f2c3b3"
+          "06e174f6-2e37-477d-8903-663b46897f88",
+          "f11d349c-d244-4712-ba2a-bba9db09310b"
         ]
       }
     },
     {
-      "userId": "44eb6898-230f-4e8a-9d78-31877f6be004",
+      "userId": "1b94eeda-df9f-46c3-aff7-3fc5108674b9",
       "key": "FOCUSED_BUYER_004",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "8717161e-4879-4f82-9a32-43c5a53cfd25",
-        "brandId": "e01b1936-a0ac-4771-8635-53a15cfbc18f",
-        "minPrice": 11193000,
-        "maxPrice": 20787000,
+        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
+        "brandId": "d148015e-c7ac-4ec7-9fe6-79bc0d00f90e",
+        "minPrice": 16443000,
+        "maxPrice": 30537000,
         "targetProductIds": [
-          "31ead9fd-b3a5-46e9-b4b0-e47959cf180a",
-          "44a178be-c569-4b04-ae93-36ff42adf77b",
-          "4b8ddc85-d982-4086-9aeb-1886e095fc2d",
-          "ddb3b49b-60a4-44fb-bd2f-6246e13c107e"
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
         ]
       }
     },
     {
-      "userId": "523354d9-01b9-4c8c-861e-553ea97732d0",
+      "userId": "e6a5798f-23e2-42a6-8ccf-163b03379b4d",
       "key": "FOCUSED_BUYER_005",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "8717161e-4879-4f82-9a32-43c5a53cfd25",
-        "brandId": "34bc794a-94bf-494b-b9c8-c9b0b69ee0ca",
-        "minPrice": 11193000,
-        "maxPrice": 20787000,
+        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
+        "brandId": "d148015e-c7ac-4ec7-9fe6-79bc0d00f90e",
+        "minPrice": 27293000,
+        "maxPrice": 50687000,
         "targetProductIds": [
-          "31ead9fd-b3a5-46e9-b4b0-e47959cf180a",
-          "44a178be-c569-4b04-ae93-36ff42adf77b",
-          "4b8ddc85-d982-4086-9aeb-1886e095fc2d",
-          "ddb3b49b-60a4-44fb-bd2f-6246e13c107e"
+          "06e174f6-2e37-477d-8903-663b46897f88",
+          "f11d349c-d244-4712-ba2a-bba9db09310b"
         ]
       }
     },
     {
-      "userId": "5e71b9f4-1553-4a49-add7-2e03960c9c0c",
+      "userId": "60d812af-4bcb-4228-a74a-76956b9effc4",
       "key": "FOCUSED_BUYER_006",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
-        "brandId": "238ea8fe-f53c-4695-bda8-d8d3c93da8cf",
-        "minPrice": 2023000,
-        "maxPrice": 3757000,
+        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
+        "brandId": "7ee79330-a379-48dc-a6e0-a856c3001dc5",
+        "minPrice": 13993000,
+        "maxPrice": 25987000,
         "targetProductIds": [
-          "40a82da6-be75-416e-bc9c-5d51cccda869",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
+          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
+          "6b22d954-c816-439b-a380-7d850aa2dc22"
         ]
       }
     },
     {
-      "userId": "f98a91a2-5e62-4464-ae82-01fd87be2cce",
+      "userId": "187a3b25-8f24-46db-bdb9-37b7b3423f2c",
       "key": "FOCUSED_BUYER_007",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "4aeee261-1849-4775-909a-f5a365d45fa9",
-        "brandId": "a76f238a-d05a-4945-a051-f39782d56692",
-        "minPrice": 13993000,
-        "maxPrice": 25987000,
+        "categoryId": "29d5df0c-d1b9-4319-ba2e-f75bb92da6dc",
+        "brandId": "7ee79330-a379-48dc-a6e0-a856c3001dc5",
+        "minPrice": 4893000,
+        "maxPrice": 9087000,
         "targetProductIds": [
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "e272ed7f-5eb4-46ea-9297-791bc5dd060c",
-          "e7d0db5c-8e30-4444-b0bc-2ab6e72fc4ef"
+          "57758ed7-5d88-4623-8936-dde43dc0b942",
+          "cbfd221c-86ca-4cb5-b44f-36da4b0e5f90"
         ]
       }
     },
     {
-      "userId": "245a94ee-5377-4915-8581-445b8a487134",
+      "userId": "90e348ee-943e-4183-adf2-378d383505f6",
       "key": "FOCUSED_BUYER_008",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "414fdfda-eece-40d5-b22e-f68b375a5486",
-        "brandId": "b027d800-be1d-4f64-91ca-c48570d58662",
-        "minPrice": 1813000,
-        "maxPrice": 3367000,
+        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
+        "brandId": "6995a277-1596-4a2a-b9b8-04da7095c013",
+        "minPrice": 20293000,
+        "maxPrice": 37687000,
         "targetProductIds": [
-          "72739063-d149-40c6-bc94-fff89026bdc9",
-          "d9b78e34-6a19-4008-ae7c-8b214eb8a213"
+          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
+          "6b22d954-c816-439b-a380-7d850aa2dc22"
         ]
       }
     },
     {
-      "userId": "2109fd0f-7c11-43a0-9cb6-6c9a9de8d85c",
+      "userId": "9a31340e-afba-4127-ab79-d05e233d3968",
       "key": "FOCUSED_BUYER_009",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "4aeee261-1849-4775-909a-f5a365d45fa9",
-        "brandId": "b027d800-be1d-4f64-91ca-c48570d58662",
-        "minPrice": 13993000,
-        "maxPrice": 25987000,
+        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
+        "brandId": "fd83745e-15f2-4c3b-a6a1-cbe78e93af9d",
+        "minPrice": 20993000,
+        "maxPrice": 38987000,
         "targetProductIds": [
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "e272ed7f-5eb4-46ea-9297-791bc5dd060c",
-          "e7d0db5c-8e30-4444-b0bc-2ab6e72fc4ef"
+          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
+          "659d117c-1447-4aac-9a30-e9d314b182ea"
         ]
       }
     },
     {
-      "userId": "87f99b39-76b3-4459-b5ff-b93341f720df",
+      "userId": "3250456d-6fb1-4302-9837-4d4cf46c5d61",
       "key": "FOCUSED_BUYER_010",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "414fdfda-eece-40d5-b22e-f68b375a5486",
-        "brandId": "a55b7d0b-aa70-418a-999b-464c870c1fad",
-        "minPrice": 1673000,
-        "maxPrice": 3107000,
+        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
+        "brandId": "a3b0bc5f-84c7-4b5a-9244-a3f1f7e5961d",
+        "minPrice": 13993000,
+        "maxPrice": 25987000,
         "targetProductIds": [
-          "72739063-d149-40c6-bc94-fff89026bdc9",
-          "d9b78e34-6a19-4008-ae7c-8b214eb8a213"
+          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
+          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
+          "6b22d954-c816-439b-a380-7d850aa2dc22"
         ]
       }
     },
     {
-      "userId": "b14067da-aba3-4abf-9f92-9f66b2e1286f",
+      "userId": "da707438-3842-4bc2-b97d-2742d23150f9",
       "key": "FOCUSED_BUYER_011",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
-        "brandId": "b027d800-be1d-4f64-91ca-c48570d58662",
-        "minPrice": 2023000,
-        "maxPrice": 3757000,
+        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
+        "brandId": "7ee79330-a379-48dc-a6e0-a856c3001dc5",
+        "minPrice": 32893000,
+        "maxPrice": 61087000,
         "targetProductIds": [
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
         ]
       }
     },
     {
-      "userId": "bcaa885f-6daf-4706-aadc-c0bb45632fd2",
+      "userId": "731b78ba-7381-4b26-b5f1-46c821386598",
       "key": "FOCUSED_BUYER_012",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
-        "brandId": "75603fc4-9bbb-460d-98f5-b077f2a50ab0",
-        "minPrice": 7693000,
-        "maxPrice": 14287000,
+        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
+        "brandId": "a3b0bc5f-84c7-4b5a-9244-a3f1f7e5961d",
+        "minPrice": 7343000,
+        "maxPrice": 13637000,
         "targetProductIds": [
-          "40a82da6-be75-416e-bc9c-5d51cccda869",
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "b9d46eea-6b0d-4ed5-a521-b84af9e486c8",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
+          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
         ]
       }
     },
     {
-      "userId": "2b0224d7-a344-4ce2-aa3b-a60dfba09880",
+      "userId": "3cac68a6-4764-4079-8803-3402108ae891",
       "key": "FOCUSED_BUYER_013",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
-        "brandId": "64cb119d-31e4-45bf-84dd-09ce38a9d0a9",
-        "minPrice": 7693000,
-        "maxPrice": 14287000,
+        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
+        "brandId": "f72e06f9-c49e-40ab-9434-5ba4d34a2670",
+        "minPrice": 1743000,
+        "maxPrice": 3237000,
         "targetProductIds": [
-          "40a82da6-be75-416e-bc9c-5d51cccda869",
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "b9d46eea-6b0d-4ed5-a521-b84af9e486c8",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae"
         ]
       }
     },
     {
-      "userId": "5fce591a-b608-4522-ab45-31bc4bbd89da",
+      "userId": "57cf3f1b-ba13-4039-9179-0d6f9e2ada04",
       "key": "FOCUSED_BUYER_014",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "fc867e34-01ae-475e-b80c-9e3fbf68d07c",
-        "brandId": "75603fc4-9bbb-460d-98f5-b077f2a50ab0",
-        "minPrice": 903000,
-        "maxPrice": 1677000,
+        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
+        "brandId": "855e9708-03b0-4edb-9bba-4e62e4d6294c",
+        "minPrice": 973000,
+        "maxPrice": 1807000,
         "targetProductIds": [
-          "03ebe2f5-f5df-492a-9fb9-07bb207d08f4",
-          "dd8c4c45-4b34-4267-b7c0-5dbba8cc23ba"
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
+          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
         ]
       }
     },
     {
-      "userId": "b3c19342-a476-4fa2-947c-6d0b56989149",
+      "userId": "b4e228c3-9df3-4758-8754-9540f8d681ac",
       "key": "FOCUSED_BUYER_015",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "bd8d3303-7068-44bc-b674-5bb17a92cdc5",
-        "brandId": "238ea8fe-f53c-4695-bda8-d8d3c93da8cf",
-        "minPrice": 3843000,
-        "maxPrice": 7137000,
+        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
+        "brandId": "f72e06f9-c49e-40ab-9434-5ba4d34a2670",
+        "minPrice": 20993000,
+        "maxPrice": 38987000,
         "targetProductIds": [
-          "595b3132-d96d-4edf-8b15-b6c30f49c1cb",
-          "943eb4d6-4c03-471d-9a6d-7f770f421afd",
-          "c5f60fed-0d20-4cc7-a015-8a63b4635844"
+          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
+          "659d117c-1447-4aac-9a30-e9d314b182ea"
         ]
       }
     },
     {
-      "userId": "2144aea3-e61b-48ce-b79a-4cab81dc9d42",
+      "userId": "e7ab7804-1d3d-4625-9bff-1dd2c2a388de",
       "key": "CATEGORY_LOYAL_016",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "c39290cc-c7c2-4c47-a5c0-b8fa18e1169a",
+        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
         "brandId": null,
-        "minPrice": 7990000,
-        "maxPrice": 29990000,
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
         "targetProductIds": [
-          "06c531c2-124b-4640-aeb2-4734dc2d814e",
-          "0b2c92c7-9b7d-480a-8053-cf7c4be03045",
-          "804ec28c-e980-423f-b190-66c5096c889a",
-          "bd00c08d-9dce-419d-9254-06db757bee7f",
-          "e1ab9efc-9761-45ff-a7b9-2c6962c40ba9",
-          "f32ac8aa-5ca9-4562-a5eb-93b2f104c5a1"
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
+          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
         ]
       }
     },
     {
-      "userId": "524a4dc3-859e-411f-9033-d2386557c0ea",
+      "userId": "21cb552a-9ae3-40e6-9950-ac1c2e22b697",
       "key": "CATEGORY_LOYAL_017",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "4aeee261-1849-4775-909a-f5a365d45fa9",
+        "categoryId": "ed0fc480-471a-4780-a0d2-5b6589115e83",
         "brandId": null,
-        "minPrice": 13490000,
-        "maxPrice": 19990000,
+        "minPrice": 17490000,
+        "maxPrice": 58990000,
         "targetProductIds": [
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "e272ed7f-5eb4-46ea-9297-791bc5dd060c",
-          "e7d0db5c-8e30-4444-b0bc-2ab6e72fc4ef"
+          "3d106b73-958d-42dc-8c50-e14841a24859",
+          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
+          "75e72e04-51de-4aac-8eb8-a101c1be0267",
+          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
         ]
       }
     },
     {
-      "userId": "fe08f31f-7f64-4442-8ad4-6ad794ca4f28",
+      "userId": "030889b7-03cd-431b-bba5-5f3eeb619ff1",
       "key": "CATEGORY_LOYAL_018",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "f23b91d8-5ef4-454c-a828-5f056aef7607",
+        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
         "brandId": null,
-        "minPrice": 14990000,
-        "maxPrice": 52990000,
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
         "targetProductIds": [
-          "1fa73d5e-333f-45e1-8b1c-cdfbad67625d",
-          "233d33d3-485b-4c47-a36a-ab36ebb44ffc",
-          "592d3086-d21f-412a-bc74-0f4a49831f99",
-          "5a32a174-a627-4ea5-a6a9-77a86434132d",
-          "5dc80384-1d82-43de-91db-6598d1a63588",
-          "c02ddd77-e284-4a94-91f4-3d15a96748ed",
-          "c5372cad-5348-4e78-aa8c-87e9501886e4"
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
         ]
       }
     },
     {
-      "userId": "46e76f77-ade9-4547-986a-f2ec0f8b81e3",
+      "userId": "3df01d09-0513-40a6-9e8a-beb37e540e56",
       "key": "CATEGORY_LOYAL_019",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "4aeee261-1849-4775-909a-f5a365d45fa9",
+        "categoryId": "29d5df0c-d1b9-4319-ba2e-f75bb92da6dc",
         "brandId": null,
-        "minPrice": 13490000,
-        "maxPrice": 19990000,
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
         "targetProductIds": [
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "e272ed7f-5eb4-46ea-9297-791bc5dd060c",
-          "e7d0db5c-8e30-4444-b0bc-2ab6e72fc4ef"
+          "389575dd-57a6-441b-b0b1-be1516261470",
+          "4474b65f-b49d-4543-903e-3f6154f0021f",
+          "57758ed7-5d88-4623-8936-dde43dc0b942",
+          "cbfd221c-86ca-4cb5-b44f-36da4b0e5f90"
         ]
       }
     },
     {
-      "userId": "e1e2014a-c3d8-4535-8bff-20992a41d84a",
+      "userId": "126db603-e25b-48fd-8ded-71983651ec3a",
       "key": "CATEGORY_LOYAL_020",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "4aeee261-1849-4775-909a-f5a365d45fa9",
+        "categoryId": "29bc009c-b8f3-450f-b108-db0769e851c8",
         "brandId": null,
-        "minPrice": 13490000,
-        "maxPrice": 19990000,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
         "targetProductIds": [
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "e272ed7f-5eb4-46ea-9297-791bc5dd060c",
-          "e7d0db5c-8e30-4444-b0bc-2ab6e72fc4ef"
+          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
+          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
         ]
       }
     },
     {
-      "userId": "e0d64870-4aad-48fa-8306-3e016c6cce8d",
+      "userId": "52b57bc6-2320-450c-9e02-bf0a874fb923",
       "key": "CATEGORY_LOYAL_021",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "c39290cc-c7c2-4c47-a5c0-b8fa18e1169a",
+        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
         "brandId": null,
-        "minPrice": 7990000,
-        "maxPrice": 29990000,
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
         "targetProductIds": [
-          "06c531c2-124b-4640-aeb2-4734dc2d814e",
-          "0b2c92c7-9b7d-480a-8053-cf7c4be03045",
-          "804ec28c-e980-423f-b190-66c5096c889a",
-          "bd00c08d-9dce-419d-9254-06db757bee7f",
-          "e1ab9efc-9761-45ff-a7b9-2c6962c40ba9",
-          "f32ac8aa-5ca9-4562-a5eb-93b2f104c5a1"
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
         ]
       }
     },
     {
-      "userId": "15747cb3-afc2-4fa7-90ac-bbef4561f9cf",
+      "userId": "a27cf987-8645-4117-8430-ec2698f768d7",
       "key": "CATEGORY_LOYAL_022",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "bd8d3303-7068-44bc-b674-5bb17a92cdc5",
+        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
         "brandId": null,
-        "minPrice": 2490000,
-        "maxPrice": 8290000,
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
         "targetProductIds": [
-          "595b3132-d96d-4edf-8b15-b6c30f49c1cb",
-          "943eb4d6-4c03-471d-9a6d-7f770f421afd",
-          "9a581150-c996-4a52-803b-59144f6a4849",
-          "c5f60fed-0d20-4cc7-a015-8a63b4635844",
-          "ec452563-3920-4f1a-97d6-60a3a7f2c3b3"
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
+          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
         ]
       }
     },
     {
-      "userId": "7af7472f-76c2-4f64-a01e-22f7c9ebe70d",
+      "userId": "858155e7-4547-4528-b0e1-56cbe96f4097",
       "key": "CATEGORY_LOYAL_023",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
+        "categoryId": "29d5df0c-d1b9-4319-ba2e-f75bb92da6dc",
         "brandId": null,
-        "minPrice": 2190000,
-        "maxPrice": 10990000,
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
         "targetProductIds": [
-          "40a82da6-be75-416e-bc9c-5d51cccda869",
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "b9d46eea-6b0d-4ed5-a521-b84af9e486c8",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "389575dd-57a6-441b-b0b1-be1516261470",
+          "4474b65f-b49d-4543-903e-3f6154f0021f",
+          "57758ed7-5d88-4623-8936-dde43dc0b942",
+          "cbfd221c-86ca-4cb5-b44f-36da4b0e5f90"
         ]
       }
     },
     {
-      "userId": "290512e9-4ad3-48ca-8a41-ddfc4e49bc09",
+      "userId": "b62726b4-da07-4b75-9f2d-5e26bc9ff11b",
       "key": "CATEGORY_LOYAL_024",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "c39290cc-c7c2-4c47-a5c0-b8fa18e1169a",
+        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
         "brandId": null,
-        "minPrice": 7990000,
-        "maxPrice": 29990000,
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
         "targetProductIds": [
-          "06c531c2-124b-4640-aeb2-4734dc2d814e",
-          "0b2c92c7-9b7d-480a-8053-cf7c4be03045",
-          "804ec28c-e980-423f-b190-66c5096c889a",
-          "bd00c08d-9dce-419d-9254-06db757bee7f",
-          "e1ab9efc-9761-45ff-a7b9-2c6962c40ba9",
-          "f32ac8aa-5ca9-4562-a5eb-93b2f104c5a1"
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
         ]
       }
     },
     {
-      "userId": "cf2f9691-580d-4e91-95aa-505ac0b3d1d6",
+      "userId": "434bac9a-f6e4-4d61-becd-e8cdb2dad38b",
       "key": "CATEGORY_LOYAL_025",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "8717161e-4879-4f82-9a32-43c5a53cfd25",
+        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
         "brandId": null,
-        "minPrice": 7290000,
-        "maxPrice": 33990000,
+        "minPrice": 38990000,
+        "maxPrice": 61990000,
         "targetProductIds": [
-          "31ead9fd-b3a5-46e9-b4b0-e47959cf180a",
-          "44a178be-c569-4b04-ae93-36ff42adf77b",
-          "4b8ddc85-d982-4086-9aeb-1886e095fc2d",
-          "ddb3b49b-60a4-44fb-bd2f-6246e13c107e"
+          "06e174f6-2e37-477d-8903-663b46897f88",
+          "f11d349c-d244-4712-ba2a-bba9db09310b"
         ]
       }
     },
     {
-      "userId": "8489375e-6be7-4bdc-a405-099459ac5545",
+      "userId": "7da56130-201c-4a5b-8d0d-901bae094e65",
       "key": "CATEGORY_LOYAL_026",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "fc867e34-01ae-475e-b80c-9e3fbf68d07c",
+        "categoryId": "ed0fc480-471a-4780-a0d2-5b6589115e83",
         "brandId": null,
-        "minPrice": 1290000,
-        "maxPrice": 2990000,
+        "minPrice": 17490000,
+        "maxPrice": 58990000,
         "targetProductIds": [
-          "03ebe2f5-f5df-492a-9fb9-07bb207d08f4",
-          "dd8c4c45-4b34-4267-b7c0-5dbba8cc23ba"
+          "3d106b73-958d-42dc-8c50-e14841a24859",
+          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
+          "75e72e04-51de-4aac-8eb8-a101c1be0267",
+          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
         ]
       }
     },
     {
-      "userId": "6917610e-408c-4759-86ef-f8d92991e9f2",
+      "userId": "06eb453a-67df-4737-a1e6-7eb834abb26f",
       "key": "CATEGORY_LOYAL_027",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "f23b91d8-5ef4-454c-a828-5f056aef7607",
+        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
         "brandId": null,
-        "minPrice": 14990000,
-        "maxPrice": 52990000,
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
         "targetProductIds": [
-          "1fa73d5e-333f-45e1-8b1c-cdfbad67625d",
-          "233d33d3-485b-4c47-a36a-ab36ebb44ffc",
-          "592d3086-d21f-412a-bc74-0f4a49831f99",
-          "5a32a174-a627-4ea5-a6a9-77a86434132d",
-          "5dc80384-1d82-43de-91db-6598d1a63588",
-          "c02ddd77-e284-4a94-91f4-3d15a96748ed",
-          "c5372cad-5348-4e78-aa8c-87e9501886e4"
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
         ]
       }
     },
     {
-      "userId": "61d90f88-dc9b-48af-9287-95cf40bad24c",
+      "userId": "a0b2fa48-b4c6-44a9-8eff-09781ec8afa2",
       "key": "CATEGORY_LOYAL_028",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "8717161e-4879-4f82-9a32-43c5a53cfd25",
+        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
         "brandId": null,
-        "minPrice": 7290000,
-        "maxPrice": 33990000,
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
         "targetProductIds": [
-          "31ead9fd-b3a5-46e9-b4b0-e47959cf180a",
-          "44a178be-c569-4b04-ae93-36ff42adf77b",
-          "4b8ddc85-d982-4086-9aeb-1886e095fc2d",
-          "ddb3b49b-60a4-44fb-bd2f-6246e13c107e"
+          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
+          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
+          "6b22d954-c816-439b-a380-7d850aa2dc22"
         ]
       }
     },
     {
-      "userId": "598cb5cf-66b6-4e42-9e78-14e11eef0f3e",
+      "userId": "1197839e-620b-4d94-831b-eae9eca84295",
       "key": "CATEGORY_LOYAL_029",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "414fdfda-eece-40d5-b22e-f68b375a5486",
+        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
         "brandId": null,
-        "minPrice": 2390000,
-        "maxPrice": 4490000,
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
         "targetProductIds": [
-          "72739063-d149-40c6-bc94-fff89026bdc9",
-          "994d22af-eae0-4997-8af8-de0adbdc1f5d",
-          "d9b78e34-6a19-4008-ae7c-8b214eb8a213",
-          "e4226b8e-9776-4a2b-b7f0-09db7c874f5c"
+          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
+          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
+          "6b22d954-c816-439b-a380-7d850aa2dc22"
         ]
       }
     },
     {
-      "userId": "6d4f555d-db5c-4843-bc5c-b535154f8293",
+      "userId": "0028b7a5-362b-4544-80ff-54565bb762bd",
       "key": "CATEGORY_LOYAL_030",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "4aeee261-1849-4775-909a-f5a365d45fa9",
+        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
         "brandId": null,
-        "minPrice": 13490000,
-        "maxPrice": 19990000,
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
         "targetProductIds": [
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "e272ed7f-5eb4-46ea-9297-791bc5dd060c",
-          "e7d0db5c-8e30-4444-b0bc-2ab6e72fc4ef"
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
         ]
       }
     },
     {
-      "userId": "1ddf582e-bf97-41f9-8eab-e49cec08d847",
+      "userId": "8898d3a1-4f7f-4315-bb5a-03dc7dc636d3",
       "key": "BRAND_LOYAL_031",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "238ea8fe-f53c-4695-bda8-d8d3c93da8cf",
-        "minPrice": 2890000,
-        "maxPrice": 10990000,
+        "brandId": "f6c9dd7f-8cc3-4bb5-ad49-db350f5fbd3f",
+        "minPrice": 38990000,
+        "maxPrice": 58990000,
         "targetProductIds": [
-          "40a82da6-be75-416e-bc9c-5d51cccda869",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "06e174f6-2e37-477d-8903-663b46897f88",
+          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
         ]
       }
     },
     {
-      "userId": "292bab74-511d-41ea-bb6a-ab1e6c6c7715",
+      "userId": "3066a1f1-9887-4580-829a-4c21de6ab069",
       "key": "BRAND_LOYAL_032",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "64cb119d-31e4-45bf-84dd-09ce38a9d0a9",
-        "minPrice": 13990000,
-        "maxPrice": 32990000,
+        "brandId": "f72e06f9-c49e-40ab-9434-5ba4d34a2670",
+        "minPrice": 1990000,
+        "maxPrice": 2490000,
         "targetProductIds": [
-          "592d3086-d21f-412a-bc74-0f4a49831f99",
-          "c02ddd77-e284-4a94-91f4-3d15a96748ed",
-          "e272ed7f-5eb4-46ea-9297-791bc5dd060c"
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae"
         ]
       }
     },
     {
-      "userId": "7d722f3d-a836-4bc8-8d6e-be6f96efe7ff",
+      "userId": "244ce70f-91ce-4d2b-a7c4-76598df058a6",
       "key": "BRAND_LOYAL_033",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "8b625d3b-9d52-47ca-bd8d-1c225b6695ca",
-        "minPrice": 6290000,
-        "maxPrice": 41990000,
+        "brandId": "fd83745e-15f2-4c3b-a6a1-cbe78e93af9d",
+        "minPrice": 1390000,
+        "maxPrice": 19990000,
         "targetProductIds": [
-          "233d33d3-485b-4c47-a36a-ab36ebb44ffc",
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "5dc80384-1d82-43de-91db-6598d1a63588",
-          "b9d46eea-6b0d-4ed5-a521-b84af9e486c8"
+          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8"
         ]
       }
     },
     {
-      "userId": "44c392f4-2c9c-420c-beaf-cca88fb206fc",
+      "userId": "21aaf75f-3ab3-408b-9061-b3e45461d4bc",
       "key": "BRAND_LOYAL_034",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "b027d800-be1d-4f64-91ca-c48570d58662",
-        "minPrice": 2390000,
-        "maxPrice": 2590000,
+        "brandId": "6995a277-1596-4a2a-b9b8-04da7095c013",
+        "minPrice": 6490000,
+        "maxPrice": 29990000,
         "targetProductIds": [
-          "72739063-d149-40c6-bc94-fff89026bdc9",
-          "d9b78e34-6a19-4008-ae7c-8b214eb8a213"
+          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
+          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
+          "659d117c-1447-4aac-9a30-e9d314b182ea"
         ]
       }
     },
     {
-      "userId": "d788733d-5f76-4631-8952-52b37d6ee29f",
+      "userId": "aba262bd-3218-4d68-9e4e-1e0d68647576",
       "key": "BRAND_LOYAL_035",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "e01b1936-a0ac-4771-8635-53a15cfbc18f",
-        "minPrice": 2490000,
-        "maxPrice": 8290000,
+        "brandId": "a3b0bc5f-84c7-4b5a-9244-a3f1f7e5961d",
+        "minPrice": 1390000,
+        "maxPrice": 61990000,
         "targetProductIds": [
-          "943eb4d6-4c03-471d-9a6d-7f770f421afd",
-          "9a581150-c996-4a52-803b-59144f6a4849",
-          "ec452563-3920-4f1a-97d6-60a3a7f2c3b3"
+          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
+          "06e174f6-2e37-477d-8903-663b46897f88",
+          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "389575dd-57a6-441b-b0b1-be1516261470",
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
+          "3d106b73-958d-42dc-8c50-e14841a24859",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f",
+          "4474b65f-b49d-4543-903e-3f6154f0021f",
+          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "57758ed7-5d88-4623-8936-dde43dc0b942",
+          "659d117c-1447-4aac-9a30-e9d314b182ea",
+          "6b22d954-c816-439b-a380-7d850aa2dc22",
+          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
+          "75e72e04-51de-4aac-8eb8-a101c1be0267",
+          "bf920474-3016-44bb-b433-9c077b8a47ae",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
+          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f",
+          "cbfd221c-86ca-4cb5-b44f-36da4b0e5f90",
+          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e",
+          "e2aad592-d15f-41cf-92a1-3d9054381ecb",
+          "f11d349c-d244-4712-ba2a-bba9db09310b"
         ]
       }
     },
     {
-      "userId": "01de5095-2f1c-43e2-a522-aa6cb48dd394",
+      "userId": "cc009675-9f1c-46f5-a446-61237b979bcf",
       "key": "BRAND_LOYAL_036",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "8b625d3b-9d52-47ca-bd8d-1c225b6695ca",
-        "minPrice": 6290000,
-        "maxPrice": 41990000,
+        "brandId": "edcc5e94-e8ab-450d-9584-6137ea82cba1",
+        "minPrice": 5390000,
+        "maxPrice": 46990000,
         "targetProductIds": [
-          "233d33d3-485b-4c47-a36a-ab36ebb44ffc",
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "5dc80384-1d82-43de-91db-6598d1a63588",
-          "b9d46eea-6b0d-4ed5-a521-b84af9e486c8"
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "389575dd-57a6-441b-b0b1-be1516261470",
+          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f",
+          "6b22d954-c816-439b-a380-7d850aa2dc22",
+          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
         ]
       }
     },
     {
-      "userId": "219193d9-c52d-41af-9bd6-46127a78cf36",
+      "userId": "07be2642-dff9-4fd0-af94-66f18ce65391",
       "key": "BRAND_LOYAL_037",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "34bc794a-94bf-494b-b9c8-c9b0b69ee0ca",
-        "minPrice": 1290000,
-        "maxPrice": 18490000,
+        "brandId": "f6c9dd7f-8cc3-4bb5-ad49-db350f5fbd3f",
+        "minPrice": 38990000,
+        "maxPrice": 58990000,
         "targetProductIds": [
-          "03ebe2f5-f5df-492a-9fb9-07bb207d08f4",
-          "06c531c2-124b-4640-aeb2-4734dc2d814e",
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "bd00c08d-9dce-419d-9254-06db757bee7f"
+          "06e174f6-2e37-477d-8903-663b46897f88",
+          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
         ]
       }
     },
     {
-      "userId": "48a594f1-e1db-44b2-8873-6844a0cede95",
+      "userId": "7e2f875e-1ea1-41ca-9411-af65e4b908a1",
       "key": "BRAND_LOYAL_038",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "8b625d3b-9d52-47ca-bd8d-1c225b6695ca",
-        "minPrice": 6290000,
-        "maxPrice": 41990000,
+        "brandId": "d148015e-c7ac-4ec7-9fe6-79bc0d00f90e",
+        "minPrice": 10490000,
+        "maxPrice": 48990000,
         "targetProductIds": [
-          "233d33d3-485b-4c47-a36a-ab36ebb44ffc",
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "5dc80384-1d82-43de-91db-6598d1a63588",
-          "b9d46eea-6b0d-4ed5-a521-b84af9e486c8"
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
+          "75e72e04-51de-4aac-8eb8-a101c1be0267"
         ]
       }
     },
     {
-      "userId": "87c71ad8-8749-462a-aec0-15ac48f12b50",
+      "userId": "bb82d6bb-a909-418d-bab2-def89a21c949",
       "key": "BRAND_LOYAL_039",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "a76f238a-d05a-4945-a051-f39782d56692",
-        "minPrice": 4490000,
-        "maxPrice": 28990000,
+        "brandId": "edcc5e94-e8ab-450d-9584-6137ea82cba1",
+        "minPrice": 5390000,
+        "maxPrice": 46990000,
         "targetProductIds": [
-          "31ead9fd-b3a5-46e9-b4b0-e47959cf180a",
-          "595b3132-d96d-4edf-8b15-b6c30f49c1cb",
-          "804ec28c-e980-423f-b190-66c5096c889a",
-          "994d22af-eae0-4997-8af8-de0adbdc1f5d",
-          "f32ac8aa-5ca9-4562-a5eb-93b2f104c5a1"
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "389575dd-57a6-441b-b0b1-be1516261470",
+          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f",
+          "6b22d954-c816-439b-a380-7d850aa2dc22",
+          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
         ]
       }
     },
     {
-      "userId": "b57a561d-dd9e-4788-99b1-002d62977e84",
+      "userId": "105a5c25-e40a-4b31-a13f-5f512cd4ba94",
       "key": "BRAND_LOYAL_040",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "a76f238a-d05a-4945-a051-f39782d56692",
-        "minPrice": 4490000,
-        "maxPrice": 28990000,
+        "brandId": "f72e06f9-c49e-40ab-9434-5ba4d34a2670",
+        "minPrice": 1990000,
+        "maxPrice": 2490000,
         "targetProductIds": [
-          "31ead9fd-b3a5-46e9-b4b0-e47959cf180a",
-          "595b3132-d96d-4edf-8b15-b6c30f49c1cb",
-          "804ec28c-e980-423f-b190-66c5096c889a",
-          "994d22af-eae0-4997-8af8-de0adbdc1f5d",
-          "f32ac8aa-5ca9-4562-a5eb-93b2f104c5a1"
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae"
         ]
       }
     },
     {
-      "userId": "c7d6d1f0-9740-4a93-83af-79b6c1726498",
+      "userId": "f873f6dc-00db-4918-819a-31a5b01df62f",
       "key": "BRAND_LOYAL_041",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "b027d800-be1d-4f64-91ca-c48570d58662",
-        "minPrice": 2390000,
-        "maxPrice": 2590000,
+        "brandId": "d148015e-c7ac-4ec7-9fe6-79bc0d00f90e",
+        "minPrice": 10490000,
+        "maxPrice": 48990000,
         "targetProductIds": [
-          "72739063-d149-40c6-bc94-fff89026bdc9",
-          "d9b78e34-6a19-4008-ae7c-8b214eb8a213"
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
+          "75e72e04-51de-4aac-8eb8-a101c1be0267"
         ]
       }
     },
     {
-      "userId": "f203619b-e6f4-491b-a682-db409b23cb54",
+      "userId": "a4db042f-35e5-49a4-bb4b-2a2a3a044b80",
       "key": "BRAND_LOYAL_042",
       "type": "BRAND_LOYAL",
       "truth": {
         "categoryId": null,
-        "brandId": "a55b7d0b-aa70-418a-999b-464c870c1fad",
-        "minPrice": 7290000,
-        "maxPrice": 46990000,
+        "brandId": "fd83745e-15f2-4c3b-a6a1-cbe78e93af9d",
+        "minPrice": 1390000,
+        "maxPrice": 19990000,
         "targetProductIds": [
-          "1fa73d5e-333f-45e1-8b1c-cdfbad67625d",
-          "4b8ddc85-d982-4086-9aeb-1886e095fc2d"
+          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8"
         ]
       }
     },
     {
-      "userId": "3672534b-cda4-433a-9308-33a6282d1dc0",
+      "userId": "7674820f-44b0-400f-ba39-4a29f6f2f6db",
       "key": "BARGAIN_HUNTER_043",
       "type": "BARGAIN_HUNTER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
+        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
         "brandId": null,
-        "minPrice": 2190000,
-        "maxPrice": 2890000,
+        "minPrice": 28490000,
+        "maxPrice": 28490000,
         "targetProductIds": [
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
+          "659d117c-1447-4aac-9a30-e9d314b182ea"
         ]
       }
     },
     {
-      "userId": "990ae981-8510-4b8b-9f9d-dfc501c582bf",
+      "userId": "a6362463-a41d-46a5-80fa-2bed33012b77",
       "key": "BARGAIN_HUNTER_044",
       "type": "BARGAIN_HUNTER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
+        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
         "brandId": null,
-        "minPrice": 2190000,
-        "maxPrice": 2890000,
+        "minPrice": 28490000,
+        "maxPrice": 28490000,
         "targetProductIds": [
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
+          "659d117c-1447-4aac-9a30-e9d314b182ea"
         ]
       }
     },
     {
-      "userId": "6111c982-d394-44c4-bd89-def4db9f4823",
+      "userId": "a611f8e5-0eca-48bf-b0bc-6dfb8a9b1b8e",
       "key": "BARGAIN_HUNTER_045",
       "type": "BARGAIN_HUNTER",
       "truth": {
-        "categoryId": "8717161e-4879-4f82-9a32-43c5a53cfd25",
+        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
         "brandId": null,
-        "minPrice": 7290000,
-        "maxPrice": 15990000,
+        "minPrice": 38990000,
+        "maxPrice": 38990000,
         "targetProductIds": [
-          "4b8ddc85-d982-4086-9aeb-1886e095fc2d",
-          "ddb3b49b-60a4-44fb-bd2f-6246e13c107e"
+          "06e174f6-2e37-477d-8903-663b46897f88",
+          "f11d349c-d244-4712-ba2a-bba9db09310b"
         ]
       }
     },
     {
-      "userId": "08d0ce8c-9d8f-4d0d-aecc-369c6dac9c6a",
+      "userId": "cc24f5e5-d542-43db-9b1d-98ce974f91fa",
       "key": "BARGAIN_HUNTER_046",
       "type": "BARGAIN_HUNTER",
       "truth": {
-        "categoryId": "8717161e-4879-4f82-9a32-43c5a53cfd25",
+        "categoryId": "29bc009c-b8f3-450f-b108-db0769e851c8",
         "brandId": null,
-        "minPrice": 7290000,
-        "maxPrice": 15990000,
+        "minPrice": 6490000,
+        "maxPrice": 6490000,
         "targetProductIds": [
-          "4b8ddc85-d982-4086-9aeb-1886e095fc2d",
-          "ddb3b49b-60a4-44fb-bd2f-6246e13c107e"
+          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
+          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
         ]
       }
     },
     {
-      "userId": "97bdb09d-175c-4bf9-b162-700b923eb61f",
+      "userId": "a4da3235-18be-4056-8771-bc01161d1195",
       "key": "BARGAIN_HUNTER_047",
       "type": "BARGAIN_HUNTER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
+        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
         "brandId": null,
-        "minPrice": 2190000,
-        "maxPrice": 2890000,
+        "minPrice": 28490000,
+        "maxPrice": 28490000,
         "targetProductIds": [
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
+          "659d117c-1447-4aac-9a30-e9d314b182ea"
         ]
       }
     },
     {
-      "userId": "599e60f0-4c85-4ec5-8087-55d932793cdd",
+      "userId": "e60b2bc4-a758-48b8-8f09-5216662d63cb",
       "key": "BARGAIN_HUNTER_048",
       "type": "BARGAIN_HUNTER",
       "truth": {
-        "categoryId": "f23b91d8-5ef4-454c-a828-5f056aef7607",
+        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
         "brandId": null,
-        "minPrice": 14990000,
-        "maxPrice": 26990000,
+        "minPrice": 28490000,
+        "maxPrice": 28490000,
         "targetProductIds": [
-          "592d3086-d21f-412a-bc74-0f4a49831f99",
-          "5a32a174-a627-4ea5-a6a9-77a86434132d",
-          "5dc80384-1d82-43de-91db-6598d1a63588"
+          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
+          "659d117c-1447-4aac-9a30-e9d314b182ea"
         ]
       }
     },
     {
-      "userId": "55da1950-e258-44a3-898e-96e78480eba4",
+      "userId": "bf666088-4ea7-40fe-aefd-70d7978e8639",
       "key": "BARGAIN_HUNTER_049",
       "type": "BARGAIN_HUNTER",
       "truth": {
-        "categoryId": "bd8d3303-7068-44bc-b674-5bb17a92cdc5",
+        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
         "brandId": null,
-        "minPrice": 2490000,
-        "maxPrice": 5490000,
+        "minPrice": 19990000,
+        "maxPrice": 28990000,
         "targetProductIds": [
-          "595b3132-d96d-4edf-8b15-b6c30f49c1cb",
-          "943eb4d6-4c03-471d-9a6d-7f770f421afd",
-          "9a581150-c996-4a52-803b-59144f6a4849"
+          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
+          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14"
         ]
       }
     },
     {
-      "userId": "ce75a001-ba48-45c4-80e0-d5587f6dd720",
+      "userId": "3f3dc32c-e41a-4a20-9937-12fe0e4e3969",
       "key": "BARGAIN_HUNTER_050",
       "type": "BARGAIN_HUNTER",
       "truth": {
-        "categoryId": "4aeee261-1849-4775-909a-f5a365d45fa9",
+        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
         "brandId": null,
-        "minPrice": 13490000,
-        "maxPrice": 13990000,
+        "minPrice": 38990000,
+        "maxPrice": 38990000,
         "targetProductIds": [
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "e272ed7f-5eb4-46ea-9297-791bc5dd060c"
+          "06e174f6-2e37-477d-8903-663b46897f88",
+          "f11d349c-d244-4712-ba2a-bba9db09310b"
         ]
       }
     },
     {
-      "userId": "c57fcbb1-1e69-40bf-98c7-bc4f153da20f",
+      "userId": "02dd3260-fbf6-46f7-882d-f4321e80c68a",
       "key": "BARGAIN_HUNTER_051",
       "type": "BARGAIN_HUNTER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
+        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
         "brandId": null,
-        "minPrice": 2190000,
-        "maxPrice": 2890000,
+        "minPrice": 38990000,
+        "maxPrice": 38990000,
         "targetProductIds": [
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "06e174f6-2e37-477d-8903-663b46897f88",
+          "f11d349c-d244-4712-ba2a-bba9db09310b"
         ]
       }
     },
     {
-      "userId": "e2ca543a-24c6-4234-aec1-d75c898ad796",
+      "userId": "13bbdb6f-1073-4469-a0cb-4d2f9f2a77eb",
       "key": "WINDOW_SHOPPER_052",
       "type": "WINDOW_SHOPPER",
       "truth": {
-        "categoryId": "c39290cc-c7c2-4c47-a5c0-b8fa18e1169a",
+        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
         "brandId": null,
-        "minPrice": 7990000,
-        "maxPrice": 29990000,
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
         "targetProductIds": [
-          "06c531c2-124b-4640-aeb2-4734dc2d814e",
-          "0b2c92c7-9b7d-480a-8053-cf7c4be03045",
-          "804ec28c-e980-423f-b190-66c5096c889a",
-          "bd00c08d-9dce-419d-9254-06db757bee7f",
-          "e1ab9efc-9761-45ff-a7b9-2c6962c40ba9",
-          "f32ac8aa-5ca9-4562-a5eb-93b2f104c5a1"
+          "359dab00-02e9-42f6-adb4-50643e7e78e1",
+          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
         ]
       }
     },
     {
-      "userId": "3bd99fc5-b7ad-49da-b1ce-64c96238de4a",
+      "userId": "d8d5247f-58e5-49cb-a4fb-6e94c5a779c5",
       "key": "WINDOW_SHOPPER_053",
       "type": "WINDOW_SHOPPER",
       "truth": {
-        "categoryId": "c39290cc-c7c2-4c47-a5c0-b8fa18e1169a",
+        "categoryId": "29bc009c-b8f3-450f-b108-db0769e851c8",
         "brandId": null,
-        "minPrice": 7990000,
-        "maxPrice": 29990000,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
         "targetProductIds": [
-          "06c531c2-124b-4640-aeb2-4734dc2d814e",
-          "0b2c92c7-9b7d-480a-8053-cf7c4be03045",
-          "804ec28c-e980-423f-b190-66c5096c889a",
-          "bd00c08d-9dce-419d-9254-06db757bee7f",
-          "e1ab9efc-9761-45ff-a7b9-2c6962c40ba9",
-          "f32ac8aa-5ca9-4562-a5eb-93b2f104c5a1"
+          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
+          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
         ]
       }
     },
     {
-      "userId": "847f1913-80c4-4489-b80d-52c0d1010105",
+      "userId": "8488e87b-0e8f-41ac-b438-0e68038af07b",
       "key": "WINDOW_SHOPPER_054",
       "type": "WINDOW_SHOPPER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
+        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
         "brandId": null,
-        "minPrice": 2190000,
-        "maxPrice": 10990000,
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
         "targetProductIds": [
-          "40a82da6-be75-416e-bc9c-5d51cccda869",
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "b9d46eea-6b0d-4ed5-a521-b84af9e486c8",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
+          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
         ]
       }
     },
     {
-      "userId": "b019a003-8052-444b-a74b-67467c6c4162",
+      "userId": "0df32911-fabf-452b-a363-fcb7973ed60d",
       "key": "WINDOW_SHOPPER_055",
       "type": "WINDOW_SHOPPER",
       "truth": {
-        "categoryId": "4aeee261-1849-4775-909a-f5a365d45fa9",
+        "categoryId": "ed0fc480-471a-4780-a0d2-5b6589115e83",
         "brandId": null,
-        "minPrice": 13490000,
-        "maxPrice": 19990000,
+        "minPrice": 17490000,
+        "maxPrice": 58990000,
         "targetProductIds": [
-          "4d6de744-d7a0-4289-9156-42d0bb46d186",
-          "e272ed7f-5eb4-46ea-9297-791bc5dd060c",
-          "e7d0db5c-8e30-4444-b0bc-2ab6e72fc4ef"
+          "3d106b73-958d-42dc-8c50-e14841a24859",
+          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
+          "75e72e04-51de-4aac-8eb8-a101c1be0267",
+          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
         ]
       }
     },
     {
-      "userId": "e018f4c9-5436-46f1-9b77-70e73dadb19e",
+      "userId": "9b527d2f-2720-4f41-b3e9-bfe93db79439",
       "key": "WINDOW_SHOPPER_056",
       "type": "WINDOW_SHOPPER",
       "truth": {
-        "categoryId": "bd8d3303-7068-44bc-b674-5bb17a92cdc5",
+        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
         "brandId": null,
-        "minPrice": 2490000,
-        "maxPrice": 8290000,
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
         "targetProductIds": [
-          "595b3132-d96d-4edf-8b15-b6c30f49c1cb",
-          "943eb4d6-4c03-471d-9a6d-7f770f421afd",
-          "9a581150-c996-4a52-803b-59144f6a4849",
-          "c5f60fed-0d20-4cc7-a015-8a63b4635844",
-          "ec452563-3920-4f1a-97d6-60a3a7f2c3b3"
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
+          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
         ]
       }
     },
     {
-      "userId": "40405933-f5e2-4244-9379-3fca9d00eb44",
+      "userId": "9d1861c6-c9b8-4bae-b36a-1c70a6a113e3",
       "key": "WINDOW_SHOPPER_057",
       "type": "WINDOW_SHOPPER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
+        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
         "brandId": null,
-        "minPrice": 2190000,
-        "maxPrice": 10990000,
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
         "targetProductIds": [
-          "40a82da6-be75-416e-bc9c-5d51cccda869",
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "b9d46eea-6b0d-4ed5-a521-b84af9e486c8",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
+          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
         ]
       }
     },
     {
-      "userId": "f735b856-93d6-4056-a175-6987e30799ff",
+      "userId": "e6d9db9c-377d-4fcb-b3a1-9539129e1576",
       "key": "WINDOW_SHOPPER_058",
       "type": "WINDOW_SHOPPER",
       "truth": {
-        "categoryId": "414fdfda-eece-40d5-b22e-f68b375a5486",
+        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
         "brandId": null,
-        "minPrice": 2390000,
-        "maxPrice": 4490000,
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
         "targetProductIds": [
-          "72739063-d149-40c6-bc94-fff89026bdc9",
-          "994d22af-eae0-4997-8af8-de0adbdc1f5d",
-          "d9b78e34-6a19-4008-ae7c-8b214eb8a213",
-          "e4226b8e-9776-4a2b-b7f0-09db7c874f5c"
+          "3969d988-709f-4e4d-9a5c-caf6fff55921",
+          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
+          "bf920474-3016-44bb-b433-9c077b8a47ae",
+          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
+          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
         ]
       }
     },
     {
-      "userId": "912e1973-8f2b-4fc1-83b1-f28bae3ef3e5",
+      "userId": "5a6dff99-3f0e-412c-80f2-c293c26776ae",
       "key": "WINDOW_SHOPPER_059",
       "type": "WINDOW_SHOPPER",
       "truth": {
-        "categoryId": "fc867e34-01ae-475e-b80c-9e3fbf68d07c",
+        "categoryId": "29bc009c-b8f3-450f-b108-db0769e851c8",
         "brandId": null,
-        "minPrice": 1290000,
-        "maxPrice": 2990000,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
         "targetProductIds": [
-          "03ebe2f5-f5df-492a-9fb9-07bb207d08f4",
-          "dd8c4c45-4b34-4267-b7c0-5dbba8cc23ba"
+          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
+          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
         ]
       }
     },
     {
-      "userId": "ed2dd101-f83e-4657-899e-ec97c9c3075b",
+      "userId": "53b445ba-317c-49bb-a7ef-fcc6f88764ee",
       "key": "WINDOW_SHOPPER_060",
       "type": "WINDOW_SHOPPER",
       "truth": {
-        "categoryId": "aa1c8577-740d-4997-8f12-cedf4c6526b8",
+        "categoryId": "ed0fc480-471a-4780-a0d2-5b6589115e83",
         "brandId": null,
-        "minPrice": 2190000,
-        "maxPrice": 10990000,
+        "minPrice": 17490000,
+        "maxPrice": 58990000,
         "targetProductIds": [
-          "40a82da6-be75-416e-bc9c-5d51cccda869",
-          "af775b4b-88a0-4be1-9ea4-9aad3808a394",
-          "b9d46eea-6b0d-4ed5-a521-b84af9e486c8",
-          "cb077cf8-4186-4bce-88fe-317df68c98f0"
+          "3d106b73-958d-42dc-8c50-e14841a24859",
+          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
+          "75e72e04-51de-4aac-8eb8-a101c1be0267",
+          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
         ]
       }
     }

@@ -6,6 +6,7 @@ const aiController = require("../controllers/aiController");
 const { optionalAuth } = require("../middlewares/authMiddleware");
 const { attachSessionId } = require("../middlewares/behaviorValidation");
 const { validateAskAdvisor } = require("../middlewares/aiValidation");
+const { validateIdParam } = require("../middlewares/adminValidation");
 const asyncHandler = require("../utils/asyncHandler");
 
 // Unlike every other route in this app, each call here spends money on a
@@ -29,6 +30,33 @@ router.post(
   attachSessionId,
   validateAskAdvisor,
   asyncHandler(aiController.askAdvisor),
+);
+
+// Quản lý lịch sử tư vấn. KHÔNG qua `advisorLimiter`: giới hạn đó tồn tại vì
+// mỗi câu hỏi tốn tiền gọi model, còn ba endpoint dưới đây chỉ đọc/ghi cơ sở dữ
+// liệu. Bắt trang lịch sử chia chung hạn mức 10 lượt/phút với việc hỏi sẽ khiến
+// chỉ chuyển qua lại vài cuộc hội thoại là bị chặn.
+router.get(
+  "/ai/conversations",
+  optionalAuth,
+  attachSessionId,
+  asyncHandler(aiController.listConversations),
+);
+
+router.get(
+  "/ai/conversations/:id",
+  optionalAuth,
+  attachSessionId,
+  validateIdParam(),
+  asyncHandler(aiController.getConversation),
+);
+
+router.delete(
+  "/ai/conversations/:id",
+  optionalAuth,
+  attachSessionId,
+  validateIdParam(),
+  asyncHandler(aiController.closeConversation),
 );
 
 module.exports = router;

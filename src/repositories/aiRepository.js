@@ -74,6 +74,11 @@ class AiRepository {
           slug: category.slug,
           name: category.name,
           productCount: reachableCount(category),
+          // The parent link is what lets the prompt render a tree instead of a
+          // flat list. Without it the model cannot tell that searching
+          // `laptop-may-tinh` already covered `laptop-gaming`, so it searches
+          // both and burns a tool turn re-finding what it had.
+          parentSlug: categories.find((other) => other.id === category.parentId)?.slug || null,
           isLeaf: categories.every((other) => other.parentId !== category.id),
           specs: (category.specificationDefinitions || [])
             .slice()
@@ -301,6 +306,133 @@ class AiRepository {
 
   createMessage(payload) {
     return db.AiMessage.create(payload);
+  }
+
+  /**
+   * Danh sách hội thoại của một người, mới nhất trước.
+   *
+   * Chủ sở hữu được xác định giống hệt `resolveConversation` trong service:
+   * người đã đăng nhập theo `userId`, khách vãng lai theo `sessionId`. Truyền
+   * cả hai vào một câu `OR` sẽ để lộ hội thoại của người khác trên cùng một
+   * máy, nên hai trường hợp là hai nhánh tách bạch.
+   */
+  findConversations({ userId, sessionId, limit = 50 }) {
+    const where = userId
+      ? { userId, status: "ACTIVE" }
+      : { userId: null, sessionId, status: "ACTIVE" };
+
+    return db.AiConversation.findAll({
+      where,
+      attributes: ["id", "title", "conversationType", "createdAt", "updatedAt"],
+      order: [["updatedAt", "DESC"]],
+      limit,
+      raw: true,
+    });
+  }
+
+  /**
+   * Lượt hỏi đáp của một hội thoại, kèm sản phẩm đã gợi ý ở từng lượt.
+   *
+   * `ai_recommended_products` được đọc riêng thay vì join: một tin nhắn có tối
+   * đa chục sản phẩm, và join vào sẽ nhân dòng tin nhắn lên rồi phải gộp lại
+   * bằng tay. Hai truy vấn nhỏ dễ đọc hơn một truy vấn phải sửa sau.
+   */
+  async findConversationMessages(conversationId) {
+    const messages = await db.AiMessage.findAll({
+      where: { conversationId, role: { [Op.in]: ["USER", "ASSISTANT"] } },
+      attributes: ["id", "role", "content", "structuredData", "createdAt"],
+      order: [["createdAt", "ASC"]],
+      raw: true,
+    });
+
+    const assistantIds = messages.filter((row) => row.role === "ASSISTANT").map((row) => row.id);
+
+    if (assistantIds.length === 0) {
+      return { messages, productsByMessage: {} };
+    }
+
+    const links = await db.AiRecommendedProduct.findAll({
+      where: { messageId: assistantIds },
+      attributes: ["messageId", "productId", "rankPosition"],
+      order: [["rankPosition", "ASC"]],
+      raw: true,
+    });
+
+    const cards = await this.findProductCardsByIds([...new Set(links.map((row) => row.productId))]);
+
+    const productsByMessage = {};
+    links.forEach((link) => {
+      const card = cards[link.productId];
+      // Sản phẩm đã bị xoá khỏi catalogue thì bỏ qua: hiện lại một thẻ trỏ vào
+      // hư không còn tệ hơn là một câu trả lời cũ thiếu mất thẻ.
+      if (card) {
+        (productsByMessage[link.messageId] = productsByMessage[link.messageId] || []).push(card);
+      }
+    });
+
+    return { messages, productsByMessage };
+  }
+
+  /** Thẻ sản phẩm cho lịch sử hội thoại, khoá theo id. */
+  async findProductCardsByIds(productIds) {
+    if (productIds.length === 0) {
+      return {};
+    }
+
+    const rows = await db.Product.findAll({
+      where: { id: productIds },
+      attributes: [
+        "id",
+        "name",
+        "slug",
+        "shortDescription",
+        "basePrice",
+        "salePrice",
+        "stockQuantity",
+        "soldCount",
+        "averageRating",
+        "reviewCount",
+      ],
+      include: [
+        { model: db.Category, as: "category", attributes: ["id", "name", "slug"] },
+        { model: db.Brand, as: "brand", attributes: ["id", "name", "slug"] },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary", "sortOrder"],
+          separate: true,
+          order: [
+            ["isPrimary", "DESC"],
+            ["sortOrder", "ASC"],
+          ],
+          limit: 1,
+        },
+      ],
+    });
+
+    const specsByProduct = await this.findComparableSpecs(rows.map((row) => row.id));
+
+    return rows.reduce((acc, product) => {
+      acc[product.id] = shapeProduct(product, specsByProduct[product.id] || {});
+      return acc;
+    }, {});
+  }
+
+  /**
+   * Đóng một hội thoại.
+   *
+   * Đặt `status = CLOSED` chứ không xoá hẳn: `ai_messages` và
+   * `ai_recommended_products` là dữ liệu của chương Đánh giá — bao nhiêu lượt
+   * hỏi, AI đã truy vấn gì, gợi ý sản phẩm nào. Cho người dùng xoá thật là tự
+   * tay bốc hơi mẫu đo giữa lúc đang làm luận văn.
+   */
+  async closeConversation(conversationId) {
+    const [affected] = await db.AiConversation.update(
+      { status: "CLOSED" },
+      { where: { id: conversationId } },
+    );
+
+    return affected > 0;
   }
 
   /** The audit trail: which products a given answer was actually built from. */

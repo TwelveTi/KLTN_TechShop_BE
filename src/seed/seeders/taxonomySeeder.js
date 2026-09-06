@@ -11,6 +11,7 @@ async function seedTaxonomy(transaction) {
   console.log("  Seeding Taxonomy (Categories, Brands, Tags, Specification Definitions)...");
 
   const categoryMap = new Map();
+  const childKeysByParent = new Map(); // parent key -> [child keys]
   const brandMap = new Map();
   const tagMap = new Map();
   const specDefMap = new Map(); // key -> Map of specKey -> specDef
@@ -31,6 +32,8 @@ async function seedTaxonomy(transaction) {
     );
     categoryMap.set(cat.key, parentCategory);
 
+    childKeysByParent.set(cat.key, []);
+
     if (Array.isArray(cat.children) && cat.children.length > 0) {
       for (const child of cat.children) {
         const childCategory = await db.Category.create(
@@ -46,6 +49,7 @@ async function seedTaxonomy(transaction) {
           { transaction },
         );
         categoryMap.set(child.key, childCategory);
+        childKeysByParent.get(cat.key).push(child.key);
       }
     }
   }
@@ -78,28 +82,44 @@ async function seedTaxonomy(transaction) {
   }
 
   // 4. Specification Definitions
+  //
+  // `specs.data.js` declares each definition once, on the parent ("laptop"), but
+  // products live on the leaves ("macbook", "laptopGaming", "laptopOffice"). A
+  // definition belongs to exactly one category — `specification_definitions` is
+  // keyed by `(category_id, key)` and there is no inheritance in the schema — so
+  // a leaf with no rows of its own is a leaf whose products can hold no specs at
+  // all, and whose filters have nothing to offer.
+  //
+  // Rather than repeat eight laptop definitions three times in the data file,
+  // the parent's set is copied down to each child here. Writing them out by hand
+  // would mean three places to edit every time a spec changes, and two of them
+  // would eventually be forgotten.
   for (const spec of specDefinitionsData) {
-    const category = categoryMap.get(spec.categoryKey);
-    if (!category) continue;
+    const targetKeys = [spec.categoryKey, ...(childKeysByParent.get(spec.categoryKey) || [])];
 
-    const specDef = await db.SpecificationDefinition.create(
-      {
-        categoryId: category.id,
-        name: spec.name,
-        key: spec.key,
-        dataType: spec.dataType || "STRING",
-        unit: spec.unit || null,
-        isFilterable: spec.isFilterable || false,
-        isComparable: spec.isComparable || false,
-        sortOrder: spec.sortOrder || 0,
-      },
-      { transaction },
-    );
+    for (const categoryKey of targetKeys) {
+      const category = categoryMap.get(categoryKey);
+      if (!category) continue;
 
-    if (!specDefMap.has(spec.categoryKey)) {
-      specDefMap.set(spec.categoryKey, new Map());
+      const specDef = await db.SpecificationDefinition.create(
+        {
+          categoryId: category.id,
+          name: spec.name,
+          key: spec.key,
+          dataType: spec.dataType || "STRING",
+          unit: spec.unit || null,
+          isFilterable: spec.isFilterable || false,
+          isComparable: spec.isComparable || false,
+          sortOrder: spec.sortOrder || 0,
+        },
+        { transaction },
+      );
+
+      if (!specDefMap.has(categoryKey)) {
+        specDefMap.set(categoryKey, new Map());
+      }
+      specDefMap.get(categoryKey).set(spec.key, specDef);
     }
-    specDefMap.get(spec.categoryKey).set(spec.key, specDef);
   }
 
   console.log(`    Created ${categoryMap.size} Categories, ${brandMap.size} Brands, ${tagMap.size} Tags, and Specification Definitions.`);

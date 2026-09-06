@@ -85,27 +85,45 @@ async function seedProducts(taxonomies, transaction) {
     }
 
     // 3. Product Specifications
+    //
+    // Every skip is reported. This used to fail silently: a product whose
+    // `categoryKey` had no definitions simply got no specifications, the seed
+    // printed a cheerful success line, and the gap only surfaced much later as
+    // a product missing from every spec filter. A seed that quietly drops data
+    // is worse than one that fails.
     if (Array.isArray(item.specifications) && item.specifications.length > 0) {
       const categorySpecs = specDefMap.get(item.categoryKey);
-      if (categorySpecs) {
+
+      if (!categorySpecs) {
+        console.warn(
+          `    Warning: ${item.key} declares ${item.specifications.length} specifications but ` +
+            `category "${item.categoryKey}" has no definitions — none were stored.`,
+        );
+      } else {
         for (const spec of item.specifications) {
           const def = categorySpecs.get(spec.key);
-          if (def) {
-            await db.ProductSpecification.create(
-              {
-                productId: product.id,
-                specificationDefinitionId: def.id,
-                valueText: spec.valueText,
-                // `??` not `||`: a BOOLEAN spec that is legitimately `false`
-                // ("Không áp dụng" for ANC) would otherwise be stored as NULL,
-                // which reads as "unknown" instead of "no".
-                valueNumber: spec.valueNumber ?? null,
-                valueBoolean: spec.valueBoolean ?? null,
-                valueJson: spec.valueJson ?? null,
-              },
-              { transaction },
+
+          if (!def) {
+            console.warn(
+              `    Warning: ${item.key} — no "${spec.key}" definition under "${item.categoryKey}", skipped.`,
             );
+            continue;
           }
+
+          await db.ProductSpecification.create(
+            {
+              productId: product.id,
+              specificationDefinitionId: def.id,
+              valueText: spec.valueText,
+              // `??` not `||`: a BOOLEAN spec that is legitimately `false`
+              // ("Không áp dụng" for ANC) would otherwise be stored as NULL,
+              // which reads as "unknown" instead of "no".
+              valueNumber: spec.valueNumber ?? null,
+              valueBoolean: spec.valueBoolean ?? null,
+              valueJson: spec.valueJson ?? null,
+            },
+            { transaction },
+          );
         }
       }
     }

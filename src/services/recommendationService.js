@@ -20,9 +20,23 @@ const HYBRID_WEIGHTS = {
   popularity: 0.1,
 };
 
+/**
+ * Bốn thành phần cá nhân hoá. `popularity` cố ý KHÔNG nằm ở đây.
+ *
+ * Đo được (README 6.4, hai catalogue độc lập): popularity đạt 9.2% precision@10
+ * trong khi bốc ngẫu nhiên đạt 13.5%. Nó **tệ hơn ngẫu nhiên**, và hợp lý khi
+ * nghĩ kỹ — sản phẩm phổ biến thì phổ biến với *mọi* người, nên khó nằm trong
+ * tập quan tâm hẹp của một người cụ thể. Cho nó góp 10% vào mọi lượt là chủ động
+ * pha nhiễu vào một danh sách đã có tín hiệu thật.
+ *
+ * Nó vẫn cần thiết, nhưng với vai trò khác: xem `resolveWeights` và phần lấp
+ * chỗ trống ở `getForUser`.
+ */
+const PERSONAL_KEYS = ["userPreference", "searchHistory", "purchaseHistory", "productSimilarity"];
+
 // Bumped whenever the formula changes, and stored on every result. Without it,
 // numbers measured before and after a tweak are silently incomparable.
-const ALGORITHM_VERSION = "hybrid-v1";
+const ALGORITHM_VERSION = "hybrid-v2";
 
 // Which component produced a product's score, in the order a person would find
 // most convincing as an explanation.
@@ -270,7 +284,41 @@ class RecommendationService {
    * can explain itself. A product that only ever scored on `popularity` is
    * honestly labelled POPULAR_NOW rather than dressed up as personalisation.
    */
-  combine(products, components, { excludeIds = new Set() } = {}) {
+  /**
+   * Trọng số cho MỘT lượt gợi ý cụ thể, thay vì một hằng số áp cho mọi lượt.
+   *
+   * Hai điều chỉnh, cả hai đều do số đo ở README 6.4 chỉ ra:
+   *
+   * 1. **Chỉ chia trọng số cho thành phần thực sự có tín hiệu, rồi chuẩn hoá lại
+   *    về tổng 1.** Bản v1 luôn cấp 25% cho `searchHistory` kể cả với khách chưa
+   *    tìm kiếm bao giờ — phần đó không mất đi mà lặng lẽ hạ tỉ trọng của những
+   *    thành phần đang có dữ liệu. Với khách CÓ tìm kiếm mà chưa mua gì,
+   *    `searchHistory` giờ nhận 0.25/(0.35+0.25+0.10) ≈ 36% thay vì 25%. Đó
+   *    chính là "nâng searchHistory ở những lượt nó bắn được", nhưng không phải
+   *    bằng cách gõ một con số to hơn vào bảng.
+   *
+   * 2. **`popularity` bị loại hẳn khi có bất kỳ tín hiệu cá nhân nào**, và chỉ
+   *    chiếm toàn bộ khi không còn gì khác. Nó không còn là một số hạng trong
+   *    tổng, nó là phương án dự phòng.
+   */
+  resolveWeights(components) {
+    const hasSignal = (key) => {
+      const scores = components[key];
+      if (!scores) return false;
+      return Object.values(scores).some((value) => value > 0);
+    };
+
+    const active = PERSONAL_KEYS.filter(hasSignal);
+
+    if (active.length === 0) {
+      return { popularity: 1 };
+    }
+
+    const total = active.reduce((sum, key) => sum + HYBRID_WEIGHTS[key], 0);
+    return Object.fromEntries(active.map((key) => [key, HYBRID_WEIGHTS[key] / total]));
+  }
+
+  combine(products, components, { excludeIds = new Set(), weights = HYBRID_WEIGHTS } = {}) {
     const ranked = [];
 
     products.forEach((product) => {
@@ -283,7 +331,7 @@ class RecommendationService {
       let bestContribution = 0;
       const parts = {};
 
-      Object.entries(HYBRID_WEIGHTS).forEach(([key, weight]) => {
+      Object.entries(weights).forEach(([key, weight]) => {
         const raw = components[key]?.[product.id] || 0;
         const contribution = raw * weight;
 
@@ -404,20 +452,52 @@ class RecommendationService {
       throw new AppError(`Unknown strategy "${strategy}"`, 400);
     }
 
-    let ranked = this.combine(candidates, effective, { excludeIds: new Set(purchasedIds) });
+    // Chế độ một thành phần thì trọng số là 1 cho đúng thành phần đó; còn lại
+    // dùng bộ trọng số thích ứng theo tín hiệu có thật của chính khách này.
+    const weights = strategy ? { [strategy]: 1 } : this.resolveWeights(effective);
+    const excludeIds = new Set(purchasedIds);
+
+    let ranked = this.combine(candidates, effective, { excludeIds, weights });
 
     // A brand-new shopper produces no signal at all; fall back rather than
     // returning an empty rail.
     let usedStrategy = strategy || "hybrid";
     if (ranked.length === 0) {
-      ranked = this.combine(candidates, { popularity: components.popularity });
+      ranked = this.combine(candidates, { popularity: components.popularity }, { weights: { popularity: 1 } });
       usedStrategy = "popularity-fallback";
+    }
+
+    /**
+     * Lấp chỗ trống bằng sản phẩm bán chạy — CHỈ những ô còn thừa.
+     *
+     * Đây là nửa còn lại của việc hạ `popularity` xuống vai trò dự phòng. Ở v1
+     * nó là một số hạng trong tổng nên luôn nhích thứ hạng của mọi sản phẩm; giờ
+     * nó không được phép chạm vào thứ tự của những gợi ý có tín hiệu thật, chỉ
+     * được điền vào phần đuôi mà tín hiệu cá nhân không với tới.
+     *
+     * Không có bước này thì việc bỏ popularity khỏi tổng sẽ làm rail ngắn lại
+     * với khách ít dữ liệu — đổi precision lấy chỗ trống trên trang.
+     */
+    if (!strategy && ranked.length < limit) {
+      const already = new Set(ranked.map((item) => item.productId));
+      const filler = this.combine(candidates, { popularity: components.popularity }, {
+        excludeIds: new Set([...excludeIds, ...already]),
+        weights: { popularity: 1 },
+      });
+
+      ranked = ranked.concat(
+        filler.slice(0, limit - ranked.length).map((item) => ({
+          ...item,
+          reasonCode: REASON_CODES.popularity,
+          reasonMetadata: { ...item.reasonMetadata, dominant: "popularity", filler: true },
+        })),
+      );
     }
 
     ranked = ranked.slice(0, limit);
 
     const itemIdByProductId = persist
-      ? await this.persist({ userId, sessionId, ranked, recommendationType: "PERSONALIZED_HOME" })
+      ? await this.persist({ userId, sessionId, ranked, recommendationType: "PERSONALIZED_HOME", weights })
       : new Map();
 
     return {
@@ -425,7 +505,10 @@ class RecommendationService {
       strategy: usedStrategy,
       algorithmVersion: ALGORITHM_VERSION,
       personalised: usedStrategy !== "popularity-fallback",
-      weights: strategy ? { [strategy]: 1 } : HYBRID_WEIGHTS,
+      // Trọng số THỰC SỰ đã dùng cho lượt này, không phải bảng hằng số. Với
+      // trọng số thích ứng thì hai khách khác nhau nhận hai bộ khác nhau, và
+      // ghi lại bảng chung sẽ làm log nói sai về chính phép tính vừa chạy.
+      weights,
     };
   }
 
@@ -539,7 +622,7 @@ class RecommendationService {
    * Returns `productId → itemId` so `decorate` can hand each card the id the
    * client will report against.
    */
-  async persist({ userId, sessionId, ranked, recommendationType }) {
+  async persist({ userId, sessionId, ranked, recommendationType, weights = HYBRID_WEIGHTS }) {
     if (ranked.length === 0) {
       return new Map();
     }
@@ -551,7 +634,11 @@ class RecommendationService {
           sessionId,
           recommendationType,
           algorithmVersion: ALGORITHM_VERSION,
-          context: { weights: HYBRID_WEIGHTS },
+          // Trọng số của CHÍNH lượt này. Ghi bảng hằng số vào đây thì mọi dòng
+          // `recommendation_results` đều khai cùng một bộ, trong khi trọng số
+          // thích ứng khiến hai khách chạy bằng hai bộ khác nhau — và đây là
+          // bảng chương Đánh giá đọc.
+          context: { weights },
           expiresAt: new Date(Date.now() + CACHE_MINUTES * 60000),
         },
         ranked.map((entry, index) => ({
@@ -683,3 +770,14 @@ class RecommendationService {
 }
 
 module.exports = new RecommendationService();
+
+/**
+ * Bảng trọng số, lộ ra để harness đo lường quét thử.
+ *
+ * `src/seed/simulate/measure.js --sweep` ghi đè các khoá của object này rồi đo
+ * lại, nên chọn được bộ trọng số bằng SỐ thay vì bằng cảm tính. Không nơi nào
+ * trong đường chạy thật được sửa nó — đây là cửa cho công cụ đo, không phải một
+ * điểm cấu hình lúc chạy.
+ */
+module.exports.HYBRID_WEIGHTS = HYBRID_WEIGHTS;
+module.exports.PERSONAL_KEYS = PERSONAL_KEYS;

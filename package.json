@@ -10,6 +10,7 @@
     "seed:reset": "node src/seed/index.js --reset",
     "seed:catalog": "node src/seed/catalog.js",
     "simulate": "node src/seed/simulate/index.js",
+    "measure": "node src/seed/simulate/measure.js",
     "simulate:reset": "node src/seed/simulate/index.js --reset"
   },
   "keywords": [
