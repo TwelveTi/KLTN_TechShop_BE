@@ -75,6 +75,28 @@ const priceProximity = (a, b) => {
  * Only fields BOTH products declare are considered: penalising a product for a
  * spec the other one simply does not list would measure catalogue completeness,
  * not similarity.
+ *
+ * **Spec số được so theo tỉ lệ, không theo phép bằng nhau.** Trước thay đổi này
+ * cả hàm chỉ có một nhánh `String(a) === String(b)`, nên hai con số gần nhau bị
+ * coi là khác hẳn:
+ *
+ *   screen   6.7"  vs 6.8"      (lệch  1%) -> 0 điểm
+ *   battery  5000  vs 4880 mAh  (lệch  2%) -> 0 điểm
+ *   caseSize 47mm  vs 49mm      (lệch  4%) -> 0 điểm
+ *   screen   13.6" vs 14.2"     (lệch  4%) -> 0 điểm
+ *
+ * Đo trên 29 cặp sản phẩm cùng danh mục: trong 56 cặp giá trị spec số, 33.9%
+ * lệch dưới 20% mà vẫn nhận 0 điểm, chỉ 23.2% được điểm. Kết quả là `specs` chỉ
+ * đóng góp trung bình 0.080/1.0 — yếu nhất trong năm phần, trong khi `price`
+ * (vốn đã dùng tỉ lệ) đạt 0.550.
+ *
+ * `findProductFacets` đã đưa `value_number` về đúng kiểu số từ lượt trả nợ
+ * 5.3.1; phần còn thiếu là **so chúng như số**. Dùng đúng công thức của
+ * `priceProximity` để hai trục số trong cùng một điểm similarity hành xử giống
+ * nhau, chứ không phải mỗi trục một luật.
+ *
+ * Spec chữ và spec boolean (đến đây dưới dạng `value_text`) vẫn so bằng nhau
+ * chính xác: "Windows 11 Home" và "macOS Sonoma" không có khái niệm gần nhau.
  */
 const specAgreement = (specsA = {}, specsB = {}) => {
   const keys = Object.keys(specsA).filter((key) => specsB[key] !== undefined);
@@ -83,9 +105,27 @@ const specAgreement = (specsA = {}, specsB = {}) => {
     return 0;
   }
 
-  const agreed = keys.filter((key) => String(specsA[key]) === String(specsB[key])).length;
+  const total = keys.reduce((sum, key) => {
+    const a = specsA[key];
+    const b = specsB[key];
 
-  return agreed / keys.length;
+    if (typeof a === "number" && typeof b === "number") {
+      if (a === b) {
+        return sum + 1;
+      }
+
+      const low = Math.min(a, b);
+      const high = Math.max(a, b);
+
+      // Giá trị 0 hoặc âm không mang tín hiệu gần/xa nào có nghĩa cho một thông
+      // số kỹ thuật, nên không cộng điểm thay vì trả ra tỉ lệ vô nghĩa.
+      return high > 0 && low >= 0 ? sum + low / high : sum;
+    }
+
+    return sum + (String(a) === String(b) ? 1 : 0);
+  }, 0);
+
+  return total / keys.length;
 };
 
 /**

@@ -72,14 +72,37 @@ class BehaviorRepository {
     return db.SearchHistory.destroy({ where: { id, userId } });
   }
 
+  /**
+   * `UPDATE products SET view_count = view_count + 1` — cộng trong SQL, không
+   * đọc-rồi-ghi. Hai lượt xem cùng lúc trên cùng sản phẩm thì cách đọc-rồi-ghi
+   * sẽ mất một lượt, còn đây thì không.
+   *
+   * Không nhận `transaction`: người gọi là `behaviorService.track`, vốn chạy
+   * NGOÀI mọi transaction nghiệp vụ đúng theo thiết kế — đếm lượt xem hỏng không
+   * được phép kéo theo thứ gì khác.
+   */
+  incrementProductViewCount(productId) {
+    return db.Product.increment("viewCount", { by: 1, where: { id: productId } });
+  }
+
   // ── Aggregates for the preference profile ─────────────────────────────────
 
-  // Behaviour counts per category for one user, weighted later by the service.
-  countBehaviorsByCategory(userId, { since } = {}) {
+  /**
+   * Behaviour counts per category for one user, weighted later by the service.
+   *
+   * `before` dựng hồ sơ **như nó đã là** tại một thời điểm trong quá khứ, phục vụ
+   * phép đo tách theo thời gian (`measure.js --loo`). Không có nó thì hồ sơ được
+   * dựng từ cả những sự kiện nằm SAU mốc cắt, và phép đo sẽ chấm điểm cho một hệ
+   * thống đã nhìn thấy đáp án.
+   */
+  countBehaviorsByCategory(userId, { since, before } = {}) {
     const where = { userId, categoryId: { [Op.ne]: null } };
 
-    if (since) {
-      where.occurredAt = { [Op.gte]: since };
+    if (since || before) {
+      where.occurredAt = {
+        ...(since ? { [Op.gte]: since } : {}),
+        ...(before ? { [Op.lt]: before } : {}),
+      };
     }
 
     return db.UserBehavior.findAll({
@@ -92,11 +115,14 @@ class BehaviorRepository {
 
   // Brand and price signals have to come through the product, so this joins
   // rather than reading a column off the event.
-  findBehaviorProductFacts(userId, { since } = {}) {
+  findBehaviorProductFacts(userId, { since, before } = {}) {
     const where = { userId, productId: { [Op.ne]: null } };
 
-    if (since) {
-      where.occurredAt = { [Op.gte]: since };
+    if (since || before) {
+      where.occurredAt = {
+        ...(since ? { [Op.gte]: since } : {}),
+        ...(before ? { [Op.lt]: before } : {}),
+      };
     }
 
     return db.UserBehavior.findAll({

@@ -34,8 +34,13 @@ async function seedProducts(taxonomies, transaction) {
         stockQuantity: item.stockQuantity || 0,
         soldCount: item.soldCount || 0,
         viewCount: item.viewCount || 0,
-        averageRating: item.averageRating || 0,
-        reviewCount: item.reviewCount || 0,
+        // Always 0 here. These two columns are derived, not authored:
+        // `reviewSeeder` recomputes both from the APPROVED rows in `reviews`
+        // after products exist, so `products.data.js` deliberately no longer
+        // declares them. Reading them off the seed data again would reintroduce
+        // a second, contradictory source of truth for the same numbers.
+        averageRating: 0,
+        reviewCount: 0,
         status: item.status || "ACTIVE",
         isFeatured: item.isFeatured || false,
         publishedAt: item.publishedAt || (item.status === "ACTIVE" ? new Date() : null),

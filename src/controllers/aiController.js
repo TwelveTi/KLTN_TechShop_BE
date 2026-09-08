@@ -16,6 +16,31 @@ class AiController {
     return APIResponse.success(res, "Advisor answered successfully", result);
   }
 
+  // Cùng đường chạy với `askAdvisor`, chỉ khác `conversationType` — và chính
+  // `conversationType` chọn prompt cùng bộ tool ở registry. Endpoint riêng thay
+  // vì một cờ trong body vì hai bên là hai tính năng khác nhau với người dùng.
+  async askComparison(req, res) {
+    const result = await aiService.ask({
+      userId: req.user?.id || null,
+      sessionId: req.sessionKey || null,
+      conversationId: req.body.conversationId,
+      message: req.body.message,
+      conversationType: "PRODUCT_COMPARISON",
+    });
+
+    return APIResponse.success(res, "Comparison answered successfully", result);
+  }
+
+  async explainRecommendation(req, res) {
+    const result = await aiService.explainRecommendation({
+      userId: req.user?.id || null,
+      sessionId: req.sessionKey || null,
+      itemId: req.params.itemId,
+    });
+
+    return APIResponse.success(res, "Explanation ready", result);
+  }
+
   async listConversations(req, res) {
     const result = await aiService.listConversations({
       userId: req.user?.id || null,

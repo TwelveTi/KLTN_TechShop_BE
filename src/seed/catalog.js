@@ -8,6 +8,7 @@ const { seedProducts } = require("./seeders/productSeeder");
 const { seedCartAndWishlist } = require("./seeders/cartWishlistSeeder");
 const { seedOrders } = require("./seeders/orderSeeder");
 const { seedReviews } = require("./seeders/reviewSeeder");
+const { seedBehaviors, buildPreferenceProfiles } = require("./seeders/behaviorSeeder");
 
 /**
  * Runner for the modular catalogue seed under `src/seed/seeders/`.
@@ -24,7 +25,8 @@ const { seedReviews } = require("./seeders/reviewSeeder");
  */
 
 // Order matters: taxonomy needs nothing, products need taxonomy, orders need
-// products, reviews need the order items they attach to.
+// products, reviews need the order items they attach to, and the behaviour log
+// is derived from all four (orders, cart, wishlist, reviews) so it runs last.
 async function seedAll() {
   return db.sequelize.transaction(async (transaction) => {
     const userMap = await seedUsers(transaction);
@@ -33,6 +35,7 @@ async function seedAll() {
     await seedCartAndWishlist(userMap, productMap, variantMap, transaction);
     const { orderItemMap } = await seedOrders(userMap, productMap, variantMap, transaction);
     await seedReviews(userMap, productMap, orderItemMap, transaction);
+    return seedBehaviors(userMap, productMap, transaction);
   });
 }
 
@@ -85,7 +88,11 @@ async function main() {
   await db.sequelize.authenticate();
   await db.sequelize.sync();
   await cleanDatabase();
-  await seedAll();
+  const { behaviorUserIds } = await seedAll();
+
+  // Sau commit, không sớm hơn: `recomputeProfile` dùng truy vấn riêng nên bên
+  // trong transaction nó chưa thấy dòng hành vi nào và sẽ ghi ra hồ sơ rỗng.
+  await buildPreferenceProfiles(behaviorUserIds);
 
   const counts = {};
   for (const [name, model] of Object.entries({
@@ -99,6 +106,9 @@ async function main() {
     orders: db.Order,
     order_items: db.OrderItem,
     reviews: db.Review,
+    user_behaviors: db.UserBehavior,
+    search_histories: db.SearchHistory,
+    user_preference_profiles: db.UserPreferenceProfile,
   })) {
     counts[name] = await model.count();
   }

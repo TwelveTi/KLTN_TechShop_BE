@@ -140,12 +140,23 @@ class RecommendationRepository {
 
   // The products a shopper has actually interacted with, newest first, so the
   // recommender can lean on recency.
-  findRecentBehaviors(userId, { since, limit = 300 }) {
+  /**
+   * `before` chặn trên theo thời gian, cho phép dựng lại tín hiệu **như nó đã là**
+   * tại một thời điểm trong quá khứ (`measure.js --loo`). Thiếu nó thì phép đo
+   * tách theo thời gian vô nghĩa: mô hình sẽ đọc cả những hành vi xảy ra sau mốc
+   * cắt, tức là nhìn thấy đúng thứ nó đang được yêu cầu dự đoán.
+   */
+  findRecentBehaviors(userId, { since, before = null, limit = 300 }) {
+    const occurredAt = {
+      ...(since ? { [Op.gte]: since } : {}),
+      ...(before ? { [Op.lt]: before } : {}),
+    };
+
     return db.UserBehavior.findAll({
       where: {
         userId,
         productId: { [Op.ne]: null },
-        ...(since ? { occurredAt: { [Op.gte]: since } } : {}),
+        ...(Object.getOwnPropertySymbols(occurredAt).length > 0 ? { occurredAt } : {}),
       },
       attributes: ["behaviorType", "productId", "occurredAt"],
       order: [["occurredAt", "DESC"]],
@@ -154,14 +165,48 @@ class RecommendationRepository {
     });
   }
 
-  findRecentKeywords(userId, { limit = 20 } = {}) {
+  findRecentKeywords(userId, { before = null, limit = 20 } = {}) {
     return db.SearchHistory.findAll({
-      where: { userId },
+      where: {
+        userId,
+        ...(before ? { searchedAt: { [Op.lt]: before } } : {}),
+      },
       attributes: ["keyword", "searchedAt"],
       order: [["searchedAt", "DESC"]],
       limit,
       raw: true,
     });
+  }
+
+  /**
+   * Chỉ tập id sản phẩm đã mua — không kèm loại hành vi, không kèm thời điểm.
+   *
+   * `findRecentBehaviors` cũng trả về những dòng này, nhưng nó kéo tối đa 300
+   * hành vi mọi loại rồi để service lọc. Đường đọc cache chỉ cần biết "đã mua
+   * những gì", và dùng hàm kia ở đó sẽ trả lại phần lớn công việc mà cache vừa
+   * tiết kiệm được.
+   */
+  async findPurchasedProductIds(userId, { since, behaviorTypes = ["PURCHASE"], limit = 300 } = {}) {
+    const rows = await db.UserBehavior.findAll({
+      where: {
+        userId,
+        behaviorType: behaviorTypes,
+        productId: { [Op.ne]: null },
+        ...(since ? { occurredAt: { [Op.gte]: since } } : {}),
+      },
+      attributes: ["productId"],
+      // Trùng lặp bỏ ở JS, KHÔNG bằng `group: ["productId"]`. Sequelize 6 map tên
+      // thuộc tính sang tên cột cho `attributes` và `where` nhưng **không** cho
+      // `group` (`Utils.mapOptionFieldNames`), nên `group: ["productId"]` sinh ra
+      // `GROUP BY productId` trong khi cột thật là `product_id` — truy vấn ném lỗi
+      // mọi lần. Đó cũng là lý do `getOutcomeStats` phải viết `col("clicked_at")`
+      // bằng tay. Tập id thì nhỏ, gộp trong bộ nhớ không mất gì.
+      order: [["occurredAt", "DESC"]],
+      limit,
+      raw: true,
+    });
+
+    return [...new Set(rows.map((row) => row.productId))];
   }
 
   // ── Similarity matrix ─────────────────────────────────────────────────────
@@ -212,12 +257,26 @@ class RecommendationRepository {
 
   // ── Results ───────────────────────────────────────────────────────────────
 
+  /**
+   * Dòng kết quả gần nhất còn trong hạn `expiresAt`, kèm items đã xếp thứ hạng.
+   *
+   * Không có danh tính thì KHÔNG có cache, và nhánh chặn dưới đây là bắt buộc:
+   * gọi hàm này với cả `userId` lẫn `sessionId` rỗng sẽ dựng điều kiện
+   * `sessionId IS NULL`, và điều kiện đó khớp đúng những dòng của người ĐÃ đăng
+   * nhập (họ không có `sessionId`) — tức là trả gợi ý của người khác cho một
+   * khách vô danh. `userId: null` ở nhánh khách vãng lai chặn cùng một lỗi theo
+   * chiều ngược lại.
+   */
   findFreshResult({ userId, sessionId, recommendationType }) {
+    if (!userId && !sessionId) {
+      return Promise.resolve(null);
+    }
+
     return db.RecommendationResult.findOne({
       where: {
         recommendationType,
         expiresAt: { [Op.gt]: new Date() },
-        ...(userId ? { userId } : { sessionId }),
+        ...(userId ? { userId } : { sessionId, userId: null }),
       },
       include: [
         {

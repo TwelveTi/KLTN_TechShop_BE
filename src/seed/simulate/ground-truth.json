@@ -1,981 +1,2864 @@
 {
-  "generatedAt": "2026-09-04T08:04:07.814Z",
+  "generatedAt": "2026-09-08T04:31:24.734Z",
   "seed": 42,
-  "users": 60,
+  "users": 120,
   "days": 90,
   "personas": [
     {
-      "userId": "a08db55c-64dc-4b22-83af-c6bf3d961abe",
+      "userId": "33605eb0-d190-4c52-b117-ce28f38935a9",
       "key": "FOCUSED_BUYER_001",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
-        "brandId": "6995a277-1596-4a2a-b9b8-04da7095c013",
-        "minPrice": 13993000,
-        "maxPrice": 25987000,
-        "targetProductIds": [
-          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
-          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
-          "6b22d954-c816-439b-a380-7d850aa2dc22"
-        ]
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": "b803d206-7986-4f10-8620-18dc2ec7a02b",
+        "minPrice": 3773000,
+        "maxPrice": 7007000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "c23345c6-1c9c-4144-a868-591816e9e00e",
+      "userId": "e4a86494-c191-4485-b61d-b13c135b01c7",
       "key": "FOCUSED_BUYER_002",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
-        "brandId": "6b579b29-5b8e-4caa-8b0e-205d1b9d0474",
-        "minPrice": 20993000,
-        "maxPrice": 38987000,
-        "targetProductIds": [
-          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
-          "659d117c-1447-4aac-9a30-e9d314b182ea"
-        ]
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+        "brandId": "b5c72d1d-c7d0-4667-a90a-29ef5104e0c9",
+        "minPrice": 41293000,
+        "maxPrice": 76687000,
+        "targets": {
+          "primary": [
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "91756f28-e696-44c9-9e06-208abe16a973",
+      "userId": "38a87d09-d00a-4d6f-80d2-2603d8fe6273",
       "key": "FOCUSED_BUYER_003",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
-        "brandId": "855e9708-03b0-4edb-9bba-4e62e4d6294c",
-        "minPrice": 27293000,
-        "maxPrice": 50687000,
-        "targetProductIds": [
-          "06e174f6-2e37-477d-8903-663b46897f88",
-          "f11d349c-d244-4712-ba2a-bba9db09310b"
-        ]
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": "1e6a33e8-1e3a-402c-8886-6447e19b40ad",
+        "minPrice": 19943000,
+        "maxPrice": 37037000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "1b94eeda-df9f-46c3-aff7-3fc5108674b9",
+      "userId": "746922ac-e800-44b6-8bff-f59c964a7899",
       "key": "FOCUSED_BUYER_004",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
-        "brandId": "d148015e-c7ac-4ec7-9fe6-79bc0d00f90e",
-        "minPrice": 16443000,
-        "maxPrice": 30537000,
-        "targetProductIds": [
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
-        ]
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": "e8a54c6f-6bbc-4878-b4c5-fd5fbbc91423",
+        "minPrice": 20293000,
+        "maxPrice": 37687000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "e6a5798f-23e2-42a6-8ccf-163b03379b4d",
+      "userId": "bfb00b30-1329-4987-be21-dc7904c8d970",
       "key": "FOCUSED_BUYER_005",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
-        "brandId": "d148015e-c7ac-4ec7-9fe6-79bc0d00f90e",
-        "minPrice": 27293000,
-        "maxPrice": 50687000,
-        "targetProductIds": [
-          "06e174f6-2e37-477d-8903-663b46897f88",
-          "f11d349c-d244-4712-ba2a-bba9db09310b"
-        ]
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": "e8a54c6f-6bbc-4878-b4c5-fd5fbbc91423",
+        "minPrice": 19943000,
+        "maxPrice": 37037000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "60d812af-4bcb-4228-a74a-76956b9effc4",
+      "userId": "bd225e03-97ed-4580-b025-42ef865ffdae",
       "key": "FOCUSED_BUYER_006",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
-        "brandId": "7ee79330-a379-48dc-a6e0-a856c3001dc5",
-        "minPrice": 13993000,
-        "maxPrice": 25987000,
-        "targetProductIds": [
-          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
-          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
-          "6b22d954-c816-439b-a380-7d850aa2dc22"
-        ]
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": "3eff0035-1037-4342-bb78-65fa7f590461",
+        "minPrice": 4053000,
+        "maxPrice": 7527000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "187a3b25-8f24-46db-bdb9-37b7b3423f2c",
+      "userId": "2894a2d3-517a-4146-a22c-7577e873ad50",
       "key": "FOCUSED_BUYER_007",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "29d5df0c-d1b9-4319-ba2e-f75bb92da6dc",
-        "brandId": "7ee79330-a379-48dc-a6e0-a856c3001dc5",
-        "minPrice": 4893000,
-        "maxPrice": 9087000,
-        "targetProductIds": [
-          "57758ed7-5d88-4623-8936-dde43dc0b942",
-          "cbfd221c-86ca-4cb5-b44f-36da4b0e5f90"
-        ]
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
+        "brandId": "3eff0035-1037-4342-bb78-65fa7f590461",
+        "minPrice": 32893000,
+        "maxPrice": 61087000,
+        "targets": {
+          "primary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "90e348ee-943e-4183-adf2-378d383505f6",
+      "userId": "d7de8072-8a9c-4021-93d9-916803a24a35",
       "key": "FOCUSED_BUYER_008",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
-        "brandId": "6995a277-1596-4a2a-b9b8-04da7095c013",
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": "d1deb1dc-f412-4860-8374-bfb3f1277232",
         "minPrice": 20293000,
         "maxPrice": 37687000,
-        "targetProductIds": [
-          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
-          "6b22d954-c816-439b-a380-7d850aa2dc22"
-        ]
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "9a31340e-afba-4127-ab79-d05e233d3968",
+      "userId": "faac4196-d3bc-42c7-8838-e7efe9aa5a37",
       "key": "FOCUSED_BUYER_009",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
-        "brandId": "fd83745e-15f2-4c3b-a6a1-cbe78e93af9d",
-        "minPrice": 20993000,
-        "maxPrice": 38987000,
-        "targetProductIds": [
-          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
-          "659d117c-1447-4aac-9a30-e9d314b182ea"
-        ]
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": "d1deb1dc-f412-4860-8374-bfb3f1277232",
+        "minPrice": 13643000,
+        "maxPrice": 25337000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "3250456d-6fb1-4302-9837-4d4cf46c5d61",
+      "userId": "f806f47a-1e65-4de1-bb72-1a5f58825ce8",
       "key": "FOCUSED_BUYER_010",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
-        "brandId": "a3b0bc5f-84c7-4b5a-9244-a3f1f7e5961d",
-        "minPrice": 13993000,
-        "maxPrice": 25987000,
-        "targetProductIds": [
-          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
-          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
-          "6b22d954-c816-439b-a380-7d850aa2dc22"
-        ]
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
+        "brandId": "e8a54c6f-6bbc-4878-b4c5-fd5fbbc91423",
+        "minPrice": 32893000,
+        "maxPrice": 61087000,
+        "targets": {
+          "primary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "da707438-3842-4bc2-b97d-2742d23150f9",
+      "userId": "c0614395-0b2f-42d3-b781-bde6acfb6eba",
       "key": "FOCUSED_BUYER_011",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
-        "brandId": "7ee79330-a379-48dc-a6e0-a856c3001dc5",
-        "minPrice": 32893000,
-        "maxPrice": 61087000,
-        "targetProductIds": [
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
-        ]
+        "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+        "brandId": "7ee0dc08-b3b0-4f73-af2c-3af158087cb8",
+        "minPrice": 1743000,
+        "maxPrice": 3237000,
+        "targets": {
+          "primary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "731b78ba-7381-4b26-b5f1-46c821386598",
+      "userId": "7e731a7c-7ff3-41f6-8b43-ce97c6323e10",
       "key": "FOCUSED_BUYER_012",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
-        "brandId": "a3b0bc5f-84c7-4b5a-9244-a3f1f7e5961d",
-        "minPrice": 7343000,
-        "maxPrice": 13637000,
-        "targetProductIds": [
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
-          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
-        ]
+        "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
+        "brandId": "3eff0035-1037-4342-bb78-65fa7f590461",
+        "minPrice": 43393000,
+        "maxPrice": 80587000,
+        "targets": {
+          "primary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "3cac68a6-4764-4079-8803-3402108ae891",
+      "userId": "86a2239a-2201-4e21-91de-d92cccaeaefb",
       "key": "FOCUSED_BUYER_013",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
-        "brandId": "f72e06f9-c49e-40ab-9434-5ba4d34a2670",
-        "minPrice": 1743000,
-        "maxPrice": 3237000,
-        "targetProductIds": [
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae"
-        ]
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": "b803d206-7986-4f10-8620-18dc2ec7a02b",
+        "minPrice": 20993000,
+        "maxPrice": 38987000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "57cf3f1b-ba13-4039-9179-0d6f9e2ada04",
+      "userId": "18efbaf3-48b3-4615-9cdd-d84d1379b0d2",
       "key": "FOCUSED_BUYER_014",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
-        "brandId": "855e9708-03b0-4edb-9bba-4e62e4d6294c",
-        "minPrice": 973000,
-        "maxPrice": 1807000,
-        "targetProductIds": [
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
-          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
-        ]
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+        "brandId": "e8a54c6f-6bbc-4878-b4c5-fd5fbbc91423",
+        "minPrice": 12243000,
+        "maxPrice": 22737000,
+        "targets": {
+          "primary": [
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "b4e228c3-9df3-4758-8754-9540f8d681ac",
+      "userId": "79bc4449-597a-4868-be7f-ba65f97d07a6",
       "key": "FOCUSED_BUYER_015",
       "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
-        "brandId": "f72e06f9-c49e-40ab-9434-5ba4d34a2670",
-        "minPrice": 20993000,
-        "maxPrice": 38987000,
-        "targetProductIds": [
-          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
-          "659d117c-1447-4aac-9a30-e9d314b182ea"
-        ]
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": "edfb49ae-1c27-489f-9eba-9663f8dfdcc6",
+        "minPrice": 20293000,
+        "maxPrice": 37687000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "e7ab7804-1d3d-4625-9bff-1dd2c2a388de",
-      "key": "CATEGORY_LOYAL_016",
-      "type": "CATEGORY_LOYAL",
+      "userId": "5197b9bd-391a-4b88-94c9-8091a3da5af5",
+      "key": "FOCUSED_BUYER_016",
+      "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
-        "brandId": null,
-        "minPrice": 1390000,
-        "maxPrice": 17990000,
-        "targetProductIds": [
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
-          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
-        ]
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+        "brandId": "b803d206-7986-4f10-8620-18dc2ec7a02b",
+        "minPrice": 18193000,
+        "maxPrice": 33787000,
+        "targets": {
+          "primary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "21cb552a-9ae3-40e6-9950-ac1c2e22b697",
-      "key": "CATEGORY_LOYAL_017",
-      "type": "CATEGORY_LOYAL",
+      "userId": "4988cb58-ad2a-4a04-94ff-87dc4bf15109",
+      "key": "FOCUSED_BUYER_017",
+      "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "ed0fc480-471a-4780-a0d2-5b6589115e83",
-        "brandId": null,
-        "minPrice": 17490000,
-        "maxPrice": 58990000,
-        "targetProductIds": [
-          "3d106b73-958d-42dc-8c50-e14841a24859",
-          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
-          "75e72e04-51de-4aac-8eb8-a101c1be0267",
-          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
-        ]
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": "7ee0dc08-b3b0-4f73-af2c-3af158087cb8",
+        "minPrice": 13643000,
+        "maxPrice": 25337000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "030889b7-03cd-431b-bba5-5f3eeb619ff1",
-      "key": "CATEGORY_LOYAL_018",
-      "type": "CATEGORY_LOYAL",
+      "userId": "db6f7245-86c3-4211-9d3e-fbc8b32bbf2d",
+      "key": "FOCUSED_BUYER_018",
+      "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
-        "brandId": null,
-        "minPrice": 23490000,
-        "maxPrice": 46990000,
-        "targetProductIds": [
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
-        ]
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": "0ba54919-eb71-4be1-8bd1-d145b5fec431",
+        "minPrice": 13993000,
+        "maxPrice": 25987000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "3df01d09-0513-40a6-9e8a-beb37e540e56",
-      "key": "CATEGORY_LOYAL_019",
-      "type": "CATEGORY_LOYAL",
+      "userId": "97b088a9-4252-4b55-a3fd-665003f781a7",
+      "key": "FOCUSED_BUYER_019",
+      "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "29d5df0c-d1b9-4319-ba2e-f75bb92da6dc",
-        "brandId": null,
-        "minPrice": 5390000,
-        "maxPrice": 8890000,
-        "targetProductIds": [
-          "389575dd-57a6-441b-b0b1-be1516261470",
-          "4474b65f-b49d-4543-903e-3f6154f0021f",
-          "57758ed7-5d88-4623-8936-dde43dc0b942",
-          "cbfd221c-86ca-4cb5-b44f-36da4b0e5f90"
-        ]
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": "edfb49ae-1c27-489f-9eba-9663f8dfdcc6",
+        "minPrice": 3773000,
+        "maxPrice": 7007000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "126db603-e25b-48fd-8ded-71983651ec3a",
-      "key": "CATEGORY_LOYAL_020",
-      "type": "CATEGORY_LOYAL",
+      "userId": "73f2a3b5-edd8-476e-89b9-5266cc3b5457",
+      "key": "FOCUSED_BUYER_020",
+      "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "29bc009c-b8f3-450f-b108-db0769e851c8",
-        "brandId": null,
-        "minPrice": 6490000,
-        "maxPrice": 19490000,
-        "targetProductIds": [
-          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
-          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
-        ]
+        "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
+        "brandId": "d1deb1dc-f412-4860-8374-bfb3f1277232",
+        "minPrice": 43393000,
+        "maxPrice": 80587000,
+        "targets": {
+          "primary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "52b57bc6-2320-450c-9e02-bf0a874fb923",
-      "key": "CATEGORY_LOYAL_021",
-      "type": "CATEGORY_LOYAL",
+      "userId": "64f8c9d0-5bdb-46cd-9942-ce8d2b31a8c2",
+      "key": "FOCUSED_BUYER_021",
+      "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
-        "brandId": null,
-        "minPrice": 23490000,
-        "maxPrice": 46990000,
-        "targetProductIds": [
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
-        ]
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": "0ba54919-eb71-4be1-8bd1-d145b5fec431",
+        "minPrice": 13643000,
+        "maxPrice": 25337000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "a27cf987-8645-4117-8430-ec2698f768d7",
-      "key": "CATEGORY_LOYAL_022",
-      "type": "CATEGORY_LOYAL",
+      "userId": "d6a35786-5533-4758-b366-2afbdd2e8f20",
+      "key": "FOCUSED_BUYER_022",
+      "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
-        "brandId": null,
-        "minPrice": 1390000,
-        "maxPrice": 17990000,
-        "targetProductIds": [
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
-          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
-        ]
+        "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
+        "brandId": "d1deb1dc-f412-4860-8374-bfb3f1277232",
+        "minPrice": 27293000,
+        "maxPrice": 50687000,
+        "targets": {
+          "primary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "858155e7-4547-4528-b0e1-56cbe96f4097",
-      "key": "CATEGORY_LOYAL_023",
-      "type": "CATEGORY_LOYAL",
+      "userId": "57e825fd-7f73-4be2-95e6-39b15adddfff",
+      "key": "FOCUSED_BUYER_023",
+      "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "29d5df0c-d1b9-4319-ba2e-f75bb92da6dc",
-        "brandId": null,
-        "minPrice": 5390000,
-        "maxPrice": 8890000,
-        "targetProductIds": [
-          "389575dd-57a6-441b-b0b1-be1516261470",
-          "4474b65f-b49d-4543-903e-3f6154f0021f",
-          "57758ed7-5d88-4623-8936-dde43dc0b942",
-          "cbfd221c-86ca-4cb5-b44f-36da4b0e5f90"
-        ]
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": "988b87eb-7c5e-46dd-9d09-d568ff1e40e7",
+        "minPrice": 19943000,
+        "maxPrice": 37037000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "b62726b4-da07-4b75-9f2d-5e26bc9ff11b",
-      "key": "CATEGORY_LOYAL_024",
-      "type": "CATEGORY_LOYAL",
+      "userId": "6be912c0-c875-4129-b387-43360498d5b2",
+      "key": "FOCUSED_BUYER_024",
+      "type": "FOCUSED_BUYER",
       "truth": {
-        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
-        "brandId": null,
-        "minPrice": 23490000,
-        "maxPrice": 46990000,
-        "targetProductIds": [
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
-        ]
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
+        "brandId": "edfb49ae-1c27-489f-9eba-9663f8dfdcc6",
+        "minPrice": 16443000,
+        "maxPrice": 30537000,
+        "targets": {
+          "primary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "434bac9a-f6e4-4d61-becd-e8cdb2dad38b",
+      "userId": "5fb18324-8913-4b58-8425-b3856f503338",
       "key": "CATEGORY_LOYAL_025",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
+        "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
         "brandId": null,
         "minPrice": 38990000,
         "maxPrice": 61990000,
-        "targetProductIds": [
-          "06e174f6-2e37-477d-8903-663b46897f88",
-          "f11d349c-d244-4712-ba2a-bba9db09310b"
-        ]
+        "targets": {
+          "primary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "7da56130-201c-4a5b-8d0d-901bae094e65",
+      "userId": "336d462f-f863-4b46-b88c-c40181471fa7",
       "key": "CATEGORY_LOYAL_026",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "ed0fc480-471a-4780-a0d2-5b6589115e83",
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
         "brandId": null,
         "minPrice": 17490000,
         "maxPrice": 58990000,
-        "targetProductIds": [
-          "3d106b73-958d-42dc-8c50-e14841a24859",
-          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
-          "75e72e04-51de-4aac-8eb8-a101c1be0267",
-          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
-        ]
+        "targets": {
+          "primary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "06eb453a-67df-4737-a1e6-7eb834abb26f",
+      "userId": "27ea020f-87a0-483f-925e-f5d1ed9ff28a",
       "key": "CATEGORY_LOYAL_027",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
         "brandId": null,
         "minPrice": 23490000,
         "maxPrice": 46990000,
-        "targetProductIds": [
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
-        ]
+        "targets": {
+          "primary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "a0b2fa48-b4c6-44a9-8eff-09781ec8afa2",
+      "userId": "89848eec-3029-45b6-918b-4a69df677c31",
       "key": "CATEGORY_LOYAL_028",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
         "brandId": null,
-        "minPrice": 19990000,
-        "maxPrice": 29990000,
-        "targetProductIds": [
-          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
-          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
-          "6b22d954-c816-439b-a380-7d850aa2dc22"
-        ]
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "1197839e-620b-4d94-831b-eae9eca84295",
+      "userId": "53ca9332-3e3d-4df5-857d-6fb1335e9f3d",
       "key": "CATEGORY_LOYAL_029",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
         "brandId": null,
-        "minPrice": 19990000,
+        "minPrice": 28490000,
         "maxPrice": 29990000,
-        "targetProductIds": [
-          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
-          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
-          "6b22d954-c816-439b-a380-7d850aa2dc22"
-        ]
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "0028b7a5-362b-4544-80ff-54565bb762bd",
+      "userId": "072eab3a-cda2-4ce0-bed2-13cf6052a88c",
       "key": "CATEGORY_LOYAL_030",
       "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "86b9954c-4574-4caa-adcf-d004c1ce72d2",
+      "key": "CATEGORY_LOYAL_031",
+      "type": "CATEGORY_LOYAL",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "e866acbc-b929-475f-8574-3f2bee8d7b3a",
+      "key": "CATEGORY_LOYAL_032",
+      "type": "CATEGORY_LOYAL",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": null,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "94df33fc-5c76-47dd-afb9-83a398cfeb78",
+      "key": "CATEGORY_LOYAL_033",
+      "type": "CATEGORY_LOYAL",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": null,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "4bf12e16-f9fd-45ab-96f7-ea18c4c75599",
+      "key": "CATEGORY_LOYAL_034",
+      "type": "CATEGORY_LOYAL",
+      "truth": {
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
         "brandId": null,
         "minPrice": 23490000,
         "maxPrice": 46990000,
-        "targetProductIds": [
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
-        ]
+        "targets": {
+          "primary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "8898d3a1-4f7f-4315-bb5a-03dc7dc636d3",
-      "key": "BRAND_LOYAL_031",
-      "type": "BRAND_LOYAL",
+      "userId": "c6d8e744-572c-495d-ba8e-34e504a75626",
+      "key": "CATEGORY_LOYAL_035",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": null,
-        "brandId": "f6c9dd7f-8cc3-4bb5-ad49-db350f5fbd3f",
-        "minPrice": 38990000,
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+        "brandId": null,
+        "minPrice": 17490000,
         "maxPrice": 58990000,
-        "targetProductIds": [
-          "06e174f6-2e37-477d-8903-663b46897f88",
-          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
-        ]
+        "targets": {
+          "primary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "3066a1f1-9887-4580-829a-4c21de6ab069",
-      "key": "BRAND_LOYAL_032",
-      "type": "BRAND_LOYAL",
+      "userId": "88cd2263-bb35-4ba8-a08c-120f803624a1",
+      "key": "CATEGORY_LOYAL_036",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": null,
-        "brandId": "f72e06f9-c49e-40ab-9434-5ba4d34a2670",
-        "minPrice": 1990000,
-        "maxPrice": 2490000,
-        "targetProductIds": [
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae"
-        ]
-      }
-    },
-    {
-      "userId": "244ce70f-91ce-4d2b-a7c4-76598df058a6",
-      "key": "BRAND_LOYAL_033",
-      "type": "BRAND_LOYAL",
-      "truth": {
-        "categoryId": null,
-        "brandId": "fd83745e-15f2-4c3b-a6a1-cbe78e93af9d",
-        "minPrice": 1390000,
-        "maxPrice": 19990000,
-        "targetProductIds": [
-          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8"
-        ]
-      }
-    },
-    {
-      "userId": "21aaf75f-3ab3-408b-9061-b3e45461d4bc",
-      "key": "BRAND_LOYAL_034",
-      "type": "BRAND_LOYAL",
-      "truth": {
-        "categoryId": null,
-        "brandId": "6995a277-1596-4a2a-b9b8-04da7095c013",
-        "minPrice": 6490000,
-        "maxPrice": 29990000,
-        "targetProductIds": [
-          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
-          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
-          "659d117c-1447-4aac-9a30-e9d314b182ea"
-        ]
-      }
-    },
-    {
-      "userId": "aba262bd-3218-4d68-9e4e-1e0d68647576",
-      "key": "BRAND_LOYAL_035",
-      "type": "BRAND_LOYAL",
-      "truth": {
-        "categoryId": null,
-        "brandId": "a3b0bc5f-84c7-4b5a-9244-a3f1f7e5961d",
-        "minPrice": 1390000,
+        "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
+        "brandId": null,
+        "minPrice": 38990000,
         "maxPrice": 61990000,
-        "targetProductIds": [
-          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
-          "06e174f6-2e37-477d-8903-663b46897f88",
-          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14",
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "389575dd-57a6-441b-b0b1-be1516261470",
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
-          "3d106b73-958d-42dc-8c50-e14841a24859",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f",
-          "4474b65f-b49d-4543-903e-3f6154f0021f",
-          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "57758ed7-5d88-4623-8936-dde43dc0b942",
-          "659d117c-1447-4aac-9a30-e9d314b182ea",
-          "6b22d954-c816-439b-a380-7d850aa2dc22",
-          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
-          "75e72e04-51de-4aac-8eb8-a101c1be0267",
-          "bf920474-3016-44bb-b433-9c077b8a47ae",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
-          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f",
-          "cbfd221c-86ca-4cb5-b44f-36da4b0e5f90",
-          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e",
-          "e2aad592-d15f-41cf-92a1-3d9054381ecb",
-          "f11d349c-d244-4712-ba2a-bba9db09310b"
-        ]
+        "targets": {
+          "primary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "cc009675-9f1c-46f5-a446-61237b979bcf",
-      "key": "BRAND_LOYAL_036",
-      "type": "BRAND_LOYAL",
+      "userId": "f25708b0-fd02-4c43-875d-8828cde8719d",
+      "key": "CATEGORY_LOYAL_037",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": null,
-        "brandId": "edcc5e94-e8ab-450d-9584-6137ea82cba1",
-        "minPrice": 5390000,
-        "maxPrice": 46990000,
-        "targetProductIds": [
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "389575dd-57a6-441b-b0b1-be1516261470",
-          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f",
-          "6b22d954-c816-439b-a380-7d850aa2dc22",
-          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
-        ]
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "07be2642-dff9-4fd0-af94-66f18ce65391",
-      "key": "BRAND_LOYAL_037",
-      "type": "BRAND_LOYAL",
+      "userId": "d1d85f04-b6ad-4159-8501-2044c6275961",
+      "key": "CATEGORY_LOYAL_038",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": null,
-        "brandId": "f6c9dd7f-8cc3-4bb5-ad49-db350f5fbd3f",
-        "minPrice": 38990000,
-        "maxPrice": 58990000,
-        "targetProductIds": [
-          "06e174f6-2e37-477d-8903-663b46897f88",
-          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
-        ]
-      }
-    },
-    {
-      "userId": "7e2f875e-1ea1-41ca-9411-af65e4b908a1",
-      "key": "BRAND_LOYAL_038",
-      "type": "BRAND_LOYAL",
-      "truth": {
-        "categoryId": null,
-        "brandId": "d148015e-c7ac-4ec7-9fe6-79bc0d00f90e",
-        "minPrice": 10490000,
-        "maxPrice": 48990000,
-        "targetProductIds": [
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
-          "75e72e04-51de-4aac-8eb8-a101c1be0267"
-        ]
-      }
-    },
-    {
-      "userId": "bb82d6bb-a909-418d-bab2-def89a21c949",
-      "key": "BRAND_LOYAL_039",
-      "type": "BRAND_LOYAL",
-      "truth": {
-        "categoryId": null,
-        "brandId": "edcc5e94-e8ab-450d-9584-6137ea82cba1",
-        "minPrice": 5390000,
-        "maxPrice": 46990000,
-        "targetProductIds": [
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "389575dd-57a6-441b-b0b1-be1516261470",
-          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f",
-          "6b22d954-c816-439b-a380-7d850aa2dc22",
-          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
-        ]
-      }
-    },
-    {
-      "userId": "105a5c25-e40a-4b31-a13f-5f512cd4ba94",
-      "key": "BRAND_LOYAL_040",
-      "type": "BRAND_LOYAL",
-      "truth": {
-        "categoryId": null,
-        "brandId": "f72e06f9-c49e-40ab-9434-5ba4d34a2670",
-        "minPrice": 1990000,
-        "maxPrice": 2490000,
-        "targetProductIds": [
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae"
-        ]
-      }
-    },
-    {
-      "userId": "f873f6dc-00db-4918-819a-31a5b01df62f",
-      "key": "BRAND_LOYAL_041",
-      "type": "BRAND_LOYAL",
-      "truth": {
-        "categoryId": null,
-        "brandId": "d148015e-c7ac-4ec7-9fe6-79bc0d00f90e",
-        "minPrice": 10490000,
-        "maxPrice": 48990000,
-        "targetProductIds": [
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
-          "75e72e04-51de-4aac-8eb8-a101c1be0267"
-        ]
-      }
-    },
-    {
-      "userId": "a4db042f-35e5-49a4-bb4b-2a2a3a044b80",
-      "key": "BRAND_LOYAL_042",
-      "type": "BRAND_LOYAL",
-      "truth": {
-        "categoryId": null,
-        "brandId": "fd83745e-15f2-4c3b-a6a1-cbe78e93af9d",
+        "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+        "brandId": null,
         "minPrice": 1390000,
-        "maxPrice": 19990000,
-        "targetProductIds": [
-          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8"
-        ]
+        "maxPrice": 17990000,
+        "targets": {
+          "primary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "7674820f-44b0-400f-ba39-4a29f6f2f6db",
-      "key": "BARGAIN_HUNTER_043",
-      "type": "BARGAIN_HUNTER",
+      "userId": "02f96507-60f0-463c-8f5b-7f859dd763f2",
+      "key": "CATEGORY_LOYAL_039",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
-        "brandId": null,
-        "minPrice": 28490000,
-        "maxPrice": 28490000,
-        "targetProductIds": [
-          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
-          "659d117c-1447-4aac-9a30-e9d314b182ea"
-        ]
-      }
-    },
-    {
-      "userId": "a6362463-a41d-46a5-80fa-2bed33012b77",
-      "key": "BARGAIN_HUNTER_044",
-      "type": "BARGAIN_HUNTER",
-      "truth": {
-        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
-        "brandId": null,
-        "minPrice": 28490000,
-        "maxPrice": 28490000,
-        "targetProductIds": [
-          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
-          "659d117c-1447-4aac-9a30-e9d314b182ea"
-        ]
-      }
-    },
-    {
-      "userId": "a611f8e5-0eca-48bf-b0bc-6dfb8a9b1b8e",
-      "key": "BARGAIN_HUNTER_045",
-      "type": "BARGAIN_HUNTER",
-      "truth": {
-        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
+        "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
         "brandId": null,
         "minPrice": 38990000,
-        "maxPrice": 38990000,
-        "targetProductIds": [
-          "06e174f6-2e37-477d-8903-663b46897f88",
-          "f11d349c-d244-4712-ba2a-bba9db09310b"
-        ]
+        "maxPrice": 61990000,
+        "targets": {
+          "primary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "cc24f5e5-d542-43db-9b1d-98ce974f91fa",
-      "key": "BARGAIN_HUNTER_046",
-      "type": "BARGAIN_HUNTER",
+      "userId": "779ee1cc-eb7d-4282-ad33-718d8f405996",
+      "key": "CATEGORY_LOYAL_040",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "29bc009c-b8f3-450f-b108-db0769e851c8",
+        "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
         "brandId": null,
-        "minPrice": 6490000,
-        "maxPrice": 6490000,
-        "targetProductIds": [
-          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
-          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
-        ]
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
+        "targets": {
+          "primary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "a4da3235-18be-4056-8771-bc01161d1195",
-      "key": "BARGAIN_HUNTER_047",
-      "type": "BARGAIN_HUNTER",
+      "userId": "6e751d53-dc57-4b2e-aa4c-bb8043a67c26",
+      "key": "CATEGORY_LOYAL_041",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
-        "brandId": null,
-        "minPrice": 28490000,
-        "maxPrice": 28490000,
-        "targetProductIds": [
-          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
-          "659d117c-1447-4aac-9a30-e9d314b182ea"
-        ]
-      }
-    },
-    {
-      "userId": "e60b2bc4-a758-48b8-8f09-5216662d63cb",
-      "key": "BARGAIN_HUNTER_048",
-      "type": "BARGAIN_HUNTER",
-      "truth": {
-        "categoryId": "6ccfa7b9-b20e-414e-a08f-bc3c4d401ad4",
-        "brandId": null,
-        "minPrice": 28490000,
-        "maxPrice": 28490000,
-        "targetProductIds": [
-          "3bccb15f-4088-4569-b1e7-6422967b5c0c",
-          "659d117c-1447-4aac-9a30-e9d314b182ea"
-        ]
-      }
-    },
-    {
-      "userId": "bf666088-4ea7-40fe-aefd-70d7978e8639",
-      "key": "BARGAIN_HUNTER_049",
-      "type": "BARGAIN_HUNTER",
-      "truth": {
-        "categoryId": "a331a845-8126-4be1-b10f-a33f69692ea9",
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
         "brandId": null,
         "minPrice": 19990000,
-        "maxPrice": 28990000,
-        "targetProductIds": [
-          "035505e9-4eb5-49ef-a37b-a32a57ee508c",
-          "0da7bfc3-4e4f-42e2-8ec2-b3fe05e3bc14"
-        ]
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "3f3dc32c-e41a-4a20-9937-12fe0e4e3969",
-      "key": "BARGAIN_HUNTER_050",
-      "type": "BARGAIN_HUNTER",
+      "userId": "6265b54c-5cfb-4626-b77e-1ea6660bbcc5",
+      "key": "CATEGORY_LOYAL_042",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
         "brandId": null,
-        "minPrice": 38990000,
-        "maxPrice": 38990000,
-        "targetProductIds": [
-          "06e174f6-2e37-477d-8903-663b46897f88",
-          "f11d349c-d244-4712-ba2a-bba9db09310b"
-        ]
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "02dd3260-fbf6-46f7-882d-f4321e80c68a",
-      "key": "BARGAIN_HUNTER_051",
-      "type": "BARGAIN_HUNTER",
+      "userId": "4a302f62-465d-48da-b9f9-0bd7ea02415b",
+      "key": "CATEGORY_LOYAL_043",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "26e4d039-fb1d-4920-b6d4-d30bd693c155",
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
         "brandId": null,
-        "minPrice": 38990000,
-        "maxPrice": 38990000,
-        "targetProductIds": [
-          "06e174f6-2e37-477d-8903-663b46897f88",
-          "f11d349c-d244-4712-ba2a-bba9db09310b"
-        ]
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "13bbdb6f-1073-4469-a0cb-4d2f9f2a77eb",
-      "key": "WINDOW_SHOPPER_052",
-      "type": "WINDOW_SHOPPER",
+      "userId": "3bc4ccd2-fc56-42b7-b010-c72c88955bab",
+      "key": "CATEGORY_LOYAL_044",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "8528296d-da9c-4658-b608-f9758d758b72",
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
         "brandId": null,
         "minPrice": 23490000,
         "maxPrice": 46990000,
-        "targetProductIds": [
-          "359dab00-02e9-42f6-adb4-50643e7e78e1",
-          "41332ad4-1f28-4e69-8d77-b0c0d209b68f"
-        ]
+        "targets": {
+          "primary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     },
     {
-      "userId": "d8d5247f-58e5-49cb-a4fb-6e94c5a779c5",
-      "key": "WINDOW_SHOPPER_053",
-      "type": "WINDOW_SHOPPER",
+      "userId": "a05bf7d5-905c-4b2e-9f94-ce529b734d19",
+      "key": "CATEGORY_LOYAL_045",
+      "type": "CATEGORY_LOYAL",
       "truth": {
-        "categoryId": "29bc009c-b8f3-450f-b108-db0769e851c8",
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
+        "brandId": null,
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
+        "targets": {
+          "primary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "5e6c266f-0bdc-4fa2-bd99-b946e253f32c",
+      "key": "CATEGORY_LOYAL_046",
+      "type": "CATEGORY_LOYAL",
+      "truth": {
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": null,
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "ffef3b45-b54f-4b3e-9cda-6c8bf5d18923",
+      "key": "CATEGORY_LOYAL_047",
+      "type": "CATEGORY_LOYAL",
+      "truth": {
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": null,
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "0e3ca3be-5552-4a6c-bb43-0c7120a3d429",
+      "key": "CATEGORY_LOYAL_048",
+      "type": "CATEGORY_LOYAL",
+      "truth": {
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": null,
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "2a3a5786-a024-4562-b5bc-9f12ebd3fdb5",
+      "key": "BRAND_LOYAL_049",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "7ee0dc08-b3b0-4f73-af2c-3af158087cb8",
+        "minPrice": 1390000,
+        "maxPrice": 19990000,
+        "targets": {
+          "primary": [
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "3ae8e908-0c23-4908-9a42-86b4caa0c4c2",
+      "key": "BRAND_LOYAL_050",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "988b87eb-7c5e-46dd-9d09-d568ff1e40e7",
+        "minPrice": 5390000,
+        "maxPrice": 46990000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de",
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "088617d4-52a8-4acc-8cbe-d22e1ed0ff3e",
+      "key": "BRAND_LOYAL_051",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "3eff0035-1037-4342-bb78-65fa7f590461",
+        "minPrice": 6490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "10448c57-2e84-4474-b847-8201ab6224cc",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "611c90fb-8df2-4d46-a9a3-9f862ea37ed2",
+      "key": "BRAND_LOYAL_052",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "1e6a33e8-1e3a-402c-8886-6447e19b40ad",
+        "minPrice": 5790000,
+        "maxPrice": 6990000,
+        "targets": {
+          "primary": [
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "bb9dd50d-40bc-4216-9e32-3b27a337ec33",
+      "key": "BRAND_LOYAL_053",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "3eff0035-1037-4342-bb78-65fa7f590461",
+        "minPrice": 6490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "10448c57-2e84-4474-b847-8201ab6224cc",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "869b30ef-e166-4d13-a16a-de5d10106ed5",
+      "key": "BRAND_LOYAL_054",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "b5c72d1d-c7d0-4667-a90a-29ef5104e0c9",
+        "minPrice": 38990000,
+        "maxPrice": 58990000,
+        "targets": {
+          "primary": [
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "e1db0e1f-ae15-45e5-8a04-59d1e7a4eded",
+      "key": "BRAND_LOYAL_055",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "0ba54919-eb71-4be1-8bd1-d145b5fec431",
+        "minPrice": 1390000,
+        "maxPrice": 61990000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de",
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2",
+            "834747f6-f274-4194-a946-97974ee63750",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "10448c57-2e84-4474-b847-8201ab6224cc",
+            "24010432-7806-4755-b001-a09c7f2d4f9a",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "d91ceaee-3d29-4dcf-aeea-8e84a39e3080",
+      "key": "BRAND_LOYAL_056",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "7ee0dc08-b3b0-4f73-af2c-3af158087cb8",
+        "minPrice": 1390000,
+        "maxPrice": 19990000,
+        "targets": {
+          "primary": [
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "cdd87c7b-b2ce-4862-ada4-343ff917b3f4",
+      "key": "BRAND_LOYAL_057",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "3eff0035-1037-4342-bb78-65fa7f590461",
+        "minPrice": 6490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "10448c57-2e84-4474-b847-8201ab6224cc",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "785d2999-f466-4a9c-a9fc-fc92e8e3dcdc",
+      "key": "BRAND_LOYAL_058",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "d1deb1dc-f412-4860-8374-bfb3f1277232",
+        "minPrice": 25990000,
+        "maxPrice": 61990000,
+        "targets": {
+          "primary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "d88914c5-dbc4-4315-9131-a0248196bc63"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "8162c7f2-0982-4691-82e1-e79347125d31",
+      "key": "BRAND_LOYAL_059",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "0ba54919-eb71-4be1-8bd1-d145b5fec431",
+        "minPrice": 1390000,
+        "maxPrice": 61990000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de",
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2",
+            "834747f6-f274-4194-a946-97974ee63750",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "10448c57-2e84-4474-b847-8201ab6224cc",
+            "24010432-7806-4755-b001-a09c7f2d4f9a",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "11a190ea-a76c-4ba3-951b-51933dcbad61",
+      "key": "BRAND_LOYAL_060",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "1e6a33e8-1e3a-402c-8886-6447e19b40ad",
+        "minPrice": 5790000,
+        "maxPrice": 6990000,
+        "targets": {
+          "primary": [
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "383bd44c-bbcf-40f6-9553-dfafd7e541c1",
+      "key": "BRAND_LOYAL_061",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "b803d206-7986-4f10-8620-18dc2ec7a02b",
+        "minPrice": 1990000,
+        "maxPrice": 2490000,
+        "targets": {
+          "primary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "a8351881-5460-49cc-a163-e3a17fb996f0",
+      "key": "BRAND_LOYAL_062",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "b803d206-7986-4f10-8620-18dc2ec7a02b",
+        "minPrice": 1990000,
+        "maxPrice": 2490000,
+        "targets": {
+          "primary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "555c80e2-7ded-470a-9e2b-91f0d6bb4e4a",
+      "key": "BRAND_LOYAL_063",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "1e6a33e8-1e3a-402c-8886-6447e19b40ad",
+        "minPrice": 5790000,
+        "maxPrice": 6990000,
+        "targets": {
+          "primary": [
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "e9db98a6-8e39-4868-8204-43534fb73a60",
+      "key": "BRAND_LOYAL_064",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "edfb49ae-1c27-489f-9eba-9663f8dfdcc6",
+        "minPrice": 1390000,
+        "maxPrice": 61990000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de",
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2",
+            "834747f6-f274-4194-a946-97974ee63750",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "10448c57-2e84-4474-b847-8201ab6224cc",
+            "24010432-7806-4755-b001-a09c7f2d4f9a",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "cfc2be4c-4f1d-4c7f-bab9-ed17ea6acc70",
+      "key": "BRAND_LOYAL_065",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "b5c72d1d-c7d0-4667-a90a-29ef5104e0c9",
+        "minPrice": 38990000,
+        "maxPrice": 58990000,
+        "targets": {
+          "primary": [
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "1542e392-90d0-44b9-8571-1c28c48d17b5",
+      "key": "BRAND_LOYAL_066",
+      "type": "BRAND_LOYAL",
+      "truth": {
+        "categoryId": null,
+        "brandId": "b803d206-7986-4f10-8620-18dc2ec7a02b",
+        "minPrice": 1990000,
+        "maxPrice": 2490000,
+        "targets": {
+          "primary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "dd2ff2ba-6c66-4f4d-9a39-1cf6dd17de9b",
+      "key": "RESEARCHER_067",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": null,
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "a679f786-323b-49e8-a872-e0a6675630b8"
+      }
+    },
+    {
+      "userId": "7f330fd8-0389-40ca-b255-75a91851fa1a",
+      "key": "RESEARCHER_068",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
         "brandId": null,
         "minPrice": 6490000,
         "maxPrice": 19490000,
-        "targetProductIds": [
-          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
-          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
-        ]
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c"
+          ],
+          "secondary": [
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "24010432-7806-4755-b001-a09c7f2d4f9a"
       }
     },
     {
-      "userId": "8488e87b-0e8f-41ac-b438-0e68038af07b",
-      "key": "WINDOW_SHOPPER_054",
-      "type": "WINDOW_SHOPPER",
+      "userId": "76dbbb25-c821-45b3-b904-8fae689bbb83",
+      "key": "RESEARCHER_069",
+      "type": "RESEARCHER",
       "truth": {
-        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
-        "brandId": null,
-        "minPrice": 1390000,
-        "maxPrice": 17990000,
-        "targetProductIds": [
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
-          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
-        ]
-      }
-    },
-    {
-      "userId": "0df32911-fabf-452b-a363-fcb7973ed60d",
-      "key": "WINDOW_SHOPPER_055",
-      "type": "WINDOW_SHOPPER",
-      "truth": {
-        "categoryId": "ed0fc480-471a-4780-a0d2-5b6589115e83",
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
         "brandId": null,
         "minPrice": 17490000,
         "maxPrice": 58990000,
-        "targetProductIds": [
-          "3d106b73-958d-42dc-8c50-e14841a24859",
-          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
-          "75e72e04-51de-4aac-8eb8-a101c1be0267",
-          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
-        ]
+        "targets": {
+          "primary": [
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "74ea4623-9296-4e0c-be26-85072eec19ef"
       }
     },
     {
-      "userId": "9b527d2f-2720-4f41-b3e9-bfe93db79439",
-      "key": "WINDOW_SHOPPER_056",
-      "type": "WINDOW_SHOPPER",
+      "userId": "36c71188-9c6b-4604-aea3-19971cbe3048",
+      "key": "RESEARCHER_070",
+      "type": "RESEARCHER",
       "truth": {
-        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
         "brandId": null,
-        "minPrice": 1390000,
-        "maxPrice": 17990000,
-        "targetProductIds": [
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
-          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
-        ]
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab"
+          ],
+          "secondary": [
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
       }
     },
     {
-      "userId": "9d1861c6-c9b8-4bae-b36a-1c70a6a113e3",
-      "key": "WINDOW_SHOPPER_057",
-      "type": "WINDOW_SHOPPER",
+      "userId": "f0699736-7c91-4419-b9f7-93982ff01851",
+      "key": "RESEARCHER_071",
+      "type": "RESEARCHER",
       "truth": {
-        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
         "brandId": null,
-        "minPrice": 1390000,
-        "maxPrice": 17990000,
-        "targetProductIds": [
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
-          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
-        ]
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": [
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "a387e6ef-1648-4a4f-8649-e016eb7579b3"
       }
     },
     {
-      "userId": "e6d9db9c-377d-4fcb-b3a1-9539129e1576",
-      "key": "WINDOW_SHOPPER_058",
-      "type": "WINDOW_SHOPPER",
+      "userId": "061889b0-c808-43ca-bb2a-d5c9e58936f8",
+      "key": "RESEARCHER_072",
+      "type": "RESEARCHER",
       "truth": {
-        "categoryId": "9022ae42-94b4-4fc9-be38-a946d8b7b1df",
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
         "brandId": null,
-        "minPrice": 1390000,
-        "maxPrice": 17990000,
-        "targetProductIds": [
-          "3969d988-709f-4e4d-9a5c-caf6fff55921",
-          "53a7f3a4-d3a0-4add-a085-002e7d0c9198",
-          "bf920474-3016-44bb-b433-9c077b8a47ae",
-          "c40f11f2-3cd6-4cc9-bfd8-81bae3a23bf8",
-          "c5c25ba1-8e87-44d0-8d78-1d5a8b9e9e8f"
-        ]
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
+        "targets": {
+          "primary": [
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "dec7327a-3e87-404f-94d3-ea284cfcc24b"
       }
     },
     {
-      "userId": "5a6dff99-3f0e-412c-80f2-c293c26776ae",
-      "key": "WINDOW_SHOPPER_059",
-      "type": "WINDOW_SHOPPER",
+      "userId": "51729692-3eb8-4a47-b04f-3fb1dd57906d",
+      "key": "RESEARCHER_073",
+      "type": "RESEARCHER",
       "truth": {
-        "categoryId": "29bc009c-b8f3-450f-b108-db0769e851c8",
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": null,
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
+        "targets": {
+          "primary": [
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "a10bc6bf-4235-43b9-9576-739bad177d90"
+      }
+    },
+    {
+      "userId": "cc6319db-1583-4b9d-be7e-9271437fffe1",
+      "key": "RESEARCHER_074",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": null,
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
+        "targets": {
+          "primary": [
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "a10bc6bf-4235-43b9-9576-739bad177d90"
+      }
+    },
+    {
+      "userId": "bd5f3067-18e2-4f11-b1fe-62950d7312d5",
+      "key": "RESEARCHER_075",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+        "brandId": null,
+        "minPrice": 17490000,
+        "maxPrice": 58990000,
+        "targets": {
+          "primary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": [
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "83ba466e-89b2-4f7f-b4ed-f460f8b6641a"
+      }
+    },
+    {
+      "userId": "10766628-9c71-4e49-83b0-a357df4c4631",
+      "key": "RESEARCHER_076",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
         "brandId": null,
         "minPrice": 6490000,
         "maxPrice": 19490000,
-        "targetProductIds": [
-          "44e98bf8-8aff-4e4d-ae75-0a8e15e6c3fc",
-          "e2aad592-d15f-41cf-92a1-3d9054381ecb"
-        ]
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c"
+          ],
+          "secondary": [
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "24010432-7806-4755-b001-a09c7f2d4f9a"
       }
     },
     {
-      "userId": "53b445ba-317c-49bb-a7ef-fcc6f88764ee",
-      "key": "WINDOW_SHOPPER_060",
-      "type": "WINDOW_SHOPPER",
+      "userId": "36e5dbe3-a167-48e5-8aaf-5e115ddf0f01",
+      "key": "RESEARCHER_077",
+      "type": "RESEARCHER",
       "truth": {
-        "categoryId": "ed0fc480-471a-4780-a0d2-5b6589115e83",
+        "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
+        "brandId": null,
+        "minPrice": 38990000,
+        "maxPrice": 61990000,
+        "targets": {
+          "primary": [
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ],
+          "secondary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "d88914c5-dbc4-4315-9131-a0248196bc63"
+      }
+    },
+    {
+      "userId": "189399e7-37de-4809-afb3-3a368f421027",
+      "key": "RESEARCHER_078",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": null,
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
+        "targets": {
+          "primary": [
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "a10bc6bf-4235-43b9-9576-739bad177d90"
+      }
+    },
+    {
+      "userId": "196a9018-2248-498a-b646-a209eee5244b",
+      "key": "RESEARCHER_079",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
+        "brandId": null,
+        "minPrice": 38990000,
+        "maxPrice": 61990000,
+        "targets": {
+          "primary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63"
+          ],
+          "secondary": [
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+      }
+    },
+    {
+      "userId": "6615bbe6-41f0-480b-827f-77be1ca81126",
+      "key": "RESEARCHER_080",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": null,
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab"
+          ],
+          "secondary": [
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+      }
+    },
+    {
+      "userId": "e94f8528-f776-47e5-8f35-559685fba854",
+      "key": "RESEARCHER_081",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e"
+          ],
+          "secondary": [
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "10448c57-2e84-4474-b847-8201ab6224cc"
+      }
+    },
+    {
+      "userId": "187a5427-6df4-4dcb-a8bb-3e75c267c498",
+      "key": "RESEARCHER_082",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e"
+          ],
+          "secondary": [
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "10448c57-2e84-4474-b847-8201ab6224cc"
+      }
+    },
+    {
+      "userId": "548a68d3-4c30-4e24-9c0f-b97de6e70e57",
+      "key": "RESEARCHER_083",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": null,
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "a679f786-323b-49e8-a872-e0a6675630b8"
+      }
+    },
+    {
+      "userId": "169fe4e9-5c82-4a07-9e6c-557aa953a347",
+      "key": "RESEARCHER_084",
+      "type": "RESEARCHER",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e"
+          ],
+          "secondary": [
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ]
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": "10448c57-2e84-4474-b847-8201ab6224cc"
+      }
+    },
+    {
+      "userId": "cb88033d-b269-4d63-9cc6-34df008db098",
+      "key": "EXPLORING_085",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": null,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ]
+        },
+        "shiftDay": 31,
+        "secondaryTaste": {
+          "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "cbf74b27-02a8-42d2-b81f-f76f531e2395",
+      "key": "EXPLORING_086",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+        "brandId": null,
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
+        "targets": {
+          "primary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ],
+          "secondary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ]
+        },
+        "shiftDay": 45,
+        "secondaryTaste": {
+          "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "993d7468-e144-4c1c-a6dd-3ff30b200dce",
+      "key": "EXPLORING_087",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
+        "brandId": null,
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
+        "targets": {
+          "primary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ]
+        },
+        "shiftDay": 37,
+        "secondaryTaste": {
+          "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "828b2e71-bd6c-442c-aac6-4d036a74bd6e",
+      "key": "EXPLORING_088",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
         "brandId": null,
         "minPrice": 17490000,
         "maxPrice": 58990000,
-        "targetProductIds": [
-          "3d106b73-958d-42dc-8c50-e14841a24859",
-          "6bb22d05-8e0b-4f8e-a5cf-84bd0b1b0e6c",
-          "75e72e04-51de-4aac-8eb8-a101c1be0267",
-          "cc6bb3e5-dffe-4674-b67f-35ee1fa4f41e"
-        ]
+        "targets": {
+          "primary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ]
+        },
+        "shiftDay": 42,
+        "secondaryTaste": {
+          "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "b4f193e6-ca94-4497-9d3a-832d64d9123b",
+      "key": "EXPLORING_089",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+        "brandId": null,
+        "minPrice": 17490000,
+        "maxPrice": 58990000,
+        "targets": {
+          "primary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ]
+        },
+        "shiftDay": 50,
+        "secondaryTaste": {
+          "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "c70b35e5-77db-456c-9cc0-bb1892435942",
+      "key": "EXPLORING_090",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ]
+        },
+        "shiftDay": 39,
+        "secondaryTaste": {
+          "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "f2bd37b3-3aac-415e-955d-4e9030cc1e0f",
+      "key": "EXPLORING_091",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": null,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ]
+        },
+        "shiftDay": 45,
+        "secondaryTaste": {
+          "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "d1aa85f6-5a1f-4b9f-a0ee-06b9731ae74e",
+      "key": "EXPLORING_092",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+        "brandId": null,
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
+        "targets": {
+          "primary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ],
+          "secondary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ]
+        },
+        "shiftDay": 47,
+        "secondaryTaste": {
+          "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "056e3815-42ef-4381-9c50-165f4f994a1e",
+      "key": "EXPLORING_093",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": null,
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ]
+        },
+        "shiftDay": 49,
+        "secondaryTaste": {
+          "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "7a1598a7-fe2a-4784-88b2-d0d94b8837d1",
+      "key": "EXPLORING_094",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
+        "brandId": null,
+        "minPrice": 38990000,
+        "maxPrice": 61990000,
+        "targets": {
+          "primary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ],
+          "secondary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ]
+        },
+        "shiftDay": 40,
+        "secondaryTaste": {
+          "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "7bc491c3-c61b-47af-8dcd-f630d9417c89",
+      "key": "EXPLORING_095",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ]
+        },
+        "shiftDay": 38,
+        "secondaryTaste": {
+          "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "6dba1993-9d7e-4acf-bbd7-5d2824895215",
+      "key": "EXPLORING_096",
+      "type": "EXPLORING",
+      "truth": {
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": null,
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ]
+        },
+        "shiftDay": 41,
+        "secondaryTaste": {
+          "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "81c4e5e5-cddb-4494-b8e7-ee9b2fe1e75b",
+      "key": "SHIFTING_INTENT_097",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
+        "brandId": null,
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
+        "targets": {
+          "primary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ]
+        },
+        "shiftDay": 45,
+        "secondaryTaste": {
+          "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "bed610f1-0ebe-4f2d-918c-d7b0caea12d7",
+      "key": "SHIFTING_INTENT_098",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ]
+        },
+        "shiftDay": 47,
+        "secondaryTaste": {
+          "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "767f877f-51c8-46c7-9df6-9a5cd6e5e18d",
+      "key": "SHIFTING_INTENT_099",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": null,
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ]
+        },
+        "shiftDay": 47,
+        "secondaryTaste": {
+          "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "e32f0f19-99c4-4e81-bbd0-0334a854d7a7",
+      "key": "SHIFTING_INTENT_100",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": null,
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ]
+        },
+        "shiftDay": 49,
+        "secondaryTaste": {
+          "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "678f5172-92ca-461c-93ce-9af2351c49a7",
+      "key": "SHIFTING_INTENT_101",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ]
+        },
+        "shiftDay": 44,
+        "secondaryTaste": {
+          "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "ffaf1fc1-9b0d-452e-b32e-3dc6cb209f41",
+      "key": "SHIFTING_INTENT_102",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "58947902-023e-4990-9c78-befa1cac3ed6",
+        "brandId": null,
+        "minPrice": 23490000,
+        "maxPrice": 46990000,
+        "targets": {
+          "primary": [
+            "dec7327a-3e87-404f-94d3-ea284cfcc24b",
+            "28037e27-4ccc-4739-86df-9781a08ab1de"
+          ],
+          "secondary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ]
+        },
+        "shiftDay": 48,
+        "secondaryTaste": {
+          "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "ff0e530c-f77c-403f-b083-4f4c0fe76af3",
+      "key": "SHIFTING_INTENT_103",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+        "brandId": null,
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
+        "targets": {
+          "primary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ],
+          "secondary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ]
+        },
+        "shiftDay": 50,
+        "secondaryTaste": {
+          "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "ff6e1b99-0dd8-4f4e-9c8f-9f9dd7d36567",
+      "key": "SHIFTING_INTENT_104",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ]
+        },
+        "shiftDay": 37,
+        "secondaryTaste": {
+          "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "8e0864e8-31bb-4a52-b8eb-16a4996397b0",
+      "key": "SHIFTING_INTENT_105",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ]
+        },
+        "shiftDay": 49,
+        "secondaryTaste": {
+          "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "f4daffd7-0251-4f8c-9587-3750906cc3de",
+      "key": "SHIFTING_INTENT_106",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": null,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ]
+        },
+        "shiftDay": 33,
+        "secondaryTaste": {
+          "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "53ff7529-8a88-4007-b096-d695509e9e9f",
+      "key": "SHIFTING_INTENT_107",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ]
+        },
+        "shiftDay": 48,
+        "secondaryTaste": {
+          "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "6f4fd033-dc20-42d2-8e4b-0f3b1f8dbee9",
+      "key": "SHIFTING_INTENT_108",
+      "type": "SHIFTING_INTENT",
+      "truth": {
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+        "brandId": null,
+        "minPrice": 17490000,
+        "maxPrice": 58990000,
+        "targets": {
+          "primary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ]
+        },
+        "shiftDay": 50,
+        "secondaryTaste": {
+          "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+          "brandId": null
+        },
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "770fdf44-758c-4788-ac81-8fd416ae7a5c",
+      "key": "WINDOW_SHOPPER_109",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": null,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "8c76ffaa-efc5-4a49-a885-9768f8299773",
+      "key": "WINDOW_SHOPPER_110",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": null,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "9338bf90-8894-46c3-89cb-83bf7eaab86d",
+      "key": "WINDOW_SHOPPER_111",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "03d37b14-aaad-42d7-a258-9177bf537b63",
+      "key": "WINDOW_SHOPPER_112",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+        "brandId": null,
+        "minPrice": 17490000,
+        "maxPrice": 58990000,
+        "targets": {
+          "primary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "9c72cee0-65b7-4283-9cda-56d9023c912e",
+      "key": "WINDOW_SHOPPER_113",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": null,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "fe0e8448-43e3-4b9c-a38e-4fbecc7553a2",
+      "key": "WINDOW_SHOPPER_114",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "b4eae1e3-c247-4066-b303-2d09829491ef",
+        "brandId": null,
+        "minPrice": 5390000,
+        "maxPrice": 8890000,
+        "targets": {
+          "primary": [
+            "a10bc6bf-4235-43b9-9576-739bad177d90",
+            "a98f7234-0ae0-4c26-8183-cd327987f9a1",
+            "a387e6ef-1648-4a4f-8649-e016eb7579b3",
+            "efb6d457-6490-407b-9bb4-c8592a93aef2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "623bac1c-a598-4bf3-8fda-7e15360c52de",
+      "key": "WINDOW_SHOPPER_115",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "fae41adf-9de0-44d5-b331-278a5edafd0e",
+        "brandId": null,
+        "minPrice": 17490000,
+        "maxPrice": 58990000,
+        "targets": {
+          "primary": [
+            "74ea4623-9296-4e0c-be26-85072eec19ef",
+            "ea2910d5-2c1a-4ecd-b5d6-b151e7678c1d",
+            "83ba466e-89b2-4f7f-b4ed-f460f8b6641a",
+            "834747f6-f274-4194-a946-97974ee63750"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "b24cf9c0-399b-4753-b0e4-743a191f0d86",
+      "key": "WINDOW_SHOPPER_116",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "42a2035c-083d-42a9-ae1b-a8054beebb0b",
+        "brandId": null,
+        "minPrice": 19990000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "a679f786-323b-49e8-a872-e0a6675630b8",
+            "4bb680f8-9e30-4220-b071-ca30457c59ab",
+            "bfb5c4d9-7ac8-45ba-a400-dce5b9101fe4"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "b53fadce-477c-4a81-9ce9-e90c1423bad5",
+      "key": "WINDOW_SHOPPER_117",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "f25076a3-b80c-4a80-a62c-bceb902c5b8a",
+        "brandId": null,
+        "minPrice": 1390000,
+        "maxPrice": 17990000,
+        "targets": {
+          "primary": [
+            "5740c32f-de06-4875-9bfb-d2154208da73",
+            "b24352c7-dbdd-469c-9d5c-841c76d6821d",
+            "c2b879a2-dc31-4947-9125-abb665b49095",
+            "ef9aa595-962e-4763-bb52-6079984558e0",
+            "e9e25dc1-ae4f-4b94-910a-fb0aaa94e590"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "1c50dbc9-d2f8-4198-8183-3bf4c76c02a3",
+      "key": "WINDOW_SHOPPER_118",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "6a99a4e3-f487-4191-8a8c-00a7959f72be",
+        "brandId": null,
+        "minPrice": 6490000,
+        "maxPrice": 19490000,
+        "targets": {
+          "primary": [
+            "41ad16af-68de-45a9-9b38-3c8470d8fa0c",
+            "24010432-7806-4755-b001-a09c7f2d4f9a"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "44b91917-8ceb-44a1-9a18-89b7fbbc7376",
+      "key": "WINDOW_SHOPPER_119",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "3bfa6674-ce7d-461b-880e-4077fddfe96b",
+        "brandId": null,
+        "minPrice": 28490000,
+        "maxPrice": 29990000,
+        "targets": {
+          "primary": [
+            "021b618e-d7e9-4eac-b3ce-edf4bfac799e",
+            "10448c57-2e84-4474-b847-8201ab6224cc"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
+      }
+    },
+    {
+      "userId": "a717cba4-19af-4c5e-a01f-496539ec22d7",
+      "key": "WINDOW_SHOPPER_120",
+      "type": "WINDOW_SHOPPER",
+      "truth": {
+        "categoryId": "ba09751c-e252-48ae-b8c2-a5fd0c21c7af",
+        "brandId": null,
+        "minPrice": 38990000,
+        "maxPrice": 61990000,
+        "targets": {
+          "primary": [
+            "d88914c5-dbc4-4315-9131-a0248196bc63",
+            "a87f32c4-f3d2-4c22-9242-ec92ee9ccce2"
+          ],
+          "secondary": []
+        },
+        "shiftDay": null,
+        "secondaryTaste": null,
+        "seedProductId": null
       }
     }
   ]

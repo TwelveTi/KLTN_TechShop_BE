@@ -1,7 +1,9 @@
 const { Type } = require("@google/genai");
 
 const aiRepository = require("../repositories/aiRepository");
+const recommendationRepository = require("../repositories/recommendationRepository");
 const { getAgent } = require("./ai/prompts");
+const explanationPrompt = require("./ai/prompts/explanation");
 const {
   TEMPERATURE,
   MAX_OUTPUT_TOKENS,
@@ -93,9 +95,69 @@ const SEARCH_PRODUCTS_TOOL = {
 //
 // Trimming keeps the NEWEST turns: in a shopping conversation the last exchange
 // carries the constraint being refined ("rẻ hơn chút nữa"), and the opening
+const FIND_BY_NAME_TOOL = {
+  name: "find_products_by_name",
+  description:
+    "Tra sản phẩm theo TÊN mà người dùng nhắc tới. Dùng khi người dùng muốn so sánh những " +
+    "sản phẩm cụ thể. Chỉ trả về sản phẩm có thật trong kho, kèm thông số để so sánh.",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      names: {
+        type: Type.ARRAY,
+        items: { type: Type.STRING },
+        description:
+          "Tên sản phẩm như người dùng viết, mỗi phần tử một sản phẩm. Không cần chính xác tuyệt đối.",
+      },
+    },
+    required: ["names"],
+  },
+};
+
+/**
+ * Tool khả dụng, tra theo tên.
+ *
+ * Mỗi agent tự khai dùng những tool nào (`toolNames`) thay vì service gắn cứng
+ * một tool cho mọi agent. Advisor chỉ cần tìm theo ràng buộc; Comparison phải
+ * tra theo tên trước rồi mới so được. Tách vậy nên thêm agent thứ ba là viết
+ * thêm một file prompt, không phải sửa vòng lặp gọi model.
+ */
+const TOOLS = {
+  [SEARCH_PRODUCTS_TOOL.name]: SEARCH_PRODUCTS_TOOL,
+  [FIND_BY_NAME_TOOL.name]: FIND_BY_NAME_TOOL,
+};
+
 // question is the part the model can most afford to forget.
 const HISTORY_MAX_MESSAGES = 20;
 const HISTORY_MAX_CHARS = 6000;
+
+// Trần cho mô tả dài đưa vào lời gọi so sánh. Mô tả sản phẩm là văn marketing:
+// vài trăm chữ đầu mang gần hết thông tin, phần còn lại là điệp khúc bảo hành và
+// chính sách đổi trả — thứ giống hệt nhau ở mọi sản phẩm nên không phân biệt
+// được máy nào với máy nào.
+const DESCRIPTION_MAX_CHARS = 900;
+
+// Cửa sổ hành vi dùng làm bằng chứng cho lời giải thích. Ngắn hơn hẳn 90 ngày
+// của bộ gợi ý: "bạn từng xem cái này ba tháng trước" không thuyết phục ai.
+const EXPLANATION_WINDOW_DAYS = 30;
+
+/** `["laptop", "phone"]` hoặc `[{name}]` → danh sách tên. Cột JSON nên phải phòng cả hai. */
+const toNameList = (value) => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((entry) => (typeof entry === "string" ? entry : entry?.name || entry?.slug || null))
+    .filter(Boolean)
+    .slice(0, 4);
+};
+
+/** Tiền cho prompt: gọn, có đơn vị, không phụ thuộc locale của máy chủ. */
+const formatVnd = (amount) => {
+  const value = Number(amount);
+  if (!Number.isFinite(value) || value <= 0) return null;
+
+  return `${Math.round(value).toLocaleString("vi-VN")}đ`;
+};
 
 // The vocabulary changes only when an admin edits the catalogue taxonomy, but it
 // is sent on every request. Caching it keeps a chat turn to one round trip
@@ -124,12 +186,24 @@ class AiService {
    * returned, so the client renders cards from query rows and only the prose
    * comes from the model.
    */
-  async ask({ userId = null, sessionId = null, conversationId = null, message }) {
+  async ask({
+    userId = null,
+    sessionId = null,
+    conversationId = null,
+    message,
+    conversationType = "PRODUCT_ADVISOR",
+  }) {
     if (!isConfigured()) {
       throw new AppError("AI advisor is not configured on this server", 503);
     }
 
-    const conversation = await this.resolveConversation({ userId, sessionId, conversationId, message });
+    const conversation = await this.resolveConversation({
+      userId,
+      sessionId,
+      conversationId,
+      message,
+      conversationType,
+    });
     const history = trimHistory(
       await aiRepository.findMessages(conversation.id, { limit: HISTORY_MAX_MESSAGES }),
     );
@@ -146,10 +220,17 @@ class AiService {
       content: message,
     });
 
-    const { answer, products, toolCalls, toolRecords, usage, model } = await this.runWithFallback({
-      contents,
-      conversationType: conversation.conversationType,
-    });
+    const { answer, products, toolCalls, toolRecords, usage, model } = await this.runWithFallback(
+      // Bản sao `contents` cho MỖI lần thử: vòng lặp đẩy thêm vào mảng này (lượt
+      // của model, kết quả tool, câu nhắc trả lời). Dùng chung một mảng thì lần
+      // thử trên model dự phòng bắt đầu từ đống rác của lần trước.
+      (model) =>
+        this.runToolLoop({
+          contents: [...contents],
+          conversationType: conversation.conversationType,
+          model,
+        }),
+    );
 
     // Lưu lượng tool ghi TRƯỚC câu trả lời để thứ tự thời gian trong hội thoại
     // phản ánh đúng thứ tự đã xảy ra: hỏi → tra cứu → trả lời.
@@ -203,16 +284,13 @@ class AiService {
    * Chạy lại an toàn vì vòng lặp KHÔNG còn ghi gì xuống DB; `runTool` chỉ trả
    * bản ghi về cho `ask()` ghi một lượt sau cùng.
    */
-  async runWithFallback({ contents, conversationType }) {
+  async runWithFallback(run) {
     const chain = resolveModelChain();
     let lastError = null;
 
     for (const model of chain) {
       try {
-        // Bản sao cho mỗi lần thử: vòng lặp ĐẨY THÊM vào `contents` (lượt của
-        // model, kết quả tool, câu nhắc trả lời). Dùng chung một mảng thì lần
-        // thử thứ hai bắt đầu từ đống rác của lần thứ nhất.
-        return await this.runToolLoop({ contents: [...contents], conversationType, model });
+        return await run(model);
       } catch (error) {
         const { kind, tryNextModel } = classifyError(error);
         lastError = error;
@@ -229,6 +307,152 @@ class AiService {
     }
 
     throw toAppError(lastError) || lastError;
+  }
+
+  /**
+   * "Vì sao tôi được gợi ý sản phẩm này?"
+   *
+   * Không đi qua `AiConversation`: đây là câu hỏi về một `recommendationItem`
+   * cụ thể, không phải một cuộc trò chuyện — và `conversationType` cũng không có
+   * giá trị nào cho nó.
+   *
+   * **Kết quả được lưu lại.** Đây không phải tối ưu sớm mà là điều kiện để tính
+   * năng dùng được: một rail 12 sản phẩm mà mỗi cái một lời gọi model thì riêng
+   * việc mở trang chủ đã ăn hết hạn mức 20 request/ngày của free tier. Lưu vào
+   * `reasonMetadata.explanation` — cột JSON có sẵn, không cần migration, và lời
+   * giải thích nằm ngay cạnh chính dòng dữ liệu nó giải thích.
+   */
+  async explainRecommendation({ userId = null, sessionId = null, itemId }) {
+    if (!isConfigured()) {
+      throw new AppError("AI advisor is not configured on this server", 503);
+    }
+
+    const item = await recommendationRepository.findItemById(itemId);
+
+    if (!item) {
+      throw new AppError("Recommendation not found", 404);
+    }
+
+    // Chủ sở hữu xác định qua dòng `recommendation_results` cha, giống hệt cách
+    // hội thoại làm: đã đăng nhập thì theo `userId`, khách vãng lai theo
+    // `sessionId`. 404 chứ không 403 để endpoint không thành công cụ dò id.
+    const owner = item.recommendation;
+    const ownedByUser = userId && owner?.userId === userId;
+    const ownedBySession = !owner?.userId && sessionId && owner?.sessionId === sessionId;
+
+    if (!ownedByUser && !ownedBySession) {
+      throw new AppError("Recommendation not found", 404);
+    }
+
+    const metadata = item.reasonMetadata || {};
+
+    if (metadata.explanation) {
+      return { itemId: item.id, explanation: metadata.explanation, cached: true };
+    }
+
+    const signals = await this.collectExplanationSignals({ userId, item });
+    const cards = await recommendationRepository.findProductCards([item.productId]);
+    const card = cards.get(item.productId);
+
+    if (!card) {
+      throw new AppError("Recommendation product no longer exists", 404);
+    }
+
+    const product = {
+      name: card.name,
+      category: card.category?.name || null,
+      brand: card.brand?.name || null,
+      price: formatVnd(card.salePrice ?? card.basePrice),
+    };
+
+    const { text, model } = await this.runWithFallback((candidate) =>
+      this.generateText({
+        model: candidate,
+        system: explanationPrompt.SYSTEM,
+        prompt: explanationPrompt.buildUserPrompt({
+          product,
+          dominant: metadata.dominant,
+          signals,
+        }),
+      }),
+    );
+
+    const explanation = text.trim();
+
+    await recommendationRepository.updateItem(item, {
+      reasonMetadata: { ...metadata, explanation, explainedAt: new Date().toISOString(), model },
+    });
+
+    return { itemId: item.id, explanation, cached: false, model };
+  }
+
+  /**
+   * Bằng chứng đưa vào lời giải thích.
+   *
+   * Chỉ lấy tín hiệu của CHÍNH khách này. Khách vãng lai không có `userId` nên
+   * không có hồ sơ lẫn lịch sử tìm kiếm — lúc đó lời giải thích rút về "sản phẩm
+   * đang bán chạy", và đó là câu trả lời thật thà chứ không phải một chỗ thiếu.
+   */
+  async collectExplanationSignals({ userId, item }) {
+    if (!userId) {
+      return {};
+    }
+
+    const [profile, keywords, behaviors] = await Promise.all([
+      recommendationRepository.findProfile(userId),
+      recommendationRepository.findRecentKeywords(userId, { limit: 8 }),
+      recommendationRepository.findRecentBehaviors(userId, {
+        since: new Date(Date.now() - EXPLANATION_WINDOW_DAYS * 24 * 60 * 60 * 1000),
+        limit: 60,
+      }),
+    ]);
+
+    const viewedIds = [
+      ...new Set(behaviors.map((row) => row.productId).filter((id) => id && id !== item.productId)),
+    ].slice(0, 12);
+
+    const viewedCards = viewedIds.length > 0 ? await recommendationRepository.findProductCards(viewedIds) : new Map();
+    const target = (await recommendationRepository.findProductCards([item.productId])).get(item.productId);
+
+    return {
+      keywords: [...new Set(keywords.map((row) => row.keyword).filter(Boolean))].slice(0, 5),
+      preferredCategories: toNameList(profile?.preferredCategories),
+      preferredBrands: toNameList(profile?.preferredBrands),
+      priceRange:
+        profile?.minPrice && profile?.maxPrice
+          ? `${formatVnd(profile.minPrice)} – ${formatVnd(profile.maxPrice)}`
+          : null,
+      // Chỉ sản phẩm CÙNG DANH MỤC với sản phẩm đang giải thích. Liệt kê mọi thứ
+      // khách từng xem thì model sẽ vin vào một cái tai nghe để giải thích vì sao
+      // gợi ý laptop.
+      viewedInSameCategory: [...viewedCards.values()]
+        .filter((row) => row.category?.id && row.category.id === target?.category?.id)
+        .map((row) => row.name)
+        .slice(0, 3),
+    };
+  }
+
+  /** Một lượt gọi model không tool, dùng cho sinh văn bản một-lượt. */
+  async generateText({ model, system, prompt }) {
+    const client = getClient();
+
+    try {
+      const response = await client.models.generateContent({
+        model,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+          systemInstruction: system,
+          temperature: TEMPERATURE,
+          maxOutputTokens: MAX_OUTPUT_TOKENS,
+          thinkingConfig: { thinkingLevel: THINKING_LEVEL },
+        },
+      });
+
+      return { text: response.text || "", model };
+    } catch (error) {
+      logger.error("Gemini text call failed", { model, error: logger.serializeError(error) });
+      throw error;
+    }
   }
 
   /** Hội thoại của người gọi, cho trang quản lý lịch sử tư vấn. */
@@ -308,7 +532,7 @@ class AiService {
    * signed-in shopper owns their conversations by `userId`; a guest owns theirs
    * by the session key the behaviour tracker already issues.
    */
-  async resolveConversation({ userId, sessionId, conversationId, message }) {
+  async resolveConversation({ userId, sessionId, conversationId, message, conversationType }) {
     if (conversationId) {
       const existing = await this.assertOwnership({ userId, sessionId, conversationId });
 
@@ -316,13 +540,17 @@ class AiService {
         throw new AppError("Conversation is closed", 409);
       }
 
+      // Kiểu hội thoại do lượt ĐẦU TIÊN quyết định và không đổi được. Cho phép
+      // đổi giữa chừng nghĩa là nửa đầu chạy bằng prompt Advisor còn nửa sau
+      // bằng prompt Comparison, trong khi lịch sử vẫn được nạp nguyên vẹn — model
+      // nhận một cuộc hội thoại mà luật chơi đổi giữa chừng.
       return existing;
     }
 
     return aiRepository.createConversation({
       userId,
       sessionId,
-      conversationType: "PRODUCT_ADVISOR",
+      conversationType,
       // First question doubles as the thread title — enough to tell threads
       // apart in an admin list without a second model call to summarise them.
       title: message.slice(0, 120),
@@ -341,6 +569,10 @@ class AiService {
     const client = getClient();
     const agent = getAgent(conversationType);
     const systemInstruction = agent.buildSystemInstruction(await loadVocabulary());
+
+    // Agent nào chỉ thấy tool của agent đó. Comparison không nên vô tình dùng
+    // được một tool chỉ Advisor mới có ngữ cảnh để dùng đúng.
+    const functionDeclarations = agent.toolNames.map((name) => TOOLS[name]);
 
     const baseConfig = {
       systemInstruction,
@@ -384,7 +616,7 @@ class AiService {
           contents,
           config: toolsExhausted
             ? { ...baseConfig, toolConfig: { functionCallingConfig: { mode: "NONE" } } }
-            : { ...baseConfig, tools: [{ functionDeclarations: [SEARCH_PRODUCTS_TOOL] }] },
+            : { ...baseConfig, tools: [{ functionDeclarations }] },
         });
       } catch (error) {
         // Ném NGUYÊN lỗi của SDK: `ask()` mới là nơi quyết định thử model khác
@@ -455,34 +687,47 @@ class AiService {
    * để lại tin nhắn `TOOL` mồ côi trong một hội thoại không có lượt trả lời nào.
    */
   async runTool(call) {
-    if (call.name !== SEARCH_PRODUCTS_TOOL.name) {
+    if (!TOOLS[call.name]) {
       return {
         products: [],
         payload: { error: `Unknown tool "${call.name}"` },
       };
     }
 
-    const args = normaliseSearchArgs(call.args || {});
+    const byName = call.name === FIND_BY_NAME_TOOL.name;
+    const args = byName ? normaliseNameArgs(call.args || {}) : normaliseSearchArgs(call.args || {});
 
     let products = [];
     let payload;
 
     try {
-      products = await aiRepository.searchProducts(args);
+      products = byName
+        ? await aiRepository.findProductsByNames(args.names)
+        : await aiRepository.searchProducts(args);
+
       payload = {
         // Named `products` rather than returned bare so a zero-result search
         // reads as an explicit empty list. The model treats a missing key as an
         // error and retries; an empty array is an answer.
-        products: products.map(toModelView),
+        products: products.map((product) => toModelView(product, { verbose: byName })),
         count: products.length,
       };
+
+      // Tên nào không tra ra sản phẩm phải được nói rõ. Trả về im lặng thiếu
+      // một cột thì model sẽ so sánh hai sản phẩm và lờ đi cái thứ ba khách vừa
+      // nhắc — trông như nó cố tình bỏ qua.
+      if (byName && products.length < args.names.length) {
+        payload.notFound = args.names.filter(
+          (name) => !products.some((product) => tokenOverlap(name, product.name) >= 0.5),
+        );
+      }
     } catch (error) {
       logger.error("AI advisor tool call failed", {
         tool: call.name,
         args,
         error: logger.serializeError(error),
       });
-      payload = { error: "Product search failed", products: [], count: 0 };
+      payload = { error: "Product lookup failed", products: [], count: 0 };
     }
 
     return {
@@ -539,7 +784,19 @@ const trimHistory = (messages) => {
  * `shortDescription` is truncated because it is marketing copy written for a
  * product page, not for a model deciding whether something fits a budget.
  */
-const toModelView = (product) => ({
+/**
+ * Hàng DB → thứ model được nhìn thấy.
+ *
+ * `verbose` chỉ bật ở đường SO SÁNH (`find_products_by_name`, tối đa 4 sản
+ * phẩm). Nó thêm mô tả dài và vài đánh giá của khách — nguyên liệu để viết ưu
+ * và nhược điểm.
+ *
+ * Đường tư vấn (`search_products`) KHÔNG bật, và đó là chủ đích: nó trả về hàng
+ * chục sản phẩm, mà nhân mỗi sản phẩm thêm ~600 token mô tả cộng review là đủ
+ * đẩy một câu hỏi bình thường vượt ngân sách context — để đổi lấy thứ mà một
+ * danh sách gợi ý không dùng đến.
+ */
+const toModelView = (product, { verbose = false } = {}) => ({
   name: product.name,
   brand: product.brand?.name || null,
   category: product.category?.name || null,
@@ -553,6 +810,14 @@ const toModelView = (product) => ({
     acc[key] = spec.unit ? `${spec.value} (${spec.unit})` : spec.value;
     return acc;
   }, {}),
+  ...(verbose
+    ? {
+        description: product.description ? product.description.slice(0, DESCRIPTION_MAX_CHARS) : null,
+        // Đặt tên trường nói rõ đây là lời NGƯỜI DÙNG viết, không phải dữ liệu
+        // của cửa hàng. Prompt dựa vào tên này để phân biệt hai loại.
+        customerReviews: product.reviews || [],
+      }
+    : {}),
 });
 
 // ── Lỗi từ nhà cung cấp ─────────────────────────────────────────────────────
@@ -616,6 +881,41 @@ const toAppError = (error) => {
  * ask for a limit of 50 when the prompt says 12. Both are cheap to correct here
  * and expensive to notice in an answer.
  */
+/** Tên sản phẩm model gửi lên: lọc rác, cắt trần, bỏ trùng. */
+const normaliseNameArgs = (args) => {
+  const names = Array.isArray(args.names) ? args.names : [];
+
+  return {
+    names: [
+      ...new Set(
+        names
+          .filter((name) => typeof name === "string")
+          .map((name) => name.trim())
+          .filter((name) => name.length > 1),
+      ),
+      // Bốn là trần: một bảng so sánh năm cột trên điện thoại thì không đọc nổi,
+      // và mỗi cột thêm vào là thêm thông số vào context.
+    ].slice(0, 4),
+  };
+};
+
+/** Tỉ lệ từ trong `query` xuất hiện ở `candidate`. Dùng để biết tên nào tra hụt. */
+const tokenOverlap = (query, candidate) => {
+  const words = (text) =>
+    String(text || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .split(/[^a-z0-9]+/)
+      .filter((word) => word.length > 1);
+
+  const tokens = words(query);
+  if (tokens.length === 0) return 0;
+
+  const haystack = words(candidate);
+  return tokens.filter((token) => haystack.some((word) => word.includes(token))).length / tokens.length;
+};
+
 const normaliseSearchArgs = (args) => {
   const toNumber = (raw) => {
     const value = Number(raw);

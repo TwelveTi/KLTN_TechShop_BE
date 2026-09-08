@@ -5,6 +5,7 @@ const path = require("path");
 const { Op } = require("sequelize");
 const db = require("../../models");
 const { buildSimulationPlan } = require("./planner");
+const counters = require("./counters");
 
 /**
  * Generates a synthetic behaviour dataset for evaluating the recommender.
@@ -20,8 +21,18 @@ const SIM_DOMAIN = "@sim.techshop.dev";
 const GROUND_TRUTH_FILE = path.join(__dirname, "ground-truth.json");
 const CHUNK = 500;
 
+/**
+ * 120 khách, không phải 60.
+ *
+ * Roster có 7 archetype (xem `planner.js`), và chương Đánh giá phải đọc được số
+ * theo TỪNG archetype — toàn bộ luận điểm "khách khác nhau cần thành phần khác
+ * nhau" biến mất trong một con số tổng. Ở 60 khách thì nhóm nhỏ nhất còn 6 người,
+ * mỗi ca sai đổi kết quả nhóm đó 17 điểm. Ở 120 thì nhóm nhỏ nhất là 12.
+ *
+ * Nới quy mô ở đây không tốn gì: chỉ là một tham số của bộ sinh.
+ */
 const parseArgs = (argv) => {
-  const args = { users: 60, days: 90, seed: 42, reset: false, keep: false };
+  const args = { users: 120, days: 90, seed: 42, reset: false, keep: false };
 
   argv.slice(2).forEach((raw) => {
     if (raw === "--reset") {
@@ -67,6 +78,7 @@ const insertInChunks = async (model, rows) => {
   }
 };
 
+
 const main = async () => {
   const args = parseArgs(process.argv);
 
@@ -74,9 +86,17 @@ const main = async () => {
 
   if (args.reset) {
     const removed = await removeSimulatedData();
+    // Đếm lượt xem/bán cũng là dữ liệu mô phỏng đã ghi đè lên catalogue, nên
+    // `--reset` phải trả nốt chúng về — nếu không thì "xoá sạch dữ liệu mô phỏng"
+    // là lời hứa chỉ giữ được một nửa.
+    const restored = await counters.restoreAuthored();
     console.log(
       `Removed simulated data: ${removed.users} users, ${removed.behaviors} behaviours, ` +
         `${removed.searches} searches, ${removed.profiles} profiles.`,
+    );
+    console.log(
+      `Restored catalogue counters on ${restored.restored} products` +
+        `${restored.untouched > 0 ? ` (${restored.untouched} not in products.data.js, left alone)` : ""}.`,
     );
     return;
   }
@@ -93,7 +113,11 @@ const main = async () => {
   const [products, categories, brands] = await Promise.all([
     db.Product.findAll({
       where: { status: "ACTIVE" },
-      attributes: ["id", "name", "categoryId", "brandId", "basePrice", "salePrice"],
+      // `slug` được `buildSimulationPlan` dùng làm khoá sắp xếp tất định. Không
+      // có nó thì planner rơi về thứ tự UUID và cùng một seed sẽ cho ra bộ dữ
+      // liệu khác nhau sau mỗi lượt `seed:catalog` — xem chú thích ở planner.
+      attributes: ["id", "slug", "name", "categoryId", "brandId", "basePrice", "salePrice"],
+      order: [["slug", "ASC"]],
       raw: true,
     }),
     db.Category.findAll({ attributes: ["id", "name"], raw: true }),
@@ -138,6 +162,11 @@ const main = async () => {
   await insertInChunks(db.UserBehavior, behaviorRows);
   await insertInChunks(db.SearchHistory, searchRows);
 
+  // Đưa catalogue về đúng thế giới mà persona vừa sống trong đó. Phải chạy SAU
+  // khi hành vi đã nằm trong DB, vì hàm này tính lại từ DB chứ không từ `plan`.
+  const simUserIds = [...idByPersona.values()];
+  const written = await counters.recomputeFromEvents(simUserIds, products.map((p) => p.id));
+
   // The answer key, written to disk rather than into the database: it must not
   // sit anywhere the recommender could read it, because recovering it is
   // exactly what the evaluation measures.
@@ -160,14 +189,31 @@ const main = async () => {
     .map(([type, count]) => `${type}=${count}`)
     .join(" · ");
 
+  const byArchetype = plan.personas.reduce((acc, persona) => {
+    acc[persona.type] = (acc[persona.type] || 0) + 1;
+    return acc;
+  }, {});
+
   console.log(`\nGenerated (seed ${args.seed}, ${args.days} days):`);
   console.log(`  ${created.length} simulated shoppers`);
+  console.log(
+    `    ${Object.entries(byArchetype)
+      .map(([type, n]) => `${type}=${n}`)
+      .join(" · ")}`,
+  );
   console.log(`  ${behaviorRows.length} behaviour events  (${byType})`);
   console.log(`  ${searchRows.length} search history rows`);
   console.log(`  ground truth -> ${path.relative(process.cwd(), GROUND_TRUTH_FILE)}`);
 
   const conversion = plan.stats.PURCHASE / Math.max(plan.stats.VIEW_PRODUCT, 1);
   console.log(`  view -> purchase conversion: ${(conversion * 100).toFixed(1)}%`);
+
+  console.log(
+    `\nCatalogue counters rewritten from these events (was: hand-authored in products.data.js):\n` +
+      `  ${written.products} products touched · ${written.withViews} with views · ${written.withSales} with sales\n` +
+      `  viewCount total ${written.views} · soldCount total ${written.sold} units\n` +
+      `  \`npm run simulate:reset\` puts the authored numbers back.`,
+  );
 };
 
 main()

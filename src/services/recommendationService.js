@@ -1,6 +1,11 @@
 const AppError = require("../utils/AppError");
 const recommendationRepository = require("../repositories/recommendationRepository");
+// Chỉ dùng ở đường `asOf` (đo tách theo thời gian): dựng lại hồ sơ sở thích tại
+// một mốc quá khứ. `behaviorService` không require ngược lại đây, nên không có
+// vòng phụ thuộc.
+const behaviorService = require("./behaviorService");
 const { computeContentSimilarity, priceOf } = require("../utils/similarity");
+const { foldDiacritics, tokenizeFolded } = require("../utils/textTokens");
 const logger = require("../utils/logger");
 
 /**
@@ -34,6 +39,21 @@ const HYBRID_WEIGHTS = {
  */
 const PERSONAL_KEYS = ["userPreference", "searchHistory", "purchaseHistory", "productSimilarity"];
 
+/**
+ * Phần của phép ghép dành cho `popularity` KHI khách đã có tín hiệu cá nhân.
+ *
+ * `0` là hành vi `hybrid-v2`: popularity bị loại hẳn khỏi tổng, chỉ còn là phương
+ * án dự phòng và phần lấp đuôi. Đặt `0.10` là quay về hành vi `v1`.
+ *
+ * Lộ ra để harness đo lường quét thử, giống `HYBRID_WEIGHTS` — xem
+ * `measure.js --popsweep`. Bằng chứng cũ cho việc chọn `0` (README 6.4.1:
+ * "popularity tệ hơn ngẫu nhiên") đã được chứng minh là **không hợp lệ**: lúc đó
+ * `simulate` không cập nhật `soldCount`/`viewCount` nên popularity đang được chấm
+ * trên số viết tay trong `products.data.js`. Nên con số này phải được chọn lại
+ * bằng số, trên cả hai giao thức và cả hai seed.
+ */
+const POPULARITY_BLEND = { weight: 0 };
+
 // Bumped whenever the formula changes, and stored on every result. Without it,
 // numbers measured before and after a tweak are silently incomparable.
 const ALGORITHM_VERSION = "hybrid-v2";
@@ -51,6 +71,20 @@ const REASON_CODES = {
 const RECENCY_WINDOW_DAYS = 90;
 const CACHE_MINUTES = 15;
 const DEFAULT_LIMIT = 12;
+
+/**
+ * Những `strategy` mà một dòng đã lưu được phép dùng lại cho request sau.
+ *
+ * Chỉ hai giá trị này là kết quả của phép ghép đầy đủ. Một dòng sinh ra bởi
+ * `?strategy=popularity` chứa danh sách của MỘT thành phần; trả nó cho một
+ * request không ép strategy là nói sai về phép tính đã chạy, và `findFreshResult`
+ * thì không lọc theo strategy nên phải chặn ở đây.
+ *
+ * Dòng cũ hơn thay đổi này không ghi `strategy` vào `context`, nên cũng rơi vào
+ * nhánh này và bị tính lại — đúng, vì không có cách nào biết nó là `hybrid` hay
+ * `popularity-fallback`.
+ */
+const CACHEABLE_STRATEGIES = new Set(["hybrid", "popularity-fallback"]);
 
 // Behaviour types that mean "already dealt with this product" — recommending
 // something a shopper just bought is the most visible way to look broken.
@@ -135,8 +169,14 @@ class RecommendationService {
    * Matches recent search keywords against product names.
    *
    * Recency-weighted: what someone searched yesterday says more than what they
-   * searched two months ago. Token-based rather than substring so "laptop gaming"
-   * matches a "Gaming Laptop" whose words are in the other order.
+   * searched two months ago. Từ khoá được tách thành token nên "laptop gaming"
+   * khớp được "Gaming Laptop" dù thứ tự từ khác; phía tên sản phẩm vẫn là khớp
+   * chuỗi con, nên một token ngắn có thể khớp giữa từ — đó là lý do
+   * `tokenizeFolded` bỏ token dưới 3 ký tự.
+   *
+   * Chỉ khớp `product.name`. Mô tả, tên thương hiệu, tên danh mục và tag đều
+   * không tham gia, nên "tai nghe chống ồn" không với được tới một sản phẩm mà
+   * tên không chứa mấy từ đó — món nợ còn lại của thành phần này.
    */
   scoreSearchHistory(products, keywords) {
     if (!keywords || keywords.length === 0) {
@@ -146,16 +186,19 @@ class RecommendationService {
     const tokenised = keywords.map((entry, index) => ({
       // Weight decays with position; the list arrives newest-first.
       weight: 1 / (index + 1),
-      tokens: String(entry.keyword || "")
-        .toLowerCase()
-        .split(/[^a-z0-9]+/)
-        .filter((token) => token.length > 2),
+      // Bỏ dấu TRƯỚC khi tách. Tách trực tiếp trên chuỗi còn dấu thì chữ có dấu
+      // không tách từ mà băm từ thành vụn: "bàn phím không dây gõ êm" ra mảng
+      // rỗng, "đồng hồ thông minh" chỉ còn ["minh"], "chuột" thành "chu" rồi
+      // khớp bừa mọi tên chứa "chu". Xem utils/textTokens.
+      tokens: tokenizeFolded(entry.keyword),
     }));
 
     const scores = {};
 
     products.forEach((product) => {
-      const haystack = String(product.name || "").toLowerCase();
+      // Phải bỏ dấu cùng một cách với phía từ khoá, nếu không "dong" sẽ không
+      // bao giờ gặp "đồng".
+      const haystack = foldDiacritics(product.name);
       let score = 0;
 
       tokenised.forEach(({ weight, tokens }) => {
@@ -315,7 +358,20 @@ class RecommendationService {
     }
 
     const total = active.reduce((sum, key) => sum + HYBRID_WEIGHTS[key], 0);
-    return Object.fromEntries(active.map((key) => [key, HYBRID_WEIGHTS[key] / total]));
+    const share = POPULARITY_BLEND.weight;
+
+    if (share <= 0) {
+      return Object.fromEntries(active.map((key) => [key, HYBRID_WEIGHTS[key] / total]));
+    }
+
+    // `share` là phần của TOÀN BỘ phép ghép dành cho popularity; phần còn lại chia
+    // cho các thành phần cá nhân theo đúng tỉ lệ cũ của chúng.
+    const blended = Object.fromEntries(
+      active.map((key) => [key, (HYBRID_WEIGHTS[key] / total) * (1 - share)]),
+    );
+    blended.popularity = share;
+
+    return blended;
   }
 
   combine(products, components, { excludeIds = new Set(), weights = HYBRID_WEIGHTS } = {}) {
@@ -373,8 +429,41 @@ class RecommendationService {
    * @param {string|null} options.strategy  force a single component: 'popularity',
    *        'userPreference', … Used by the evaluation to compare one algorithm
    *        against the hybrid.
+   * @param {Date|null} options.asOf  tính gợi ý **như nó đã là** tại thời điểm
+   *        này: mọi hành vi và từ khoá từ đó trở đi bị giấu, và hồ sơ sở thích
+   *        được dựng lại tại chỗ thay vì đọc bản đã lưu. Khe cắm thứ ba dành cho
+   *        công cụ đo, cùng loại với `strategy` và `persist` — xem `measure.js
+   *        --loo`. Không đường chạy thật nào truyền tham số này.
    */
-  async getForUser({ userId = null, sessionId = null, limit = DEFAULT_LIMIT, strategy = null, persist = true }) {
+  async getForUser({ userId = null, sessionId = null, limit = DEFAULT_LIMIT, strategy = null, persist = true, asOf = null }) {
+    /**
+     * Dùng lại dòng `recommendation_results` còn hạn trước khi tính lại bất cứ thứ gì.
+     *
+     * Đặt TRƯỚC `findScorableProducts` là cố ý — đọc cache mà vẫn nạp cả
+     * catalogue thì không tiết kiệm được gì. Hai điều mỗi lượt tính lại phải trả
+     * giá: một dòng "shown" mới làm loãng mẫu số CTR của chương Đánh giá, và một
+     * bộ `itemId` mới làm mất lời giải thích AI đã lưu ở `reasonMetadata` (README 7.3).
+     *
+     * Ba điều kiện loại trừ, cả ba đều bắt buộc:
+     *
+     *  - **`!userId`** — khách vãng lai không có dòng nào để đọc. Xem nhánh dưới.
+     *  - **`strategy`** — đường ép một thành phần đơn lẻ là đường đo lường, phải
+     *    luôn tính lại (xem `CACHEABLE_STRATEGIES`).
+     *  - **`!persist`** — gọi với `persist: false` là nói "đừng chạm vào bảng kết
+     *    quả", và đọc cũng là chạm. `measure.js --sweep` chạy 7 bộ trọng số liên
+     *    tiếp trên cùng một khách; nếu bộ thứ hai đọc lại dòng của bộ thứ nhất
+     *    thì cả bảng quét chỉ là một con số nhân bảy.
+     */
+    // `asOf` cũng loại trừ cache, và vì một lý do khác ba lý do trên: một dòng đã
+    // lưu là kết quả tính tại thời điểm nó được ghi, không phải tại mốc đang hỏi.
+    if (userId && persist && !strategy && !asOf) {
+      const cached = await this.readCachedResult({ userId, sessionId, limit });
+
+      if (cached) {
+        return cached;
+      }
+    }
+
     const products = await recommendationRepository.findScorableProducts();
 
     if (products.length === 0) {
@@ -387,23 +476,57 @@ class RecommendationService {
       const popularity = this.scorePopularity(products);
       const ranked = this.combine(products, { popularity }).slice(0, limit);
 
+      /**
+       * Vẫn KHÔNG lưu, nên cũng không có gì để cache — và đó là lựa chọn, không
+       * phải chỗ chưa làm. Cache cho khách vãng lai đòi phải lưu trước, mà lưu
+       * thì đánh vào đúng hai con số việc này đang đi sửa:
+       *
+       *  1. **Mẫu số CTR.** `getOutcomeStats` đếm MỌI dòng `recommendation_items`,
+       *     không lọc theo `recommendationType` lẫn `personalised`. Mỗi phiên
+       *     khách lạ sẽ thêm 12 lượt "shown" của một danh sách bán chạy chung vào
+       *     cùng mẫu số với dải cá nhân hoá — làm loãng đúng tỉ lệ chương Đánh giá
+       *     đang đo, chỉ khác là loãng bằng 12 dòng mỗi 15 phút thay vì mỗi request.
+       *  2. **Hạn mức Gemini.** Lời giải thích AI chỉ có nghĩa khi có tín hiệu để
+       *     giải thích. Khách chưa có `userId` thì `collectExplanationSignals`
+       *     trả rỗng và model chỉ nói được "sản phẩm đang bán chạy" — trả tiền
+       *     hạn mức cho một câu suy ra được từ `reasonCode`.
+       *
+       * Đổi lại, đường này rẻ: một truy vấn catalogue rồi xếp hạng trong bộ nhớ,
+       * không hồ sơ, không ma trận tương tự, không ghi gì. Chi phí một lượt tính
+       * lại ở đây thấp hơn chi phí của dòng cache mà nó tiết kiệm được.
+       *
+       * Dải "sản phẩm tương tự" thì CÓ lưu cho khách vãng lai (`getSimilarProducts`
+       * nhận `sessionId`) — khác biệt đó là cố ý và được ghi ở README 7.3.
+       */
       return {
-        // Not persisted, so no outcome ids: an anonymous rail would create a
-        // result row on every homepage hit, and there is no user to attribute
-        // it to afterwards.
+        // No outcome ids, because nothing was persisted: the client must not
+        // invent one, and there is no user to attribute it to afterwards.
         items: await this.decorate(ranked),
         strategy: "popularity",
         algorithmVersion: ALGORITHM_VERSION,
         personalised: false,
+        cached: false,
       };
     }
 
-    const since = new Date(Date.now() - RECENCY_WINDOW_DAYS * 86400000);
+    // Cửa sổ 90 ngày trượt theo mốc đang hỏi. Neo nó vào `Date.now()` trong khi
+    // `before` lùi về quá khứ sẽ đọc một cửa sổ rộng hơn 90 ngày, và hai lượt đo
+    // ở hai mốc khác nhau sẽ chạy trên hai độ dài lịch sử khác nhau.
+    const anchor = asOf ? asOf.getTime() : Date.now();
+    const since = new Date(anchor - RECENCY_WINDOW_DAYS * 86400000);
 
     const [profile, behaviors, keywords] = await Promise.all([
-      recommendationRepository.findProfile(userId),
-      recommendationRepository.findRecentBehaviors(userId, { since }),
-      recommendationRepository.findRecentKeywords(userId),
+      /**
+       * Ở chế độ `asOf`, hồ sơ đã lưu là **hồ sơ của hôm nay** — nó được gộp từ
+       * cả những hành vi sau mốc cắt, nên dùng nó là đưa đáp án cho mô hình.
+       * Dựng lại tại chỗ với `persist: false`: một hồ sơ "tính tới ngày X" không
+       * phải hồ sơ hiện tại của khách, ghi đè lên là làm hỏng dữ liệu thật.
+       */
+      asOf
+        ? behaviorService.recomputeProfile(userId, { before: asOf, persist: false })
+        : recommendationRepository.findProfile(userId),
+      recommendationRepository.findRecentBehaviors(userId, { since, before: asOf }),
+      recommendationRepository.findRecentKeywords(userId, { before: asOf }),
     ]);
 
     const productById = new Map(products.map((p) => [p.id, p]));
@@ -497,7 +620,16 @@ class RecommendationService {
     ranked = ranked.slice(0, limit);
 
     const itemIdByProductId = persist
-      ? await this.persist({ userId, sessionId, ranked, recommendationType: "PERSONALIZED_HOME", weights })
+      ? await this.persist({
+          userId,
+          sessionId,
+          ranked,
+          recommendationType: "PERSONALIZED_HOME",
+          weights,
+          // Ghi lại để `readCachedResult` dựng lại được `strategy` và
+          // `personalised` mà không phải đoán từ `weights`.
+          strategy: usedStrategy,
+        })
       : new Map();
 
     return {
@@ -509,7 +641,117 @@ class RecommendationService {
       // trọng số thích ứng thì hai khách khác nhau nhận hai bộ khác nhau, và
       // ghi lại bảng chung sẽ làm log nói sai về chính phép tính vừa chạy.
       weights,
+      cached: false,
     };
+  }
+
+  /**
+   * Dòng `recommendation_results` còn hạn, dựng lại đúng hình dạng mà đường tính
+   * lại trả về — kể cả `itemId` của chính những dòng `recommendation_items` đã lưu.
+   *
+   * Trả `null` (nghĩa là "tính lại") ở MỌI ca không dựng lại được nguyên vẹn.
+   * Một cache sai còn tệ hơn không cache: nó phục vụ một dải khác với dải đã ghi,
+   * trong khi `recommendation_items` vẫn khai là đã hiện đúng dải cũ — và outcome
+   * báo về sẽ quy kết cho những `itemId` không phải thứ khách thật sự nhìn thấy.
+   */
+  async readCachedResult({ userId, sessionId, limit }) {
+    try {
+      const result = await recommendationRepository.findFreshResult({
+        userId,
+        sessionId,
+        recommendationType: "PERSONALIZED_HOME",
+      });
+
+      if (!result) {
+        return null;
+      }
+
+      const context = result.context || {};
+
+      if (!CACHEABLE_STRATEGIES.has(context.strategy)) {
+        return null;
+      }
+
+      // Công thức đổi thì số đo trước và sau không so được với nhau, nên một dòng
+      // của phiên bản trước phải bị bỏ chứ không được dùng lại.
+      if (result.algorithmVersion !== ALGORITHM_VERSION) {
+        return null;
+      }
+
+      const stored = (result.items || []).slice(0, limit);
+
+      /**
+       * Dòng hẹp hơn `limit` thì không trả lời được request này.
+       *
+       * Không lấp thêm cho đủ: phần lấp thêm sẽ không có `itemId` nào, và một dải
+       * nửa đo được nửa không làm cột "shown" nói sai về đúng chỗ nó vừa được sửa.
+       * Tính lại rồi ghi một dòng rộng hơn — request `limit` nhỏ sau đó vẫn đọc
+       * lại được dòng đó vì `findFreshResult` lấy dòng mới nhất.
+       */
+      if (stored.length < limit) {
+        return null;
+      }
+
+      /**
+       * Mua rồi thì không được gợi ý lại.
+       *
+       * `excludeIds` đã lọc lúc dòng này sinh ra, nhưng một lượt mua SAU đó thì
+       * dòng cũ không biết — và `SATISFIED_TYPES` tồn tại vì gợi ý lại thứ khách
+       * vừa mua là kiểu hỏng dễ thấy nhất. Bỏ cả cache thay vì bỏ từng thẻ: bỏ
+       * thẻ sẽ làm dải ngắn lại dưới `limit`, còn lượt mua thì vốn hiếm nên tính
+       * lại ở đây gần như không bao giờ chạy.
+       */
+      const purchasedIds = await recommendationRepository.findPurchasedProductIds(userId, {
+        since: new Date(Date.now() - RECENCY_WINDOW_DAYS * 86400000),
+        behaviorTypes: SATISFIED_TYPES,
+      });
+      const purchased = new Set(purchasedIds);
+
+      if (stored.some((item) => purchased.has(item.productId))) {
+        return null;
+      }
+
+      const items = await this.decorate(
+        stored.map((item) => ({
+          productId: item.productId,
+          // DECIMAL(12,6) về từ MySQL dưới dạng chuỗi; đường tính lại trả số, và
+          // client so sánh/định dạng giá trị này.
+          score: Number(item.score),
+          reasonCode: item.reasonCode,
+          reasonMetadata: item.reasonMetadata,
+        })),
+        { itemIdByProductId: new Map(stored.map((item) => [item.productId, item.id])) },
+      );
+
+      /**
+       * `decorate` đọc sản phẩm theo khoá chính và KHÔNG lọc `status` — nó không
+       * cần lọc ở đường tính lại vì `findScorableProducts` chỉ trả ACTIVE. Ở đây
+       * thì dòng đã lưu có thể trỏ tới sản phẩm vừa bị ẩn hoặc xoá trong 15 phút
+       * vừa qua, nên phải tự kiểm: thiếu thẻ (`decorate` đã bỏ) hoặc còn thẻ mà
+       * không còn ACTIVE thì tính lại.
+       */
+      if (items.length < stored.length || items.some((item) => item.product.status !== "ACTIVE")) {
+        return null;
+      }
+
+      return {
+        items,
+        strategy: context.strategy,
+        algorithmVersion: result.algorithmVersion,
+        personalised: context.strategy !== "popularity-fallback",
+        // Đọc lại từ chính dòng đã ghi, không phải tính lại từ bảng hằng số:
+        // trọng số thích ứng khiến hai khách chạy bằng hai bộ khác nhau.
+        weights: context.weights || {},
+        cached: true,
+      };
+    } catch (error) {
+      // Cùng lập luận với `persist`: mất cache không được làm khách mất gợi ý.
+      // Tính lại thì chậm hơn, nhưng dải vẫn hiện.
+      logger.warn("Failed to read a cached recommendation result", {
+        error: logger.serializeError(error),
+      });
+      return null;
+    }
   }
 
   /**
@@ -622,7 +864,7 @@ class RecommendationService {
    * Returns `productId → itemId` so `decorate` can hand each card the id the
    * client will report against.
    */
-  async persist({ userId, sessionId, ranked, recommendationType, weights = HYBRID_WEIGHTS }) {
+  async persist({ userId, sessionId, ranked, recommendationType, weights = HYBRID_WEIGHTS, strategy = null }) {
     if (ranked.length === 0) {
       return new Map();
     }
@@ -638,7 +880,11 @@ class RecommendationService {
           // `recommendation_results` đều khai cùng một bộ, trong khi trọng số
           // thích ứng khiến hai khách chạy bằng hai bộ khác nhau — và đây là
           // bảng chương Đánh giá đọc.
-          context: { weights },
+          //
+          // `strategy` ghi cùng chỗ vì `readCachedResult` cần nó để biết dòng này
+          // có được dùng lại hay không: một dòng của `?strategy=popularity` là
+          // danh sách một thành phần, không phải kết quả của phép ghép.
+          context: { weights, strategy },
           expiresAt: new Date(Date.now() + CACHE_MINUTES * 60000),
         },
         ranked.map((entry, index) => ({
@@ -781,3 +1027,4 @@ module.exports = new RecommendationService();
  */
 module.exports.HYBRID_WEIGHTS = HYBRID_WEIGHTS;
 module.exports.PERSONAL_KEYS = PERSONAL_KEYS;
+module.exports.POPULARITY_BLEND = POPULARITY_BLEND;

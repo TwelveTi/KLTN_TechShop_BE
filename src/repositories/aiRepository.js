@@ -205,6 +205,163 @@ class AiRepository {
       .map((product) => shapeProduct(product, specsByProduct[product.id] || {}));
   }
 
+  /**
+   * Tra sản phẩm theo TÊN người dùng gõ, cho tính năng so sánh.
+   *
+   * Không dùng `LIKE '%tên%'`: khách gõ "macbook air m2" còn trong kho là
+   * "Apple MacBook Air 13.6 inch M2 (8GB / 256GB SSD)" — không chuỗi con nào
+   * khớp. Nên chấm điểm theo TỪ: tên nào phủ được nhiều từ khoá nhất thì thắng.
+   *
+   * Nạp cả catalogue rồi lọc trong bộ nhớ. Với vài chục sản phẩm thì một truy
+   * vấn rẻ hơn hẳn việc dựng một câu SQL mờ, và độ chính xác cao hơn nhiều — đây
+   * cũng là đánh đổi `searchProducts` đã chọn, cùng lý do.
+   */
+  async findProductsByNames(names, { limit = 4 } = {}) {
+    if (!Array.isArray(names) || names.length === 0) {
+      return [];
+    }
+
+    const rows = await db.Product.findAll({
+      where: { status: "ACTIVE" },
+      attributes: [
+        "id",
+        "name",
+        "slug",
+        "shortDescription",
+        // Mô tả dài CHỈ nạp ở đường tra theo tên, không ở `searchProducts`.
+        // Đây là nguyên liệu để nói ưu/nhược điểm, mà so sánh thì tối đa 4 sản
+        // phẩm; `searchProducts` trả về hàng chục nên đưa vào đó là nhân số
+        // token lên nhiều lần cho một thứ không ai đọc.
+        "description",
+        "basePrice",
+        "salePrice",
+        "stockQuantity",
+        "soldCount",
+        "averageRating",
+        "reviewCount",
+      ],
+      include: [
+        { model: db.Category, as: "category", attributes: ["id", "name", "slug"] },
+        { model: db.Brand, as: "brand", attributes: ["id", "name", "slug"] },
+        {
+          model: db.ProductImage,
+          as: "images",
+          attributes: ["imageUrl", "isPrimary", "sortOrder"],
+          separate: true,
+          order: [
+            ["isPrimary", "DESC"],
+            ["sortOrder", "ASC"],
+          ],
+          limit: 1,
+        },
+      ],
+    });
+
+    const picked = [];
+    const used = new Set();
+
+    for (const raw of names.slice(0, limit)) {
+      const tokens = tokenize(raw);
+      if (tokens.length === 0) continue;
+
+      let best = null;
+      let bestScore = 0;
+
+      for (const product of rows) {
+        // Mỗi sản phẩm chỉ khớp một tên: không có dòng này thì "iPhone 15" và
+        // "iPhone 15 Pro Max" cùng trỏ về một sản phẩm và bảng so sánh có hai
+        // cột giống hệt nhau.
+        if (used.has(product.id)) continue;
+
+        const haystack = tokenize(`${product.name} ${product.brand?.name || ""}`);
+        const hits = tokens.filter((token) => haystack.some((word) => word.includes(token))).length;
+        const score = hits / tokens.length;
+
+        if (score > bestScore) {
+          bestScore = score;
+          best = product;
+        }
+      }
+
+      // Ngưỡng một nửa số từ. Thấp hơn thì "so sánh cái nào tốt" cũng khớp bừa
+      // một sản phẩm nào đó và model sẽ so sánh thứ khách không hề nhắc tới.
+      if (best && bestScore >= 0.5) {
+        used.add(best.id);
+        picked.push(best);
+      }
+    }
+
+    const pickedIds = picked.map((row) => row.id);
+    const [specsByProduct, reviewsByProduct] = await Promise.all([
+      this.findComparableSpecs(pickedIds),
+      this.findRepresentativeReviews(pickedIds),
+    ]);
+
+    return picked.map((product) =>
+      shapeProduct(product, specsByProduct[product.id] || {}, {
+        description: product.description,
+        reviews: reviewsByProduct[product.id] || [],
+      }),
+    );
+  }
+
+  /**
+   * Vài đánh giá tiêu biểu của mỗi sản phẩm — nguyên liệu để nói ƯU/NHƯỢC ĐIỂM.
+   *
+   * Bảng thông số nói được máy nào nhiều RAM hơn, nhưng không nói được máy nào
+   * nóng, máy nào loa bé, máy nào pin tụt nhanh sau vài tháng. Thứ đó nằm trong
+   * lời khách đã mua, và trước thay đổi này nó chưa bao giờ tới được model —
+   * nên khi bị bảo "nêu ưu nhược điểm", model chỉ có hai đường: đọc lại chính
+   * con số vừa nêu, hoặc lấy từ kiến thức nội tại của nó. Cả hai đều là thứ
+   * mục 7.0.1 tồn tại để chặn.
+   *
+   * **Lấy cả hai phía, không lấy ngẫu nhiên.** Đánh giá cao nhất và thấp nhất,
+   * chứ không phải mới nhất: một sản phẩm 5 review 5 sao thì "mới nhất" cho ra
+   * năm lời khen và model sẽ không có gì để viết vào phần nhược điểm.
+   */
+  async findRepresentativeReviews(productIds, { perProduct = 3 } = {}) {
+    if (productIds.length === 0) {
+      return {};
+    }
+
+    const rows = await db.Review.findAll({
+      where: {
+        productId: productIds,
+        status: "APPROVED",
+        content: { [Op.ne]: null },
+      },
+      attributes: ["productId", "rating", "title", "content"],
+      order: [["rating", "DESC"]],
+      raw: true,
+    });
+
+    const byProduct = {};
+
+    for (const row of rows) {
+      const content = (row.content || "").trim();
+      if (content === "") continue;
+      (byProduct[row.productId] = byProduct[row.productId] || []).push({
+        rating: row.rating,
+        title: row.title || null,
+        // Cắt ngắn: một review dài không mang thêm tín hiệu nào so với vài câu
+        // đầu, và bốn sản phẩm nhân ba review nhân độ dài đầy đủ là một phần
+        // đáng kể của ngân sách context.
+        content: content.length > 240 ? `${content.slice(0, 240)}…` : content,
+      });
+    }
+
+    // Đã sắp theo rating giảm dần, nên lấy từ hai đầu là được khen nhất và chê
+    // nhất. Với `perProduct = 3`: hai đầu trên, một đầu dưới.
+    for (const [productId, list] of Object.entries(byProduct)) {
+      if (list.length <= perProduct) continue;
+
+      const takeTop = perProduct - 1;
+      byProduct[productId] = [...list.slice(0, takeTop), list[list.length - 1]];
+    }
+
+    return byProduct;
+  }
+
   /** A parent category stands for its children — "laptop" must not exclude "gaming laptop". */
   async resolveCategoryIds(slugOrName) {
     const category = await db.Category.findOne({
@@ -455,6 +612,22 @@ class AiRepository {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
+/**
+ * Chuỗi → danh sách từ để so khớp tên sản phẩm.
+ *
+ * Bỏ dấu tiếng Việt vì khách gõ "dien thoai" cũng phải khớp "Điện Thoại", và bỏ
+ * mọi ký tự không phải chữ/số để "M3 Pro" khớp được với "(M3 Pro)". Từ một ký tự
+ * bị loại: chúng khớp với gần như mọi thứ và chỉ làm loãng điểm.
+ */
+const tokenize = (value) =>
+  String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d")
+    .split(/[^a-z0-9]+/)
+    .filter((word) => word.length > 1);
+
 const matchesSpecFilters = (specs, filters) =>
   filters.every((filter) => {
     const spec = specs[filter.key];
@@ -509,11 +682,19 @@ const sortProducts = (products, sortBy) => {
 };
 
 /** Flattens a product row plus its specs into what the model and the client both read. */
-const shapeProduct = (product, specs) => ({
+/**
+ * @param {object} extras  Chỉ đường tra theo tên (so sánh) truyền vào — mô tả
+ *   dài và đánh giá của khách. `searchProducts` để trống, và đó là chủ đích:
+ *   nó trả về hàng chục sản phẩm, thêm hai trường đó vào là nhân token lên
+ *   nhiều lần cho thứ không dùng tới ở đường tư vấn.
+ */
+const shapeProduct = (product, specs, extras = {}) => ({
   id: product.id,
   name: product.name,
   slug: product.slug,
   shortDescription: product.shortDescription,
+  description: extras.description ?? null,
+  reviews: extras.reviews ?? [],
   price: priceOf(product),
   basePrice: Number(product.basePrice),
   salePrice: product.salePrice === null ? null : Number(product.salePrice),

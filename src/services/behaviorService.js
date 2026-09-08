@@ -40,7 +40,7 @@ class BehaviorService {
         return null;
       }
 
-      return await behaviorRepository.createBehavior({
+      const behavior = await behaviorRepository.createBehavior({
         userId,
         sessionId,
         behaviorType,
@@ -49,6 +49,30 @@ class BehaviorService {
         metadata,
         occurredAt: new Date(),
       });
+
+      /**
+       * `products.view_count` chỉ được tăng ở ĐÚNG chỗ này.
+       *
+       * Trước thay đổi này không nơi nào trong ứng dụng tăng nó — grep cả `src/`
+       * chỉ ra seed và `scorePopularity`. Tức là `viewCount` là dữ liệu chết:
+       * `scorePopularity` cấp cho nó 0.15 trọng số nhưng con số nó đọc mãi mãi là
+       * con số viết tay trong `seed/data/products.data.js`, không bao giờ phản
+       * ánh việc ai đã xem gì.
+       *
+       * Đặt sau bước khử trùng lặp là cố ý: F5 mười lần là một lượt xem đáng kể,
+       * không phải mười. Nếu tăng trước bước đó thì `viewCount` sẽ đo số lần tải
+       * trang chứ không đo sự chú ý, và nó sẽ lệch pha với chính `user_behaviors`
+       * mà mọi thành phần còn lại đang đọc.
+       *
+       * Nằm trong `try` của `track` nên nó thừa hưởng đúng lời hứa của hàm này:
+       * một lượt cộng thất bại được ghi log rồi bỏ qua, không bao giờ làm trắng
+       * trang sản phẩm.
+       */
+      if (behaviorType === "VIEW_PRODUCT" && productId) {
+        await behaviorRepository.incrementProductViewCount(productId);
+      }
+
+      return behavior;
     } catch (error) {
       logger.warn("Failed to record a user behaviour", {
         behaviorType,
@@ -200,12 +224,23 @@ class BehaviorService {
   // Recomputed on demand rather than on every event: a profile that is a few
   // minutes stale costs nothing, while writing it on every page view would put
   // an aggregate query in the hot path of browsing.
-  async recomputeProfile(userId) {
-    const since = new Date(Date.now() - PROFILE_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  /**
+   * @param {string} userId
+   * @param {Object} [options]
+   * @param {Date|null} [options.before]  dựng hồ sơ như nó đã là tại thời điểm
+   *        này, bỏ mọi sự kiện từ đó trở đi. Cửa sổ 90 ngày trượt theo, nếu không
+   *        thì một mốc cắt cũ sẽ đọc một cửa sổ dài hơn 90 ngày.
+   * @param {boolean} [options.persist=true]  ghi xuống `user_preference_profiles`.
+   *        Đặt `false` cho đường đo lường: một hồ sơ "tính tới ngày X" không phải
+   *        hồ sơ hiện tại của khách, ghi đè lên là làm hỏng dữ liệu thật.
+   */
+  async recomputeProfile(userId, { before = null, persist = true } = {}) {
+    const anchor = before ? before.getTime() : Date.now();
+    const since = new Date(anchor - PROFILE_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
     const [categoryRows, productFacts] = await Promise.all([
-      behaviorRepository.countBehaviorsByCategory(userId, { since }),
-      behaviorRepository.findBehaviorProductFacts(userId, { since }),
+      behaviorRepository.countBehaviorsByCategory(userId, { since, before }),
+      behaviorRepository.findBehaviorProductFacts(userId, { since, before }),
     ]);
 
     const categoryScores = {};
@@ -258,7 +293,9 @@ class BehaviorService {
       lastCalculatedAt: new Date(),
     };
 
-    await behaviorRepository.upsertProfile(userId, profile);
+    if (persist) {
+      await behaviorRepository.upsertProfile(userId, profile);
+    }
 
     return profile;
   }
