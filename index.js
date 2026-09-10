@@ -12,10 +12,16 @@ const logger = require("./src/utils/logger");
 const uploadService = require("./src/services/uploadService");
 const kafkaManager = require("./src/kafkas");
 const { passport } = require("./src/configs/passport");
+const { configureTrustProxy } = require("./src/utils/trustProxy");
 
 const app = express();
 const server = http.createServer(app);
 const corsOrigin = process.env.FRONTEND_URL || (process.env.NODE_ENV === "production" ? false : true);
+
+// Trước mọi middleware đọc `req.ip` — cả hai limiter và logger đều đọc, và một
+// `req.ip` sai làm hỏng cả hai theo cách không nhìn thấy được: rate limit gộp
+// mọi người vào một xô, log ghi lại địa chỉ của proxy.
+configureTrustProxy(app);
 
 app.use(helmet());
 

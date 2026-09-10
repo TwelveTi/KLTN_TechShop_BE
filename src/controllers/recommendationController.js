@@ -29,11 +29,13 @@ class RecommendationController {
   // Closes the loop: a shown recommendation that was clicked / carted / bought.
   // These timestamps are what the evaluation chapter measures.
   async recordOutcome(req, res) {
-    const result = await recommendationService.recordOutcome(
-      req.params.itemId,
-      req.body.outcome,
-      req.user?.id || null,
-    );
+    const result = await recommendationService.recordOutcome(req.params.itemId, req.body.outcome, {
+      userId: req.user?.id || null,
+      // Bắt buộc: dải "sản phẩm tương tự" ĐƯỢC lưu cho khách vãng lai (khoá theo
+      // `sessionId`), nên thiếu nó thì khách vãng lai không báo được kết quả trên
+      // chính dải của mình — và chốt chặn chủ sở hữu không có gì để xét.
+      sessionId: req.sessionKey || null,
+    });
 
     return APIResponse.success(res, "Outcome recorded", result);
   }
@@ -50,7 +52,16 @@ class RecommendationController {
   }
 
   async getOutcomeStats(req, res) {
-    const result = await recommendationService.getOutcomeStats();
+    // `?since=` nối được tới repository. Trước đây controller gọi không tham số nên
+    // `since` là code chết, và không có cách nào loại những lượt "shown" sinh ra
+    // trước một mốc — ví dụ trước khi bật cache 15 phút, giai đoạn mà mỗi lần vào
+    // trang chủ lại thêm 12 lượt chưa ai kịp bấm.
+    // `Invalid Date` sẽ đi thẳng vào `replacements` và làm truy vấn ném lỗi, nên
+    // giá trị không phân tích được thì coi như không truyền.
+    const parsed = req.query.since ? new Date(req.query.since) : null;
+    const since = parsed && !Number.isNaN(parsed.getTime()) ? parsed : null;
+
+    const result = await recommendationService.getOutcomeStats({ since });
 
     return APIResponse.success(res, "Get recommendation outcome stats successfully", result);
   }

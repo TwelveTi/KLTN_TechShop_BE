@@ -906,15 +906,31 @@ class RecommendationService {
   }
 
   /** Record that a shown recommendation was acted on. */
-  async recordOutcome(itemId, outcome, userId) {
+  async recordOutcome(itemId, outcome, { userId = null, sessionId = null } = {}) {
     const item = await recommendationRepository.findItemById(itemId);
 
     if (!item) {
       throw new AppError("Recommendation item not found", 404);
     }
 
-    // A shopper may only report outcomes on their own recommendations.
-    if (item.recommendation?.userId && userId && item.recommendation.userId !== userId) {
+    /**
+     * Chỉ chủ của dải mới được báo kết quả trên nó.
+     *
+     * Bản trước viết `item.recommendation?.userId && userId && ...`, và **mệnh đề
+     * `&& userId` làm cả chốt chặn vô hiệu với người gọi vô danh**: `userId` là
+     * `null` thì điều kiện luôn false, nên bất kỳ ai có một `itemId` cũng ghi được
+     * `clickedAt`/`addedToCartAt`/`purchasedAt` lên dải của người khác. Đó là ghi
+     * đè trực tiếp vào CTR/conversion mà chương Đánh giá đọc.
+     *
+     * Dùng đúng mẫu mà `aiService.explainRecommendation` đã dùng: đã đăng nhập thì
+     * xét theo `userId`, khách vãng lai xét theo `sessionId` của dải. 404 chứ không
+     * 403, để endpoint không thành công cụ dò `itemId`.
+     */
+    const owner = item.recommendation;
+    const ownedByUser = Boolean(userId) && owner?.userId === userId;
+    const ownedBySession = !owner?.userId && Boolean(sessionId) && owner?.sessionId === sessionId;
+
+    if (!ownedByUser && !ownedBySession) {
       throw new AppError("Recommendation item not found", 404);
     }
 
@@ -994,24 +1010,47 @@ class RecommendationService {
     return { products: products.length, pairs: stored, perProduct, minScore };
   }
 
+  /**
+   * Tỉ lệ theo TỪNG loại rail, cộng một dòng tổng.
+   *
+   * Dòng tổng giữ lại để tương thích với người gọi cũ, nhưng nó **không phải** con
+   * số để trích vào chương Đánh giá: nó gộp dải cá nhân hoá với dải "sản phẩm
+   * tương tự" vào một mẫu số. Số cần trích nằm ở `byType.PERSONALIZED_HOME`.
+   */
   async getOutcomeStats(options = {}) {
-    const raw = await recommendationRepository.getOutcomeStats(options);
+    const rows = await recommendationRepository.getOutcomeStats(options);
 
-    const shown = Number(raw.shown) || 0;
-    const clicked = Number(raw.clicked) || 0;
-    const addedToCart = Number(raw.addedToCart) || 0;
-    const purchased = Number(raw.purchased) || 0;
-    const rate = (value) => (shown === 0 ? 0 : Math.round((value / shown) * 10000) / 10000);
+    const summarise = (row) => {
+      const shown = Number(row.shown) || 0;
+      const clicked = Number(row.clicked) || 0;
+      const addedToCart = Number(row.addedToCart) || 0;
+      const purchased = Number(row.purchased) || 0;
+      const rate = (value) => (shown === 0 ? 0 : Math.round((value / shown) * 10000) / 10000);
 
-    return {
-      shown,
-      clicked,
-      addedToCart,
-      purchased,
-      clickThroughRate: rate(clicked),
-      cartRate: rate(addedToCart),
-      conversionRate: rate(purchased),
+      return {
+        shown,
+        clicked,
+        addedToCart,
+        purchased,
+        clickThroughRate: rate(clicked),
+        cartRate: rate(addedToCart),
+        conversionRate: rate(purchased),
+      };
     };
+
+    const byType = Object.fromEntries(rows.map((row) => [row.recommendationType, summarise(row)]));
+
+    const combined = rows.reduce(
+      (acc, row) => ({
+        shown: acc.shown + (Number(row.shown) || 0),
+        clicked: acc.clicked + (Number(row.clicked) || 0),
+        addedToCart: acc.addedToCart + (Number(row.addedToCart) || 0),
+        purchased: acc.purchased + (Number(row.purchased) || 0),
+      }),
+      { shown: 0, clicked: 0, addedToCart: 0, purchased: 0 },
+    );
+
+    return { byType, ...summarise(combined) };
   }
 }
 

@@ -220,19 +220,51 @@ class RecommendationRepository {
     });
   }
 
-  findSimilarToMany(productIds, { limitPerProduct = 12 } = {}) {
+  /**
+   * Láng giềng của nhiều sản phẩm nguồn cùng lúc, **top-N cho TỪNG nguồn**.
+   *
+   * Bản trước dùng `limit: productIds.length * limitPerProduct` cộng
+   * `ORDER BY score DESC`, tức một **hạn mức chung** chứ không phải top-N mỗi
+   * nguồn — và comment thì khai "the service keeps the top N per source", điều mà
+   * service cũng không làm. Chưa gây hại vì `rebuildSimilarityMatrix` lưu đúng 12
+   * láng giềng mỗi sản phẩm nên tổng không bao giờ vượt hạn mức. Nhưng chạy
+   * `rebuild` với `perProduct` lớn hơn thì một sản phẩm vừa xem có điểm cao sẽ ăn
+   * hết hạn mức và những sản phẩm còn lại mất tiếng — âm thầm, không lỗi, và
+   * `scoreProductSimilarity` sẽ hỏng đúng ở chỗ khó thấy nhất.
+   *
+   * Cắt trong bộ nhớ thay vì trong SQL: một truy vấn window function cho MySQL 8
+   * đắt hơn hẳn việc nhóm vài trăm dòng ở đây, và `LIMIT` thì không diễn tả được
+   * "N mỗi nhóm".
+   */
+  async findSimilarToMany(productIds, { limitPerProduct = 12 } = {}) {
     if (productIds.length === 0) {
-      return Promise.resolve([]);
+      return [];
     }
 
-    // One query for the whole set; the service keeps the top N per source.
-    return db.ProductSimilarity.findAll({
+    const rows = await db.ProductSimilarity.findAll({
       where: { productId: productIds },
       attributes: ["productId", "similarProductId", "score", "similarityType"],
-      order: [["score", "DESC"]],
-      limit: productIds.length * limitPerProduct,
+      order: [
+        ["productId", "ASC"],
+        ["score", "DESC"],
+      ],
       raw: true,
     });
+
+    const kept = [];
+    const perSource = new Map();
+
+    // Đã sắp theo (productId, score DESC) nên chỉ cần đếm là đủ, không cần sắp lại.
+    rows.forEach((row) => {
+      const taken = perSource.get(row.productId) || 0;
+      if (taken >= limitPerProduct) {
+        return;
+      }
+      perSource.set(row.productId, taken + 1);
+      kept.push(row);
+    });
+
+    return kept;
   }
 
   async replaceSimilarities(rows, { similarityType }) {
@@ -324,23 +356,43 @@ class RecommendationRepository {
     return item.update(changes);
   }
 
-  // Outcome counters for the evaluation chapter: how many recommendations were
-  // clicked, carted, bought.
-  async getOutcomeStats({ since } = {}) {
-    const where = since ? { createdAt: { [Op.gte]: since } } : {};
+  /**
+   * Outcome counters for the evaluation chapter: how many recommendations were
+   * clicked, carted, bought — **tách theo `recommendationType`**.
+   *
+   * Bản trước `COUNT` mọi dòng `recommendation_items` không lọc gì cả, nên nó trộn
+   * `PERSONALIZED_HOME` với `SIMILAR_PRODUCTS` thành **một** tỉ lệ. Hai dải đó có
+   * bản chất khác nhau (một cái cá nhân hoá, một cái là láng giềng của sản phẩm
+   * đang xem) và số lượt hiện rất khác nhau, nên tỉ lệ gộp không nói về cái nào
+   * cả — trong khi đó chính là con số chương Đánh giá trích ra.
+   *
+   * `since` cũng đã được nối vào tận controller: trước đây nó tồn tại ở đây nhưng
+   * người gọi không truyền bao giờ, tức là code chết.
+   *
+   * Viết SQL thẳng thay vì `group` của Sequelize: Sequelize 6 map tên thuộc tính
+   * sang tên cột cho `attributes`/`where` nhưng **không** cho `group`
+   * (`Utils.mapOptionFieldNames`), nên `group: ["recommendation.recommendationType"]`
+   * sinh ra SQL sai. Cùng lý do với `col("clicked_at")` viết tay ở bản cũ.
+   */
+  async getOutcomeStats({ since = null } = {}) {
+    const rows = await db.sequelize.query(
+      `SELECT r.recommendation_type                AS recommendationType,
+              COUNT(i.id)                          AS shown,
+              COUNT(i.clicked_at)                  AS clicked,
+              COUNT(i.added_to_cart_at)            AS addedToCart,
+              COUNT(i.purchased_at)                AS purchased
+         FROM recommendation_items i
+         JOIN recommendation_results r ON r.id = i.recommendation_id
+        ${since ? "WHERE i.created_at >= :since" : ""}
+        GROUP BY r.recommendation_type
+        ORDER BY shown DESC`,
+      {
+        replacements: since ? { since } : {},
+        type: db.sequelize.QueryTypes.SELECT,
+      },
+    );
 
-    const [totals] = await db.RecommendationItem.findAll({
-      where,
-      attributes: [
-        [fn("COUNT", col("id")), "shown"],
-        [fn("COUNT", col("clicked_at")), "clicked"],
-        [fn("COUNT", col("added_to_cart_at")), "addedToCart"],
-        [fn("COUNT", col("purchased_at")), "purchased"],
-      ],
-      raw: true,
-    });
-
-    return totals;
+    return rows;
   }
 }
 

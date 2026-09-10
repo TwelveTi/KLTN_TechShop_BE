@@ -161,9 +161,34 @@ class PaymentService {
       return { ok: false, reason: "missing_reference", ipn: vnpayConfig.IPN_RESPONSE.ORDER_NOT_FOUND };
     }
 
+    /**
+     * Tra `payment` KHÔNG khoá chỉ để biết `orderId`, rồi khoá **đơn trước, lần
+     * thanh toán sau**.
+     *
+     * Bản trước khoá `payment` rồi mới khoá `order`, tức ngược thứ tự với
+     * `createVnpayUrl` (khoá `order` trước, rồi mới ghi vào `payments`). Hai
+     * đường đi khoá cùng hai bảng theo hai chiều ngược nhau là công thức của
+     * deadlock: khách bấm "thanh toán lại" đúng lúc IPN của lần trước đang về thì
+     * một bên giữ khoá đơn và cần bảng payments, bên kia giữ khoá payment và cần
+     * đơn. Lượt đọc không khoá ở đây chỉ dùng để phân giải id; bản đọc có khoá bên
+     * dưới mới là bản có thẩm quyền.
+     */
+    const unlocked = await paymentRepository.findPaymentByTransactionCode(transactionCode);
+
+    if (!unlocked) {
+      return { ok: false, reason: "payment_not_found", ipn: vnpayConfig.IPN_RESPONSE.ORDER_NOT_FOUND };
+    }
+
     const transaction = await paymentRepository.beginTransaction();
 
     try {
+      const order = await paymentRepository.findOrderById(unlocked.orderId, { transaction, lock: true });
+
+      if (!order) {
+        await transaction.rollback();
+        return { ok: false, reason: "order_not_found", ipn: vnpayConfig.IPN_RESPONSE.ORDER_NOT_FOUND };
+      }
+
       const payment = await paymentRepository.findPaymentByTransactionCode(transactionCode, {
         transaction,
         lock: true,
@@ -172,13 +197,6 @@ class PaymentService {
       if (!payment) {
         await transaction.rollback();
         return { ok: false, reason: "payment_not_found", ipn: vnpayConfig.IPN_RESPONSE.ORDER_NOT_FOUND };
-      }
-
-      const order = await paymentRepository.findOrderById(payment.orderId, { transaction, lock: true });
-
-      if (!order) {
-        await transaction.rollback();
-        return { ok: false, reason: "order_not_found", ipn: vnpayConfig.IPN_RESPONSE.ORDER_NOT_FOUND };
       }
 
       // The amount is signed, so a mismatch means the order changed underneath
@@ -213,8 +231,20 @@ class PaymentService {
         String(query.vnp_ResponseCode) === vnpayConfig.RESPONSE_CODE.SUCCESS &&
         String(query.vnp_TransactionStatus) === vnpayConfig.RESPONSE_CODE.SUCCESS;
 
+      /**
+       * Đơn có còn ở trạng thái được phép thanh toán KHÔNG.
+       *
+       * `createVnpayUrl` kiểm điều này lúc **phát** URL, nhưng URL còn sống thêm
+       * `EXPIRE_MINUTES` nữa, nên lúc **quyết toán** trạng thái đơn có thể đã đổi
+       * — và trước thay đổi này không nhánh nào kiểm lại.
+       */
+      const orderStillPayable =
+        PAYABLE_ORDER_STATUSES.includes(order.status) && order.paymentStatus !== "PAID";
+
       if (!succeeded) {
-        await this.applyFailure(order, payment, query, transaction);
+        // `touchOrder`: một lần thanh toán bị bỏ dở KHÔNG được phép ghi
+        // `paymentStatus: "FAILED"` lên một đơn đã thanh toán xong bằng lần khác.
+        await this.applyFailure(order, payment, query, transaction, { touchOrder: orderStillPayable });
         await transaction.commit();
 
         return {
@@ -235,7 +265,13 @@ class PaymentService {
       });
 
       if (alreadySettled) {
-        await this.applyDuplicateSuccess(order, payment, alreadySettled, query, transaction);
+        await this.recordUnappliedSuccess(order, payment, query, transaction, {
+          note:
+            `DUPLICATE PAYMENT - refund required. VNPay transaction ` +
+            `${query.vnp_TransactionNo || payment.transactionCode} was paid after ` +
+            `${alreadySettled.transactionCode} had already settled this order.`,
+          payloadExtra: { duplicateOf: alreadySettled.transactionCode },
+        });
         await transaction.commit();
 
         logger.error("Duplicate successful VNPay payment on an order that was already paid", {
@@ -251,6 +287,53 @@ class PaymentService {
           reason: "duplicate_payment",
           order,
           payment,
+          ipn: vnpayConfig.IPN_RESPONSE.ALREADY_CONFIRMED,
+        };
+      }
+
+      /**
+       * Tiền về cho một đơn không còn được phép thanh toán — gần như luôn là đơn
+       * đã huỷ.
+       *
+       * **Từ chối quyết toán, ghi cờ cần hoàn tiền.** Không "hồi sinh" đơn: làm
+       * thế phải trừ lại tồn kho và áp lại voucher, mà cả hai đều có thể thất bại
+       * giữa đường (hàng đã bán hết, mã đã hết lượt) và khi đó đơn nằm ở một
+       * trạng thái không ai định nghĩa. Tiền là thật nên vẫn ghi `SUCCESS`, còn
+       * đơn thì không đụng tới: `status`, `paymentStatus`, `paidAt` và `soldCount`
+       * đều giữ nguyên.
+       *
+       * Vì sao nó xảy ra được: khách xin URL thanh toán, huỷ đơn ở tab khác (tồn
+       * kho được hoàn, voucher được nhả), rồi vẫn trả tiền trên trang cổng đang
+       * mở. Trước thay đổi này `applySuccess` sẽ lật đơn CANCELLED thành PAID và
+       * cộng `soldCount` cho hàng đã trả về kho.
+       */
+      if (!orderStillPayable) {
+        await this.recordUnappliedSuccess(order, payment, query, transaction, {
+          note:
+            `PAYMENT ON A NON-PAYABLE ORDER - refund required. VNPay transaction ` +
+            `${query.vnp_TransactionNo || payment.transactionCode} settled while the order was ` +
+            `${order.status}/${order.paymentStatus}. Stock and voucher were already released; ` +
+            `the order was deliberately NOT reopened.`,
+          payloadExtra: { unappliedReason: `order_${order.status}_${order.paymentStatus}` },
+        });
+        await transaction.commit();
+
+        logger.error("Successful VNPay payment on an order that can no longer be paid", {
+          orderId: order.id,
+          orderCode: order.orderCode,
+          orderStatus: order.status,
+          orderPaymentStatus: order.paymentStatus,
+          transactionCode: payment.transactionCode,
+          vnpTransactionNo: query.vnp_TransactionNo,
+        });
+
+        return {
+          ok: false,
+          reason: "order_not_payable",
+          order,
+          payment,
+          // Với VNPay thì đây là "đã nhận, đừng gửi lại": chúng ta ĐÃ ghi nhận
+          // giao dịch, việc còn lại là hoàn tiền chứ không phải nhận lại IPN.
           ipn: vnpayConfig.IPN_RESPONSE.ALREADY_CONFIRMED,
         };
       }
@@ -317,16 +400,28 @@ class PaymentService {
     }
   }
 
-  // Money that arrived for an order that was already paid. Recorded as a real
-  // SUCCESS (it is real money) but deliberately inert on the order itself, and
-  // written into the status history so the admin console shows a refund is owed.
-  async applyDuplicateSuccess(order, payment, alreadySettled, query, transaction) {
+  /**
+   * Tiền thật đã về, nhưng KHÔNG được áp vào đơn.
+   *
+   * Hai ca dùng chung hàm này, và chúng giống nhau ở đúng điều quan trọng: lần
+   * thanh toán được ghi `SUCCESS` (tiền là thật, sổ sách phải thấy nó) trong khi
+   * đơn hoàn toàn không bị đụng tới — `status`, `paymentStatus`, `paidAt`,
+   * `soldCount` giữ nguyên. Dòng `order_status_histories` với `fromStatus` bằng
+   * `toStatus` là chỗ admin đọc ra rằng có một khoản cần hoàn.
+   *
+   *   - trả tiền hai lần cho cùng một đơn (`duplicateOf`)
+   *   - trả tiền cho một đơn không còn được phép thanh toán (`unappliedReason`)
+   *
+   * `refundRequired: true` luôn có trong `providerPayload` để một truy vấn duy
+   * nhất tìm ra được mọi khoản phải hoàn.
+   */
+  async recordUnappliedSuccess(order, payment, query, transaction, { note, payloadExtra = {} }) {
     await paymentRepository.updatePayment(
       payment,
       {
         status: "SUCCESS",
         paidAt: new Date(),
-        providerPayload: { ...query, duplicateOf: alreadySettled.transactionCode, refundRequired: true },
+        providerPayload: { ...query, ...payloadExtra, refundRequired: true },
       },
       { transaction },
     );
@@ -334,22 +429,29 @@ class PaymentService {
     await paymentRepository.createStatusHistory(
       {
         orderId: order.id,
+        // fromStatus === toStatus: cố ý. Đơn KHÔNG chuyển trạng thái; dòng này
+        // chỉ để lại dấu vết cho người đọc.
         fromStatus: order.status,
         toStatus: order.status,
-        note:
-          `DUPLICATE PAYMENT - refund required. VNPay transaction ` +
-          `${query.vnp_TransactionNo || payment.transactionCode} was paid after ` +
-          `${alreadySettled.transactionCode} had already settled this order.`,
+        note,
         changedBy: null,
       },
       { transaction },
     );
   }
 
-  // A failed or cancelled attempt does NOT release the reserved stock and does
-  // not cancel the order: the customer can start another attempt, or switch to
-  // COD. Stock comes back when the order itself is cancelled.
-  async applyFailure(order, payment, query, transaction) {
+  /**
+   * A failed or cancelled attempt does NOT release the reserved stock and does
+   * not cancel the order: the customer can start another attempt, or switch to
+   * COD. Stock comes back when the order itself is cancelled.
+   *
+   * `touchOrder = false` khi đơn không còn ở trạng thái chờ thanh toán. Bản trước
+   * ghi `paymentStatus: "FAILED"` vô điều kiện, nên IPN muộn của một lần thanh
+   * toán bị bỏ dở sẽ đè lên một đơn đã trả tiền xong bằng lần khác và để lại cặp
+   * mâu thuẫn `status = PAID` / `paymentStatus = FAILED`. Lần thanh toán vẫn được
+   * ghi nhận thất bại — đó là sự thật về chính nó — chỉ có đơn là không đụng tới.
+   */
+  async applyFailure(order, payment, query, transaction, { touchOrder = true } = {}) {
     const cancelledByUser = String(query.vnp_ResponseCode) === vnpayConfig.RESPONSE_CODE.CANCELLED;
 
     await paymentRepository.updatePayment(
@@ -361,7 +463,9 @@ class PaymentService {
       { transaction },
     );
 
-    await paymentRepository.updateOrder(order, { paymentStatus: "FAILED" }, { transaction });
+    if (touchOrder) {
+      await paymentRepository.updateOrder(order, { paymentStatus: "FAILED" }, { transaction });
+    }
   }
 
   // Where the browser is sent once the result is settled.

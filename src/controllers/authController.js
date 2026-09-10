@@ -87,9 +87,15 @@ class AuthController {
         deviceInfo: req.get("user-agent"),
       });
 
-      // Sign the user in: set the refresh cookie so the frontend can exchange
-      // it for an access token on load (refreshSession) — the link logs them in.
-      setRefreshTokenCookie(res, result.refreshToken);
+      // Lần đầu thì bấm link là đăng nhập luôn: đặt refresh cookie để FE đổi lấy
+      // access token khi tải trang (refreshSession).
+      //
+      // Lần bấm lại thì `refreshToken` là `null` và KHÔNG có cookie nào được đặt —
+      // xem chú thích ở `authService.verifyEmail`. Người dùng vẫn được chuyển về
+      // FE với `verified=already`, chỉ là phải đăng nhập như bình thường.
+      if (result.refreshToken) {
+        setRefreshTokenCookie(res, result.refreshToken);
+      }
 
       const status = result.alreadyVerified ? "already" : "success";
       return res.redirect(`${frontendUrl}/?verified=${status}`);

@@ -32,9 +32,14 @@ router.get(
   asyncHandler(recommendationController.getSimilarProducts),
 );
 
+// `attachSessionId` không phải để lấy thêm dữ liệu mà là để **phân quyền**: dải
+// "sản phẩm tương tự" được lưu cho khách vãng lai theo `sessionId`, nên thiếu nó
+// thì chốt chặn chủ sở hữu trong `recordOutcome` không có gì để xét với họ. Hai
+// route trên đã có; route này trước đây thiếu.
 router.post(
   "/recommendations/items/:itemId/outcome",
   optionalAuth,
+  attachSessionId,
   validateIdParam("itemId"),
   validateOutcome,
   asyncHandler(recommendationController.recordOutcome),

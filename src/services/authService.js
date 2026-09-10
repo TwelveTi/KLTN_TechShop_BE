@@ -199,13 +199,29 @@ class AuthService {
 
     const alreadyVerified = Boolean(user.emailVerifiedAt);
 
+    /**
+     * Chỉ LẦN ĐẦU mới được đăng nhập bằng link.
+     *
+     * Trước 2026-09-08 `createTokens` chạy vô điều kiện, nên cái link trong hộp
+     * thư là **một credential đăng nhập dùng lại được suốt 24 giờ**: token là JWT
+     * không có nonce và không được ghi vào đâu để tiêu, nên bấm lại bao nhiêu lần
+     * cũng phát ra một refresh cookie 7 ngày mới. Ai đọc hộp thư sau đó, nhận email
+     * chuyển tiếp, hay tìm lại URL trong history của một máy dùng chung đều có phiên
+     * đầy đủ — và `logout` không chặn được, vì link phát tiếp cái khác.
+     *
+     * Ràng buộc `emailVerifiedAt` biến chính hành động xác thực thành thứ tiêu
+     * token: lần thứ hai trở đi `alreadyVerified` là true và không có gì được
+     * phát. Không cần thêm bảng hay cột nào.
+     *
+     * Vẫn giữ được ý đồ ban đầu ("bấm link là vào được luôn") vì lần đầu — lần duy
+     * nhất người dùng thật sự bấm — không đổi gì cả.
+     */
+    let refreshToken = null;
+
     if (!alreadyVerified) {
       await authRepository.updateUser(user, { emailVerifiedAt: new Date() });
+      ({ refreshToken } = await this.createTokens(user, meta));
     }
-
-    // Clicking the verification link also signs the user in: issue a refresh
-    // token so the frontend can pick up the session right after the redirect.
-    const { refreshToken } = await this.createTokens(user, meta);
 
     return { user: toSafeUser(user), alreadyVerified, refreshToken };
   }

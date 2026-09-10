@@ -65,11 +65,34 @@ class PasswordService {
     });
   }
 
-  // Entry point of the flow: ALWAYS issues a fresh code (any previous one is
-  // invalidated) so the user reliably receives a code every time they ask. The
-  // repeat-request rate limit lives on resendResetOtp, not here — the earlier
-  // behaviour of silently skipping while returning "a code has been sent" left
-  // the user waiting for an email that never arrived.
+  /**
+   * Entry point of the flow.
+   *
+   * ── Cooldown, thêm 2026-09-08 ─────────────────────────────────────────────
+   *
+   * Trước đây hàm này **luôn** phát mã mới và không có giới hạn nào (cooldown chỉ
+   * nằm ở `resendResetOtp`). Hai hệ quả, và cái thứ hai nặng hơn:
+   *
+   *  1. Bơm mail: endpoint công khai, gọi bao nhiêu lần cũng gửi thật bấy nhiêu
+   *     email tới địa chỉ của người khác.
+   *  2. `MAX_OTP_ATTEMPTS` bị vô hiệu. Giới hạn 5 lần sai được đếm **trên từng
+   *     bản ghi OTP**, mà `issueOtp` tạo bản ghi mới với `attempts: 0`. Nên vòng
+   *     `forgot-password` → 5 lần đoán → `forgot-password` reset bộ đếm vô hạn,
+   *     biến một chốt chặn theo mã thành một ngân sách đoán không giới hạn.
+   *
+   * Cách chặn: trong thời gian cooldown thì **không phát mã mới và không gửi
+   * mail**, nhưng vẫn trả về ĐÚNG một thông điệp chung như mọi lần.
+   *
+   * Không ném 429 ở đây — đó là điều `resendResetOtp` làm, và nó chỉ hợp với một
+   * hành động người dùng chủ động bấm. Ở endpoint công khai này, 429 chỉ xảy ra
+   * với tài khoản có thật, tức là tự tạo ra một kênh **dò tài khoản** đúng ngay
+   * chỗ `GENERIC_FORGOT_MESSAGE` được dựng lên để bịt.
+   *
+   * Cũng không còn nỗi lo cũ ("bỏ qua im lặng làm người dùng chờ một email không
+   * bao giờ tới"): bỏ qua chỉ xảy ra trong vòng `OTP_RESEND_COOLDOWN_SECONDS`, tức
+   * là người dùng vừa được gửi một mã cách đây vài chục giây và **mã đó vẫn còn
+   * hiệu lực** — giữ nó lại còn tốt hơn là huỷ đi để phát cái mới.
+   */
   async forgotPassword(email, meta = {}) {
     const user = await passwordRepository.findActiveLocalUserByEmail(email);
 
@@ -82,6 +105,13 @@ class PasswordService {
     let issuedOtp = null;
 
     try {
+      const latest = await passwordRepository.findLatestOtpByUser(user.id, { transaction, lock: true });
+
+      if (resendRetryAfterSeconds(latest) > 0) {
+        await transaction.rollback();
+        return { message: GENERIC_FORGOT_MESSAGE };
+      }
+
       issuedOtp = await this.issueOtp(user.id, transaction);
       await transaction.commit();
     } catch (error) {

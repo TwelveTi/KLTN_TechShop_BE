@@ -38,8 +38,20 @@ class OrderRepository {
     });
   }
 
-  findOrderByIdForUser(orderId, userId, { transaction } = {}) {
-    return db.Order.findOne({ where: { id: orderId, userId }, transaction });
+  /**
+   * `lock` là thứ làm cho chốt trạng thái ở `cancelMyOrder` thật sự có hiệu lực.
+   *
+   * Không có nó, hai lượt huỷ đồng thời đều đọc được `status = "PENDING"` rồi đều
+   * đi qua chốt, và mỗi lượt lại hoàn tồn kho thêm một lần — `order.update()` là
+   * một `UPDATE` vô điều kiện, nó không hề kiểm lại trạng thái đã đọc.
+   * `paymentService.createVnpayUrl` khoá đúng như thế này ở đường tương đương.
+   */
+  findOrderByIdForUser(orderId, userId, { transaction, lock } = {}) {
+    return db.Order.findOne({
+      where: { id: orderId, userId },
+      transaction,
+      ...(lock ? { lock: transaction.LOCK.UPDATE } : {}),
+    });
   }
 
   findOrderByIdWithItems(orderId, { transaction } = {}) {

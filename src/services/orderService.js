@@ -442,7 +442,15 @@ class OrderService {
     const transaction = await orderRepository.beginTransaction();
 
     try {
-      const order = await orderRepository.findOrderByIdForUser(orderId, userId, { transaction });
+      // `lock: true` BẮT BUỘC. Hai lượt huỷ đồng thời (khách bấm đôi, hoặc FE thử
+      // lại một request đã timeout) nếu đọc không khoá thì đều thấy `PENDING`,
+      // đều đi qua chốt bên dưới, và mỗi lượt lại hoàn tồn kho cùng nhả voucher
+      // thêm một lần. Khoá ở đây làm lượt thứ hai chờ, rồi đọc ra `CANCELLED` và
+      // dừng ở đúng chốt đã có sẵn.
+      const order = await orderRepository.findOrderByIdForUser(orderId, userId, {
+        transaction,
+        lock: true,
+      });
 
       if (!order) {
         throw new AppError("Order not found", 404);
