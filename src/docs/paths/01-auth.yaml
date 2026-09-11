@@ -1,0 +1,340 @@
+/auth/register:
+  post:
+    tags: [Auth]
+    summary: Đăng ký tài khoản
+    security: []
+    description: Gửi email xác thực. Hạn mức 5 lần/giờ mỗi IP.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email, password, fullName]
+            properties:
+              email: { type: string, format: email, maxLength: 255 }
+              password: { type: string, minLength: 6, maxLength: 72 }
+              fullName: { type: string, minLength: 2, maxLength: 150 }
+              phone: { type: string, maxLength: 20 }
+    responses:
+      '201': { $ref: '#/components/responses/Created' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '409': { $ref: '#/components/responses/Conflict' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+
+/auth/login:
+  post:
+    tags: [Auth]
+    summary: Đăng nhập
+    security: []
+    description: |
+      Trả access token trong body và đặt refresh token vào cookie `httpOnly`.
+
+      Hai limiter chạy cùng lúc: 8 lần **sai** / 15 phút cho mỗi cặp (IP, email),
+      và 30 lần sai / 15 phút cho mỗi IP. Đăng nhập thành công không bị tính.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email, password]
+            properties:
+              email: { type: string, format: email }
+              password: { type: string, minLength: 6, maxLength: 72 }
+    responses:
+      '200':
+        description: Đăng nhập thành công
+        headers:
+          Set-Cookie:
+            schema: { type: string }
+            description: '`refreshToken=<jwt>; HttpOnly; Path=/; Max-Age=604800`'
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        accessToken: { type: string }
+                        user: { $ref: '#/components/schemas/User' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+
+/auth/refresh:
+  post:
+    tags: [Auth]
+    summary: Đổi refresh token lấy access token mới
+    security: []
+    description: |
+      Refresh token đọc từ cookie `httpOnly`, không nhận qua body. Token cũ bị
+      xoay vòng; có cửa sổ ân hạn 30 giây để chịu được double-submit từ nhiều tab.
+
+      Cố ý **không** có limiter riêng: client hợp lệ gọi mỗi 15 phút và refresh
+      token là chuỗi ký chứ không phải mật khẩu người gõ ra.
+    responses:
+      '200':
+        description: Cấp access token mới
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        accessToken: { type: string }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/auth/logout:
+  post:
+    tags: [Auth]
+    summary: Đăng xuất
+    security: []
+    description: Thu hồi refresh token hiện tại và xoá cookie.
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+
+/auth/check-email:
+  get:
+    tags: [Auth]
+    summary: Kiểm tra email đã có tài khoản chưa
+    security: []
+    description: |
+      Phục vụ kiểm tra tức thời ở form đăng ký. Đây là một kênh **dò tài khoản**
+      công khai — đánh đổi UX có ý thức, ghi rõ ở README 5.1. Hạn mức 40 lượt/15
+      phút mỗi IP chỉ làm chậm việc dò chứ không bịt được.
+    parameters:
+      - name: email
+        in: query
+        required: true
+        schema: { type: string, format: email }
+    responses:
+      '200':
+        description: Kết quả tra cứu
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        available: { type: boolean }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+
+/auth/verify-email:
+  get:
+    tags: [Auth]
+    summary: Xác thực email từ link trong hộp thư
+    security: []
+    description: |
+      **Chỉ đăng nhập được ở lần bấm ĐẦU TIÊN.** Từ lần thứ hai, `emailVerifiedAt`
+      đã có nên không phát thêm phiên nào — link trong hộp thư không phải một
+      credential dùng lại được. Xem README 5.1.
+    parameters:
+      - name: token
+        in: query
+        required: true
+        schema: { type: string }
+    responses:
+      '302':
+        description: Chuyển hướng về frontend kèm `?verified=success|already`
+      '400': { $ref: '#/components/responses/BadRequest' }
+
+/auth/resend-verification:
+  post:
+    tags: [Auth]
+    summary: Gửi lại email xác thực
+    description: Chung hạn mức gửi email với `forgot-password` — 6 lần/giờ mỗi IP.
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+
+/auth/forgot-password:
+  post:
+    tags: [Auth]
+    summary: Yêu cầu mã OTP đặt lại mật khẩu
+    security: []
+    description: |
+      Luôn trả cùng một thông điệp dù email có tồn tại hay không
+      (`GENERIC_FORGOT_MESSAGE`) — đây là endpoint công khai nên không được để lộ
+      tài khoản nào có thật.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email]
+            properties:
+              email: { type: string, format: email }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+
+/auth/resend-reset-otp:
+  post:
+    tags: [Auth]
+    summary: Gửi lại mã OTP
+    security: []
+    description: |
+      Khác `forgot-password`: endpoint này **có** ném 429 theo cooldown của tài
+      khoản (`OTP_RESEND_COOLDOWN_SECONDS`), nên nó cũng là một kênh dò. Giữ
+      nguyên vì đây là hành động người dùng chủ động bấm và cần phản hồi thật.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email]
+            properties:
+              email: { type: string, format: email }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+
+/auth/verify-reset-otp:
+  post:
+    tags: [Auth]
+    summary: Đối chiếu OTP, đổi lấy reset token
+    security: []
+    description: Hạn mức 10 lần sai / 15 phút mỗi cặp (IP, email).
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email, otp]
+            properties:
+              email: { type: string, format: email }
+              otp: { type: string, pattern: '^\d{6}$' }
+    responses:
+      '200':
+        description: OTP đúng
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        resetToken: { type: string }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+
+/auth/reset-password:
+  post:
+    tags: [Auth]
+    summary: Đặt lại mật khẩu bằng reset token
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [resetToken, newPassword]
+            properties:
+              resetToken: { type: string, maxLength: 255 }
+              newPassword: { type: string, minLength: 6, maxLength: 72 }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+
+/auth/change-password:
+  patch:
+    tags: [Auth]
+    summary: Đổi mật khẩu khi đã đăng nhập
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [currentPassword, newPassword]
+            properties:
+              currentPassword: { type: string, minLength: 6, maxLength: 72 }
+              newPassword: { type: string, minLength: 6, maxLength: 72 }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+
+/auth/sessions:
+  get:
+    tags: [Auth]
+    summary: Danh sách phiên đăng nhập của tôi
+    responses:
+      '200':
+        description: Các thiết bị đang giữ refresh token còn hiệu lực
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id: { type: string, format: uuid }
+                          userAgent: { type: string, nullable: true }
+                          ipAddress: { type: string, nullable: true }
+                          isCurrent: { type: boolean }
+                          expiresAt: { type: string, format: date-time }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/auth/sessions/revoke-others:
+  post:
+    tags: [Auth]
+    summary: Đăng xuất mọi thiết bị khác
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/auth/sessions/{id}:
+  delete:
+    tags: [Auth]
+    summary: Thu hồi một phiên
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/auth/google:
+  get:
+    tags: [Auth]
+    summary: Bắt đầu đăng nhập bằng Google
+    security: []
+    description: Chỉ được mount khi đã cấu hình `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`.
+    responses:
+      '302': { description: Chuyển hướng sang trang đồng ý của Google }
+
+/auth/google/callback:
+  get:
+    tags: [Auth]
+    summary: Google gọi lại sau khi người dùng đồng ý
+    security: []
+    responses:
+      '302': { description: Đặt refresh cookie rồi chuyển hướng về frontend }

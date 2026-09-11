@@ -1,0 +1,700 @@
+# Toàn bộ nhóm này đi qua `authMiddleware` rồi `checkRole(["ADMIN"])`, khai một
+# lần ở `routes/adminRoute.js`. `authMiddleware` đọc `role` từ **database** mỗi
+# request chứ không tin `role` trong token, nên hạ quyền có hiệu lực ngay.
+
+/admin/products:
+  get:
+    tags: [Admin]
+    summary: Danh sách sản phẩm (mọi trạng thái)
+    description: Cùng bộ tham số lọc với `GET /products`, nhưng không mặc định chỉ `ACTIVE`.
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit'
+      - name: keyword
+        in: query
+        schema: { type: string }
+      - name: status
+        in: query
+        schema: { type: string, enum: [ACTIVE, INACTIVE, DRAFT, ALL] }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+  post:
+    tags: [Admin]
+    summary: Tạo sản phẩm
+    description: |
+      Thông số kỹ thuật được `findOrCreate` definition theo `slugify(name)` nên
+      không cần khai báo trước cho danh mục. Gửi cả `value` lẫn `valueText` khi
+      đã biết con số — parser chỉ là đường tiện lợi cho giá trị đơn giản như
+      `"16 GB"`. Giá trị không khớp kiểu bị **từ chối 400**, không âm thầm để
+      `valueNumber` NULL.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ProductWrite' }
+    responses:
+      '201': { $ref: '#/components/responses/Created' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/admin/products/{id}:
+  get:
+    tags: [Admin]
+    summary: Chi tiết sản phẩm (không ghi VIEW_PRODUCT)
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    responses:
+      '200':
+        description: Sản phẩm
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Product' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  put:
+    tags: [Admin]
+    summary: Sửa sản phẩm
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ProductWrite' }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  delete:
+    tags: [Admin]
+    summary: Xoá sản phẩm
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+      '409':
+        description: Còn ràng buộc (đơn hàng đã tham chiếu)
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+
+/admin/categories:
+  get:
+    tags: [Admin]
+    summary: Danh sách danh mục (kể cả đang tắt)
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+  post:
+    tags: [Admin]
+    summary: Tạo danh mục
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string }
+              parentId: { type: string, format: uuid, nullable: true }
+              description: { type: string }
+              imageUrl: { type: string }
+              isActive: { type: boolean }
+              sortOrder: { type: integer }
+    responses:
+      '201': { $ref: '#/components/responses/Created' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/categories/{id}:
+  put:
+    tags: [Admin]
+    summary: Sửa danh mục
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              parentId: { type: string, format: uuid, nullable: true }
+              description: { type: string }
+              imageUrl: { type: string }
+              isActive: { type: boolean }
+              sortOrder: { type: integer }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  delete:
+    tags: [Admin]
+    summary: Xoá danh mục
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+      '409':
+        description: Còn sản phẩm hoặc danh mục con đang dùng
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+
+/admin/brands:
+  get:
+    tags: [Admin]
+    summary: Danh sách thương hiệu (kể cả đang tắt)
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+  post:
+    tags: [Admin]
+    summary: Tạo thương hiệu
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string }
+              logoUrl: { type: string }
+              description: { type: string }
+              isActive: { type: boolean }
+    responses:
+      '201': { $ref: '#/components/responses/Created' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/brands/{id}:
+  put:
+    tags: [Admin]
+    summary: Sửa thương hiệu
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              logoUrl: { type: string }
+              description: { type: string }
+              isActive: { type: boolean }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  delete:
+    tags: [Admin]
+    summary: Xoá thương hiệu
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+      '409':
+        description: Còn sản phẩm đang dùng
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+
+/admin/categories/{categoryId}/specifications:
+  get:
+    tags: [Admin]
+    summary: Bộ khung thông số của một danh mục
+    description: |
+      `SpecificationDefinition` gắn theo `categoryId`, unique `(category_id, key)`
+      — laptop có CPU/GPU/RAM, tai nghe có driver/ANC/pin, không dùng chung một
+      bộ cột được.
+    parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  post:
+    tags: [Admin]
+    summary: Thêm một định nghĩa thông số
+    parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string, example: RAM }
+              dataType: { type: string, enum: [STRING, NUMBER, BOOLEAN, JSON] }
+              unit: { type: string, example: GB }
+              isFilterable: { type: boolean }
+              isComparable: { type: boolean }
+              sortOrder: { type: integer }
+    responses:
+      '201': { $ref: '#/components/responses/Created' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/specifications/{id}:
+  put:
+    tags: [Admin]
+    summary: Sửa một định nghĩa thông số
+    description: |
+      Đổi `dataType` khi đã có dữ liệu sẽ **parse lại toàn bộ giá trị đã lưu trong
+      một transaction**, và **từ chối cả thay đổi** nếu có bất kỳ giá trị nào
+      không chuyển được — kèm tên giá trị đó. Một definition migrate nửa vời tệ
+      hơn một request bị từ chối.
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              dataType: { type: string, enum: [STRING, NUMBER, BOOLEAN, JSON] }
+              unit: { type: string }
+              isFilterable: { type: boolean }
+              isComparable: { type: boolean }
+              sortOrder: { type: integer }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400':
+        description: Có giá trị đang lưu không chuyển được sang kiểu mới
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  delete:
+    tags: [Admin]
+    summary: Xoá một định nghĩa thông số
+    description: Không xoá được definition đang có sản phẩm dùng.
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+      '409':
+        description: Còn sản phẩm đang dùng
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+
+/admin/discounts:
+  get:
+    tags: [Admin]
+    summary: Danh sách mã giảm giá
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit'
+      - name: status
+        in: query
+        schema: { type: string, enum: [ACTIVE, PAUSED, EXPIRED] }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+  post:
+    tags: [Admin]
+    summary: Tạo mã giảm giá
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/DiscountWrite' }
+    responses:
+      '201': { $ref: '#/components/responses/Created' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/discounts/{id}:
+  put:
+    tags: [Admin]
+    summary: Sửa mã giảm giá
+    description: Không hạ `usageLimit` xuống dưới số lượt đã dùng.
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/DiscountWrite' }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  delete:
+    tags: [Admin]
+    summary: Xoá mã giảm giá
+    description: Mã đã có đơn dùng thì **không xoá được**, chỉ chuyển `PAUSED`, để lịch sử đơn cũ còn đọc được.
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+      '409':
+        description: Đã có đơn dùng mã này
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+
+/admin/orders:
+  get:
+    tags: [Admin]
+    summary: Danh sách đơn hàng
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit'
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum: [PENDING, PAID, PROCESSING, SHIPPING, DELIVERED, CANCELLED, REFUNDED]
+      - name: keyword
+        in: query
+        schema: { type: string }
+        description: Mã đơn hoặc tên/điện thoại người nhận.
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/orders/{id}:
+  get:
+    tags: [Admin]
+    summary: Chi tiết đơn hàng
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    responses:
+      '200':
+        description: Đơn hàng kèm dòng hàng và lịch sử trạng thái
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Order' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/admin/orders/{id}/status:
+  patch:
+    tags: [Admin]
+    summary: Đổi trạng thái đơn
+    description: |
+      Chuyển sang `CANCELLED` sẽ **hoàn tồn kho và nhả lượt voucher**, cùng đường
+      với khách tự huỷ. `products.sold_count` chỉ tăng khi tiền về thật, không
+      tăng lúc đặt đơn.
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status:
+                type: string
+                enum: [PENDING, PAID, PROCESSING, SHIPPING, DELIVERED, CANCELLED, REFUNDED]
+              note: { type: string }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400':
+        description: Chuyển trạng thái không hợp lệ
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/admin/users:
+  get:
+    tags: [Admin]
+    summary: Danh sách người dùng
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit'
+      - name: keyword
+        in: query
+        schema: { type: string }
+      - name: role
+        in: query
+        schema: { type: string, enum: [ADMIN, CUSTOMER] }
+      - name: status
+        in: query
+        schema: { type: string, enum: [ACTIVE, INACTIVE, BANNED] }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+  post:
+    tags: [Admin]
+    summary: Tạo người dùng
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email, password, fullName]
+            properties:
+              email: { type: string, format: email }
+              password: { type: string, minLength: 6, maxLength: 72 }
+              fullName: { type: string }
+              phone: { type: string }
+              role: { type: string, enum: [ADMIN, CUSTOMER] }
+              status: { type: string, enum: [ACTIVE, INACTIVE, BANNED] }
+    responses:
+      '201': { $ref: '#/components/responses/Created' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '409': { $ref: '#/components/responses/Conflict' }
+
+/admin/users/{id}:
+  get:
+    tags: [Admin]
+    summary: Chi tiết người dùng
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    responses:
+      '200':
+        description: Người dùng
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/User' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  put:
+    tags: [Admin]
+    summary: Sửa người dùng
+    description: |
+      Đổi `status` sang `BANNED` có hiệu lực **ngay lần request kế tiếp** —
+      `authMiddleware` đọc user từ database mỗi request, không chờ token hết hạn.
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              fullName: { type: string }
+              phone: { type: string }
+              role: { type: string, enum: [ADMIN, CUSTOMER] }
+              status: { type: string, enum: [ACTIVE, INACTIVE, BANNED] }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  delete:
+    tags: [Admin]
+    summary: Xoá người dùng
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/admin/uploads/products/images:
+  post:
+    tags: [Admin]
+    summary: Tải ảnh sản phẩm lên Cloudinary
+    description: |
+      Tách khỏi việc tạo sản phẩm để form admin xem trước được ảnh. Nếu request
+      tạo sản phẩm sau đó bị từ chối, ảnh đã tải lên được **dọn lại** — xem
+      `cleanupProductImagesFromBody` ở `index.js`.
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              files:
+                type: array
+                items: { type: string, format: binary }
+    responses:
+      '200':
+        description: Danh sách ảnh đã tải
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          imageUrl: { type: string }
+                          publicId: { type: string }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/uploads/images:
+  delete:
+    tags: [Admin]
+    summary: Xoá ảnh khỏi Cloudinary
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [publicIds]
+            properties:
+              publicIds:
+                type: array
+                items: { type: string }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/revenue/summary:
+  get:
+    tags: [Admin]
+    summary: Tổng quan doanh thu
+    description: Mọi endpoint doanh thu chỉ tính đơn đã trả tiền thật.
+    parameters:
+      - { name: from, in: query, schema: { type: string, format: date } }
+      - { name: to, in: query, schema: { type: string, format: date } }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/revenue/daily:
+  get:
+    tags: [Admin]
+    summary: Doanh thu theo ngày
+    parameters:
+      - { name: from, in: query, schema: { type: string, format: date } }
+      - { name: to, in: query, schema: { type: string, format: date } }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/revenue/monthly:
+  get:
+    tags: [Admin]
+    summary: Doanh thu theo tháng
+    parameters:
+      - { name: year, in: query, schema: { type: integer } }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/revenue/products:
+  get:
+    tags: [Admin]
+    summary: Doanh thu theo sản phẩm
+    parameters:
+      - { name: from, in: query, schema: { type: string, format: date } }
+      - { name: to, in: query, schema: { type: string, format: date } }
+      - $ref: '#/components/parameters/Limit'
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/revenue/categories:
+  get:
+    tags: [Admin]
+    summary: Doanh thu theo danh mục
+    parameters:
+      - { name: from, in: query, schema: { type: string, format: date } }
+      - { name: to, in: query, schema: { type: string, format: date } }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/revenue/brands:
+  get:
+    tags: [Admin]
+    summary: Doanh thu theo thương hiệu
+    parameters:
+      - { name: from, in: query, schema: { type: string, format: date } }
+      - { name: to, in: query, schema: { type: string, format: date } }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/recommendations/similarity/rebuild:
+  post:
+    tags: [Admin]
+    summary: Dựng lại ma trận ProductSimilarity
+    description: |
+      Tính lại content-similarity cho toàn bộ catalogue và lưu `perProduct` láng
+      giềng mạnh nhất cho mỗi sản phẩm. Chạy lại sau khi đổi catalogue hoặc thông
+      số — ma trận là ảnh chụp, không tự cập nhật.
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              perProduct: { type: integer, default: 12 }
+              minScore: { type: number }
+    responses:
+      '200':
+        description: Số cặp đã ghi
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        pairs: { type: integer }
+      '403': { $ref: '#/components/responses/Forbidden' }
+
+/admin/recommendations/stats:
+  get:
+    tags: [Admin]
+    summary: Thống kê kết quả gợi ý
+    description: |
+      Đếm số lượt hiện / click / thêm giỏ / mua, **tách theo `recommendationType`**.
+      `since` lọc theo thời điểm để loại những lượt "shown" sinh ra trước khi bật
+      cache 15 phút — giai đoạn mà mỗi lần vào trang chủ lại thêm 12 lượt chưa ai
+      kịp bấm.
+    parameters:
+      - name: since
+        in: query
+        schema: { type: string, format: date-time }
+        description: Giá trị không phân tích được coi như không truyền.
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }

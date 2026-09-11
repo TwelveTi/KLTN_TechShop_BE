@@ -38,6 +38,24 @@ class RecommendationRepository {
     return db.Product.findByPk(productId, { raw: true });
   }
 
+  // Tên danh mục / hãng / tag cho `scoreSearchHistory`. Ba bảng nhỏ nên đọc
+  // nguyên bảng rẻ hơn join vào hot path của `findScorableProducts`.
+  async findTaxonomyNames() {
+    const [categories, brands, tags] = await Promise.all([
+      db.Category.findAll({ attributes: ["id", "name"], raw: true }),
+      db.Brand.findAll({ attributes: ["id", "name"], raw: true }),
+      db.Tag.findAll({ attributes: ["id", "name"], raw: true }),
+    ]);
+
+    const toMap = (rows) => Object.fromEntries(rows.map((row) => [row.id, row.name]));
+
+    return {
+      categoryNames: toMap(categories),
+      brandNames: toMap(brands),
+      tagNames: toMap(tags),
+    };
+  }
+
   /**
    * The presentation fields for the handful of products a rail actually returns.
    *

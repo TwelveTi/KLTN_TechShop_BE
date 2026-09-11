@@ -1,0 +1,202 @@
+/ai/advisor:
+  post:
+    tags: [AI]
+    summary: Hỏi trợ lý tư vấn sản phẩm
+    security: []
+    description: |
+      Gemini function calling: model **không** được trả lời từ trí nhớ của nó mà
+      phải gọi tool truy vấn database, rồi diễn giải hàng thật lấy được.
+
+      `answer` (văn của model) và `products` (dòng từ database) là hai trường
+      tách biệt và **không bao giờ trộn** — nếu model nhắc tới một máy không tồn
+      tại thì cái tên đó nằm trong đoạn văn và không có thẻ sản phẩm nào cho nó.
+
+      Auth tuỳ chọn: khách chưa đăng nhập vẫn hỏi được, hội thoại gắn theo
+      `X-Session-Id`. Hạn mức 10 câu/phút vì mỗi câu là một lần gọi model có tính
+      tiền. Trả `503` nếu chưa cấu hình `GEMINI_API_KEY`.
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [message]
+            properties:
+              message: { type: string, example: 'Laptop dưới 25 triệu, pin trâu, hay mang đi lại' }
+              conversationId:
+                type: string
+                format: uuid
+                nullable: true
+                description: Bỏ trống để mở hội thoại mới.
+    responses:
+      '200':
+        description: Câu trả lời kèm hàng thật và bằng chứng grounding
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/AiAnswer' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+      '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+/ai/compare:
+  post:
+    tags: [AI]
+    summary: So sánh sản phẩm bằng AI
+    security: []
+    description: |
+      Dùng lại nguyên pipeline của advisor, thêm tool tra theo tên
+      (`find_products_by_name`). Câu trả lời có bốn phần: kết luận, ưu/nhược điểm,
+      bảng thông số, khuyến nghị.
+
+      Đường này gửi thêm `description` và **đánh giá của khách** cho model, lấy từ
+      **cả hai đầu thang điểm** — năm review 5 sao gần nhất thì không còn gì để
+      viết dưới mục nhược điểm. Review là **dữ liệu, không phải chỉ dẫn**.
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [message]
+            properties:
+              message: { type: string, example: So sánh iPhone 15 Pro Max với Galaxy S24 Ultra }
+              conversationId: { type: string, format: uuid, nullable: true }
+    responses:
+      '200':
+        description: Bài so sánh kèm thẻ sản phẩm
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/AiAnswer' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+      '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+/ai/recommendations/{itemId}/explain:
+  post:
+    tags: [AI]
+    summary: '"Vì sao tôi được gợi ý sản phẩm này?"'
+    security: []
+    description: |
+      Về **một** dòng `recommendation_items`, nên không đi qua `AiConversation`.
+      Lời giải thích được lưu lại: lần hỏi thứ hai cho cùng `itemId` trả về từ bản
+      đã lưu (`cached: true`) và không tốn lượt gọi model.
+
+      Khi khách không có tín hiệu nào, model nói thẳng là sản phẩm đang bán chạy
+      chứ không giả vờ rằng gợi ý mang tính cá nhân.
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - $ref: '#/components/parameters/SessionId'
+    responses:
+      '200':
+        description: Lời giải thích
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        explanation: { type: string }
+                        cached: { type: boolean }
+      '404':
+        description: Dòng gợi ý không còn (đã bị thay bởi lượt tính mới)
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+      '429': { $ref: '#/components/responses/TooManyRequests' }
+      '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+/ai/conversations:
+  get:
+    tags: [AI]
+    summary: Danh sách hội thoại của tôi
+    security: []
+    description: |
+      Trả cả hội thoại tư vấn lẫn so sánh trong một danh sách; `mode` là thứ phân
+      biệt hai loại. Không đi qua limiter của model — đây chỉ là đọc database.
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    responses:
+      '200':
+        description: Danh sách hội thoại
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id: { type: string, format: uuid }
+                          title: { type: string, nullable: true }
+                          mode: { type: string, enum: [advisor, comparison] }
+                          lastMessageAt: { type: string, format: date-time }
+
+/ai/conversations/{id}:
+  get:
+    tags: [AI]
+    summary: Xem lại một hội thoại
+    security: []
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+      - $ref: '#/components/parameters/SessionId'
+    responses:
+      '200':
+        description: Hội thoại kèm toàn bộ tin nhắn
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        mode: { type: string, enum: [advisor, comparison] }
+                        messages:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              role: { type: string, enum: [user, assistant] }
+                              content: { type: string }
+                              createdAt: { type: string, format: date-time }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  delete:
+    tags: [AI]
+    summary: Đóng một hội thoại
+    security: []
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+      - $ref: '#/components/parameters/SessionId'
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }

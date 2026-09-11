@@ -1,0 +1,315 @@
+/cart:
+  get:
+    tags: [Cart]
+    summary: Giỏ hàng của tôi
+    description: Giá **luôn** được tính lại từ database qua `utils/pricing`, dùng chung với đơn hàng.
+    responses:
+      '200':
+        description: Giỏ hàng
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Cart' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+  delete:
+    tags: [Cart]
+    summary: Xoá sạch giỏ
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/cart/items:
+  post:
+    tags: [Cart]
+    summary: Thêm sản phẩm vào giỏ
+    description: Ghi một sự kiện `ADD_TO_CART` sau khi commit. Tín hiệu này **không** khử trùng lặp — thêm hai lần là hai ý định thật.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId: { type: string, format: uuid }
+              variantId: { type: string, format: uuid, nullable: true }
+              quantity: { type: integer, minimum: 1 }
+    responses:
+      '200':
+        description: Giỏ sau khi thêm
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Cart' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/cart/items/{itemId}:
+  patch:
+    tags: [Cart]
+    summary: Đổi số lượng một dòng
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [quantity]
+            properties:
+              quantity: { type: integer, minimum: 1 }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  delete:
+    tags: [Cart]
+    summary: Bỏ một dòng khỏi giỏ
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/orders:
+  post:
+    tags: [Order]
+    summary: Đặt hàng
+    description: |
+      Yêu cầu email đã xác thực. Chạy trong một transaction: khoá dòng tồn kho
+      `FOR UPDATE`, **trừ tồn kho ngay khi đặt**, khoá voucher, tạo đơn kèm
+      snapshot sản phẩm, ghi lịch sử trạng thái, rồi xoá đúng những dòng đã đặt
+      khỏi giỏ. Thứ tự khoá cố định (sản phẩm → voucher) ở cả tạo đơn lẫn huỷ đơn
+      là thứ ngăn deadlock.
+
+      Mọi số tiền tính lại ở server; giá do client gửi lên bị bỏ qua. Phí ship
+      30.000đ, miễn phí từ 1.000.000đ, và tính trên subtotal **trước** giảm giá.
+    parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema: { type: string }
+        description: |
+          Gửi lại cùng key trả về đúng đơn cũ (HTTP 200) thay vì tạo đơn thứ hai —
+          chống double-click và refresh. `discountCode` nằm trong chữ ký
+          idempotency, nên đặt hụt rồi áp mã và bấm lại sẽ tạo đơn mới đã giảm giá.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [addressId, paymentMethod, items]
+            properties:
+              addressId: { type: string, format: uuid }
+              paymentMethod: { type: string, enum: [COD, VNPAY] }
+              deliveryMethodId: { type: string, nullable: true }
+              discountCode: { type: string, nullable: true }
+              note: { type: string, nullable: true }
+              items:
+                type: array
+                minItems: 1
+                items:
+                  type: object
+                  required: [productId, quantity]
+                  properties:
+                    productId: { type: string, format: uuid }
+                    variantId: { type: string, format: uuid, nullable: true }
+                    quantity: { type: integer, minimum: 1 }
+    responses:
+      '201':
+        description: Đơn vừa tạo
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Order' }
+      '200':
+        description: Trả lại đơn cũ vì trùng `Idempotency-Key`
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Order' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '403':
+        description: Email chưa xác thực
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+      '409':
+        description: Hết hàng hoặc voucher hết lượt
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+
+/orders/me:
+  get:
+    tags: [Order]
+    summary: Đơn hàng của tôi
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit'
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum: [PENDING, PAID, PROCESSING, SHIPPING, DELIVERED, CANCELLED, REFUNDED]
+    responses:
+      '200':
+        description: Trang đơn hàng
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items: { $ref: '#/components/schemas/Order' }
+                        pagination: { $ref: '#/components/schemas/Pagination' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/orders/{id}/cancel:
+  patch:
+    tags: [Order]
+    summary: Tự huỷ đơn còn ở PENDING
+    description: |
+      Hoàn tồn kho và **nhả lượt dùng voucher** trong cùng transaction. Đơn được
+      đọc kèm `lock: true` — thiếu khoá thì hai lượt huỷ đồng thời đều thấy
+      `PENDING`, đều đi qua chốt, và mỗi lượt lại hoàn tồn kho thêm một lần.
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              reason: { type: string }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400':
+        description: Đơn không còn ở trạng thái huỷ được
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/payments/vnpay/create-url:
+  post:
+    tags: [Payment]
+    summary: Tạo URL thanh toán VNPay
+    description: |
+      Mỗi lần thanh toán tạo một dòng `payments` riêng với `vnp_TxnRef` riêng, nên
+      trả lại một đơn đã fail không bị cổng từ chối vì trùng mã.
+
+      Trả `503` nếu thiếu `vnp_TmnCode`/`vnp_HashSecret` — thà từ chối còn hơn tạo
+      chữ ký sai.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [orderId]
+            properties:
+              orderId: { type: string, format: uuid }
+    responses:
+      '200':
+        description: URL để chuyển hướng khách sang cổng
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        paymentUrl: { type: string }
+                        expiresAt: { type: string, format: date-time }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '404': { $ref: '#/components/responses/NotFound' }
+      '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+/payments/vnpay/return:
+  get:
+    tags: [Payment]
+    summary: Trình duyệt quay về từ cổng thanh toán
+    security: []
+    description: |
+      Không có `authMiddleware` — thứ xác thực nó là chữ ký HMAC-SHA512 trên query
+      string, so sánh bằng `timingSafeEqual`. Số tiền được đối chiếu với
+      `orders.total_price` trước khi ghi nhận.
+
+      Nếu đơn đã bị huỷ trong lúc URL còn sống: **từ chối quyết toán**, ghi
+      `providerPayload.refundRequired = true` và một dòng lịch sử để admin đọc ra
+      khoản phải hoàn. Đơn không bị "hồi sinh".
+    parameters:
+      - name: vnp_ResponseCode
+        in: query
+        schema: { type: string }
+      - name: vnp_TxnRef
+        in: query
+        schema: { type: string }
+      - name: vnp_SecureHash
+        in: query
+        schema: { type: string }
+    responses:
+      '302':
+        description: Chuyển hướng về `{FRONTEND_URL}/checkout/success|failed`
+
+/payments/vnpay/ipn:
+  get:
+    tags: [Payment]
+    summary: VNPay gọi server-to-server
+    security: []
+    description: |
+      Dùng chung hàm quyết toán với `/return` và idempotent: lần gọi thứ hai thấy
+      payment đã settle nên không đổi gì (`RspCode: "02"`).
+
+      Chưa kiểm chứng bằng IPN thật — sandbox không gọi được `localhost`.
+    responses:
+      '200':
+        description: Phản hồi theo định dạng VNPay
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                RspCode: { type: string, example: '00' }
+                Message: { type: string, example: Confirm Success }

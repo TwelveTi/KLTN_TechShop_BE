@@ -1,4 +1,4 @@
-const { Op, fn, col } = require("sequelize");
+const { Op, fn, col, literal } = require("sequelize");
 const db = require("../models");
 
 // Data-access for the two tracking tables that feed the recommendation system:
@@ -105,10 +105,15 @@ class BehaviorRepository {
       };
     }
 
+    // Gộp thêm theo tuổi sự kiện (số ngày) để service nhân được hệ số suy giảm.
+    // Vẫn là aggregate, nên số dòng bị chặn bởi cửa sổ 90 ngày.
+    const daysAgo = fn("DATEDIFF", literal(":anchor"), col("occurred_at"));
+
     return db.UserBehavior.findAll({
-      attributes: ["categoryId", "behaviorType", [fn("COUNT", col("id")), "total"]],
+      attributes: ["categoryId", "behaviorType", [daysAgo, "daysAgo"], [fn("COUNT", col("id")), "total"]],
       where,
-      group: ["categoryId", "behaviorType"],
+      group: ["categoryId", "behaviorType", daysAgo],
+      replacements: { anchor: before || new Date() },
       raw: true,
     });
   }
@@ -126,7 +131,8 @@ class BehaviorRepository {
     }
 
     return db.UserBehavior.findAll({
-      attributes: ["behaviorType", "productId"],
+      // `occurredAt` để service tính tuổi sự kiện cho hệ số suy giảm.
+      attributes: ["behaviorType", "productId", "occurredAt"],
       where,
       include: [
         {

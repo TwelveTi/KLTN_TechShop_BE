@@ -1,0 +1,147 @@
+/users/me:
+  get:
+    tags: [User]
+    summary: Hồ sơ của tôi
+    responses:
+      '200':
+        description: Hồ sơ người dùng
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/User' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+  put:
+    tags: [User]
+    summary: Cập nhật hồ sơ
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              fullName: { type: string, minLength: 2, maxLength: 150 }
+              phone: { type: string, maxLength: 20 }
+              avatarUrl: { type: string, maxLength: 1000 }
+    responses:
+      '200':
+        description: Hồ sơ sau khi cập nhật
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/User' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/users/me/avatar:
+  post:
+    tags: [User]
+    summary: Tải ảnh đại diện
+    description: Ảnh được đẩy lên Cloudinary; ảnh cũ bị xoá sau khi ảnh mới lưu xong.
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required: [file]
+            properties:
+              file: { type: string, format: binary }
+    responses:
+      '200':
+        description: URL ảnh mới
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        avatarUrl: { type: string }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/addresses/me:
+  get:
+    tags: [User]
+    summary: Sổ địa chỉ của tôi
+    responses:
+      '200':
+        description: Danh sách địa chỉ
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items: { $ref: '#/components/schemas/Address' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+  post:
+    tags: [User]
+    summary: Thêm địa chỉ
+    description: Địa chỉ hành chính 2 cấp (tỉnh/thành + phường/xã), theo mô hình sau sáp nhập.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [receiverName, receiverPhone, province, addressLine]
+            properties:
+              receiverName: { type: string }
+              receiverPhone: { type: string }
+              province: { type: string }
+              district: { type: string }
+              ward: { type: string }
+              addressLine: { type: string }
+              postalCode: { type: string }
+              isDefault: { type: boolean }
+    responses:
+      '201':
+        description: Địa chỉ vừa tạo
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Address' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/addresses/me/{id}/default:
+  put:
+    tags: [User]
+    summary: Đặt làm địa chỉ mặc định
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/addresses/me/{id}:
+  delete:
+    tags: [User]
+    summary: Xoá địa chỉ
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '404': { $ref: '#/components/responses/NotFound' }

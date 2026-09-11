@@ -1,0 +1,189 @@
+/products:
+  get:
+    tags: [Catalogue]
+    summary: Danh sách sản phẩm (tìm kiếm, lọc, sắp xếp, phân trang)
+    security: []
+    description: |
+      Auth tuỳ chọn. Khi có `keyword`, một sự kiện `SEARCH` được ghi **ở server**
+      cho user hoặc cho `X-Session-Id` nếu khách chưa đăng nhập — client không tự
+      báo tín hiệu này.
+
+      `category` và `brand` nhận UUID, slug hoặc tên; `brand` nhận nhiều giá trị
+      ngăn cách bằng dấu phẩy.
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit'
+      - name: keyword
+        in: query
+        schema: { type: string }
+        description: Khớp `LIKE` vào tên sản phẩm.
+      - name: category
+        in: query
+        schema: { type: string }
+        description: UUID / slug / tên. `all` để bỏ lọc.
+      - name: brand
+        in: query
+        schema: { type: string }
+        description: 'Một hoặc nhiều, ngăn cách bằng dấu phẩy: `apple,dell`.'
+      - name: minPrice
+        in: query
+        schema: { type: number }
+      - name: maxPrice
+        in: query
+        schema: { type: number }
+      - name: rating
+        in: query
+        schema: { type: number, minimum: 0, maximum: 5 }
+        description: Điểm trung bình tối thiểu.
+      - name: inStock
+        in: query
+        schema: { type: boolean }
+      - name: onSale
+        in: query
+        schema: { type: boolean }
+      - name: sort
+        in: query
+        schema:
+          type: string
+          enum: [newest, priceAsc, priceDesc, bestSelling, rating]
+          default: newest
+      - name: status
+        in: query
+        schema: { type: string, enum: [ACTIVE, INACTIVE, DRAFT, ALL] }
+    responses:
+      '200':
+        description: Trang kết quả
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items: { $ref: '#/components/schemas/Product' }
+                        pagination: { $ref: '#/components/schemas/Pagination' }
+
+/products/{id}:
+  get:
+    tags: [Catalogue]
+    summary: Chi tiết sản phẩm
+    security: []
+    description: |
+      Ghi một sự kiện `VIEW_PRODUCT` và tăng `products.view_count`. Cả hai đi sau
+      bước khử trùng lặp 30 phút, nên F5 mười lần vẫn là một lượt xem.
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+      - $ref: '#/components/parameters/SessionId'
+    responses:
+      '200':
+        description: Sản phẩm kèm ảnh, biến thể và thông số
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Product' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/categories:
+  get:
+    tags: [Catalogue]
+    summary: Danh mục công khai
+    security: []
+    description: |
+      Chỉ trả bản ghi `isActive = true`, mỗi mục kèm `productCount` đã **gộp cả
+      danh mục con** — khách bấm "Laptop" mong thấy mọi thứ bên dưới nó.
+
+      Danh mục con có cha đang tắt sẽ **nổi lên gốc** thay vì biến mất khỏi cây.
+    parameters:
+      - name: tree
+        in: query
+        schema: { type: boolean }
+        description: '`true` trả cây lồng nhau qua trường `children`.'
+    responses:
+      '200':
+        description: Danh sách hoặc cây danh mục
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items: { $ref: '#/components/schemas/Category' }
+                        totalProducts:
+                          type: integer
+                          description: Cho mục "All Products".
+
+/categories/{slug}:
+  get:
+    tags: [Catalogue]
+    summary: Một danh mục theo slug
+    security: []
+    parameters:
+      - $ref: '#/components/parameters/SlugPath'
+    responses:
+      '200':
+        description: Danh mục
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Category' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/brands:
+  get:
+    tags: [Catalogue]
+    summary: Thương hiệu công khai
+    security: []
+    description: Chỉ `isActive = true`, kèm `productCount`.
+    responses:
+      '200':
+        description: Danh sách thương hiệu
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items: { $ref: '#/components/schemas/Brand' }
+
+/brands/{slug}:
+  get:
+    tags: [Catalogue]
+    summary: Một thương hiệu theo slug
+    security: []
+    parameters:
+      - $ref: '#/components/parameters/SlugPath'
+    responses:
+      '200':
+        description: Thương hiệu
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Brand' }
+      '404': { $ref: '#/components/responses/NotFound' }

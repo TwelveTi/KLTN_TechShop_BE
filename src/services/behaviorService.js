@@ -3,7 +3,16 @@ const behaviorRepository = require("../repositories/behaviorRepository");
 const logger = require("../utils/logger");
 const pricing = require("../utils/pricing");
 
-const { BEHAVIOR_TYPES, SIGNAL_WEIGHTS } = require("../utils/behaviorSignals");
+const { BEHAVIOR_TYPES, effectiveWeight } = require("../utils/behaviorSignals");
+
+// Trung bình có trọng số; rơi về trung bình thường nếu mọi trọng số bằng 0.
+const weightedMean = (entries) => {
+  const totalWeight = entries.reduce((sum, e) => sum + e.weight, 0);
+
+  return totalWeight > 0
+    ? entries.reduce((sum, e) => sum + e.price * e.weight, 0) / totalWeight
+    : entries.reduce((sum, e) => sum + e.price, 0) / entries.length;
+};
 
 // Repeat views of the same product inside this window collapse into one event.
 // Without it a page refresh (or a shopper comparing two tabs) would drown the
@@ -243,9 +252,14 @@ class BehaviorService {
       behaviorRepository.findBehaviorProductFacts(userId, { since, before }),
     ]);
 
+    // Tuổi sự kiện tính từ chính mốc dựng hồ sơ, không phải từ `Date.now()` —
+    // nếu không, hồ sơ "tính tới ngày X" sẽ suy giảm theo hôm nay.
+    const daysAgoOf = (occurredAt) =>
+      Math.max(0, Math.floor((anchor - new Date(occurredAt).getTime()) / (24 * 60 * 60 * 1000)));
+
     const categoryScores = {};
     categoryRows.forEach((row) => {
-      const weight = SIGNAL_WEIGHTS[row.behaviorType] || 1;
+      const weight = effectiveWeight(row.behaviorType, Number(row.daysAgo) || 0);
       categoryScores[row.categoryId] = (categoryScores[row.categoryId] || 0) + Number(row.total) * weight;
     });
 
@@ -256,7 +270,7 @@ class BehaviorService {
 
     productFacts.forEach((row) => {
       const product = row.product;
-      const weight = SIGNAL_WEIGHTS[row.behaviorType] || 1;
+      const weight = effectiveWeight(row.behaviorType, daysAgoOf(row.occurredAt));
 
       if (product.brandId) {
         brandScores[product.brandId] = (brandScores[product.brandId] || 0) + weight;
@@ -269,7 +283,7 @@ class BehaviorService {
       if (["PURCHASE", "ADD_TO_CART", "FAVORITE"].includes(row.behaviorType)) {
         const { unitPrice } = pricing.resolveUnitPrice(product, null);
         if (unitPrice > 0) {
-          intentPrices.push(unitPrice);
+          intentPrices.push({ price: unitPrice, weight });
         }
       }
     });
@@ -285,11 +299,12 @@ class BehaviorService {
       preferredBrands: topOf(brandScores),
       preferredTags: [],
       preferredSpecs: {},
-      minPrice: intentPrices.length ? pricing.roundMoney(Math.min(...intentPrices)) : null,
-      maxPrice: intentPrices.length ? pricing.roundMoney(Math.max(...intentPrices)) : null,
-      averagePrice: intentPrices.length
-        ? pricing.roundMoney(intentPrices.reduce((sum, p) => sum + p, 0) / intentPrices.length)
-        : null,
+      // Dải giá giữ nguyên là bao lồi của mọi tín hiệu có ý định — nó mô tả
+      // khách đã từng cân nhắc tới đâu. Chỉ `averagePrice` (điểm giá đang nhắm)
+      // mới suy giảm, nên ngân sách mới kéo được nó ra khỏi ngân sách cũ.
+      minPrice: intentPrices.length ? pricing.roundMoney(Math.min(...intentPrices.map((p) => p.price))) : null,
+      maxPrice: intentPrices.length ? pricing.roundMoney(Math.max(...intentPrices.map((p) => p.price))) : null,
+      averagePrice: intentPrices.length ? pricing.roundMoney(weightedMean(intentPrices)) : null,
       lastCalculatedAt: new Date(),
     };
 

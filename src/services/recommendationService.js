@@ -174,14 +174,16 @@ class RecommendationService {
    * chuỗi con, nên một token ngắn có thể khớp giữa từ — đó là lý do
    * `tokenizeFolded` bỏ token dưới 3 ký tự.
    *
-   * Chỉ khớp `product.name`. Mô tả, tên thương hiệu, tên danh mục và tag đều
-   * không tham gia, nên "tai nghe chống ồn" không với được tới một sản phẩm mà
-   * tên không chứa mấy từ đó — món nợ còn lại của thành phần này.
+   * Khớp trên bốn trường với trọng số giảm dần: tên sản phẩm 1.0 · tên hãng 0.8
+   * · tên danh mục 0.6 · tên tag 0.5. Mỗi token lấy trường khớp mạnh nhất, nên
+   * khớp đúng tên sản phẩm vẫn thắng khớp cả danh mục — xem README 6.4.2.
    */
-  scoreSearchHistory(products, keywords) {
+  scoreSearchHistory(products, keywords, taxonomy = {}) {
     if (!keywords || keywords.length === 0) {
       return {};
     }
+
+    const { categoryNames = {}, brandNames = {}, tagNames = {} } = taxonomy;
 
     const tokenised = keywords.map((entry, index) => ({
       // Weight decays with position; the list arrives newest-first.
@@ -198,14 +200,28 @@ class RecommendationService {
     products.forEach((product) => {
       // Phải bỏ dấu cùng một cách với phía từ khoá, nếu không "dong" sẽ không
       // bao giờ gặp "đồng".
-      const haystack = foldDiacritics(product.name);
+      const fields = [
+        { text: foldDiacritics(product.name), weight: 1 },
+        { text: foldDiacritics(brandNames[product.brandId] || ""), weight: 0.8 },
+        { text: foldDiacritics(categoryNames[product.categoryId] || ""), weight: 0.6 },
+        {
+          text: foldDiacritics((product.tagIds || []).map((id) => tagNames[id] || "").join(" ")),
+          weight: 0.5,
+        },
+      ].filter((field) => field.text.length > 0);
+
       let score = 0;
 
       tokenised.forEach(({ weight, tokens }) => {
         if (tokens.length === 0) {
           return;
         }
-        const hits = tokens.filter((token) => haystack.includes(token)).length;
+        // Mỗi token tính theo trường khớp mạnh nhất; khớp toàn bộ vào tên sản
+        // phẩm cho ra đúng điểm như bản chỉ-khớp-tên.
+        const hits = tokens.reduce(
+          (sum, token) => sum + Math.max(0, ...fields.map((f) => (f.text.includes(token) ? f.weight : 0))),
+          0,
+        );
         if (hits > 0) {
           score += weight * (hits / tokens.length);
         }
@@ -541,7 +557,10 @@ class RecommendationService {
 
     // Facets are needed for the content-based comparison against past purchases.
     const facetIds = [...new Set([...products.map((p) => p.id), ...purchasedIds])];
-    const { tagsByProduct, specsByProduct } = await recommendationRepository.findProductFacets(facetIds);
+    const [{ tagsByProduct, specsByProduct }, taxonomy] = await Promise.all([
+      recommendationRepository.findProductFacets(facetIds),
+      recommendationRepository.findTaxonomyNames(),
+    ]);
 
     const withFacets = (product) => ({
       ...product,
@@ -559,7 +578,7 @@ class RecommendationService {
 
     const components = {
       userPreference: this.scoreUserPreference(candidates, profile),
-      searchHistory: this.scoreSearchHistory(candidates, keywords),
+      searchHistory: this.scoreSearchHistory(candidates, keywords, taxonomy),
       purchaseHistory: this.scorePurchaseHistory(candidates, purchasedProducts),
       productSimilarity: this.scoreProductSimilarity(candidates, similarityRows, viewedRank),
       popularity: this.scorePopularity(candidates),

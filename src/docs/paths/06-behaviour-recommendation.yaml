@@ -1,0 +1,259 @@
+/behaviors:
+  post:
+    tags: [Behaviour]
+    summary: Client báo sự kiện
+    security: []
+    description: |
+      **Chỉ nhận những gì server không tự thấy** — hiện là `CLICK_RECOMMENDATION`
+      và `FAVORITE`. Xem, tìm kiếm, thêm giỏ và mua hàng đều được ghi ở server:
+      nếu cho client báo `PURCHASE` thì một người tự bơm được tín hiệu của mình và
+      làm hỏng cả gợi ý của họ lẫn điểm phổ biến dùng chung.
+
+      Auth tuỳ chọn; khách chưa đăng nhập được nhóm theo `X-Session-Id`.
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/BehaviourEvent'
+              - type: object
+                required: [events]
+                properties:
+                  events:
+                    type: array
+                    maxItems: 50
+                    items: { $ref: '#/components/schemas/BehaviourEvent' }
+    responses:
+      '200':
+        description: Số sự kiện nhận và số đã ghi
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        received: { type: integer }
+                        recorded: { type: integer }
+      '400': { $ref: '#/components/responses/BadRequest' }
+
+/search-history/me:
+  get:
+    tags: [Behaviour]
+    summary: Lịch sử tìm kiếm của tôi
+    parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit'
+    responses:
+      '200':
+        description: Trang lịch sử
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id: { type: string, format: uuid }
+                              keyword: { type: string }
+                              resultCount: { type: integer, nullable: true }
+                              searchedAt: { type: string, format: date-time }
+                        pagination: { $ref: '#/components/schemas/Pagination' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+  delete:
+    tags: [Behaviour]
+    summary: Xoá toàn bộ lịch sử tìm kiếm
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/search-history/me/keywords:
+  get:
+    tags: [Behaviour]
+    summary: Từ khoá gần đây, không trùng
+    description: Cho dropdown "tìm kiếm gần đây" — cùng một từ gõ hai mươi lần chỉ hiện một lần.
+    parameters:
+      - name: limit
+        in: query
+        schema: { type: integer, minimum: 1, maximum: 50, default: 10 }
+    responses:
+      '200':
+        description: Danh sách từ khoá
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          keyword: { type: string }
+                          lastSearchedAt: { type: string, format: date-time }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/search-history/me/{id}:
+  delete:
+    tags: [Behaviour]
+    summary: Xoá một dòng lịch sử
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/me/preferences:
+  get:
+    tags: [Behaviour]
+    summary: Hồ sơ sở thích đã suy ra từ hành vi
+    description: |
+      Bản tóm tắt có trọng số mà recommender đọc. Trọng số tín hiệu được **nhân**
+      hệ số suy giảm theo tuổi sự kiện (bán rã 60 ngày, sàn 0.35) và chỉ xét 90
+      ngày gần nhất — README 6.2.1.
+
+      `preferredTags` và `preferredSpecs` hiện **luôn rỗng**: bộ dựng hồ sơ chưa
+      điền chúng (README 6.5).
+    parameters:
+      - name: recompute
+        in: query
+        schema: { type: boolean }
+        description: '`true` tính lại từ log thay vì đọc bản đã lưu.'
+    responses:
+      '200':
+        description: Hồ sơ sở thích
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/PreferenceProfile' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/recommendations:
+  get:
+    tags: [Recommendation]
+    summary: Dải gợi ý cá nhân hoá
+    security: []
+    description: |
+      Ghép năm thành phần (`userPreference` 35% · `searchHistory` 25% ·
+      `purchaseHistory` 20% · `productSimilarity` 10% · `popularity` dự phòng).
+      Bốn số đầu là tỉ lệ **tương đối**: chỉ những thành phần thực sự có tín hiệu
+      mới được chia trọng số rồi chuẩn hoá lại.
+
+      Khách không có tín hiệu nào rơi về `popularity` thay vì nhận dải rỗng.
+      Kết quả được lưu và dùng lại trong 15 phút.
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+      - name: limit
+        in: query
+        schema: { type: integer, minimum: 1, maximum: 50, default: 12 }
+      - name: strategy
+        in: query
+        schema:
+          type: string
+          enum: [userPreference, searchHistory, purchaseHistory, productSimilarity, popularity]
+        description: |
+          Ép chạy **một** thành phần thay vì hybrid. Tồn tại để phục vụ chương
+          Đánh giá — mọi thành phần khác bị đưa về rỗng nên trọng số không rò rỉ vào.
+    responses:
+      '200':
+        description: Dải gợi ý
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        personalised:
+                          type: boolean
+                          description: '`false` nghĩa là đã rơi về popularity.'
+                        strategy: { type: string, example: hybrid }
+                        items:
+                          type: array
+                          items: { $ref: '#/components/schemas/RecommendationItem' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+
+/recommendations/products/{id}/similar:
+  get:
+    tags: [Recommendation]
+    summary: Sản phẩm tương tự
+    security: []
+    description: >-
+      Đọc ma trận `ProductSimilarity` — thuần nội dung: danh mục, hãng, giá,
+      tag, thông số.
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+      - $ref: '#/components/parameters/SessionId'
+      - name: limit
+        in: query
+        schema: { type: integer, minimum: 1, maximum: 50, default: 8 }
+    responses:
+      '200':
+        description: Danh sách sản phẩm tương tự
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items: { $ref: '#/components/schemas/RecommendationItem' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
+/recommendations/items/{itemId}/outcome:
+  post:
+    tags: [Recommendation]
+    summary: Báo kết quả của một gợi ý
+    security: []
+    description: |
+      Dùng cho CTR ở chương Đánh giá. Chốt chặn chủ sở hữu xét theo `userId` hoặc
+      `X-Session-Id`, vì dải "sản phẩm tương tự" **được** lưu cho cả khách vãng lai.
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - $ref: '#/components/parameters/SessionId'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [outcome]
+            properties:
+              outcome: { type: string, enum: [CLICK, ADD_TO_CART, PURCHASE] }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }

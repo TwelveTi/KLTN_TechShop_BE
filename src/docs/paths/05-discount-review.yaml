@@ -1,0 +1,183 @@
+/discounts/validate:
+  post:
+    tags: [Discount]
+    summary: Xem trước số tiền được giảm
+    description: |
+      **Chỉ để hiển thị — không giữ chỗ voucher.** Mã vẫn có thể hết lượt trước
+      khi khách bấm đặt hàng, y hệt tồn kho; nguồn chân lý là lúc tạo đơn.
+
+      Cả hai đường đi qua cùng một hàm `evaluate()`, nên số báo cho khách được
+      tính bằng đúng bộ quy tắc lúc trừ tiền.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [code, subtotal]
+            properties:
+              code: { type: string }
+              subtotal: { type: number }
+    responses:
+      '200':
+        description: Kết quả áp thử
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        code: { type: string }
+                        discountAmount: { type: number }
+                        discountType: { type: string, enum: [PERCENT, FIXED] }
+      '400':
+        description: Mã không hợp lệ, hết hạn, hết lượt, hoặc chưa đạt giá trị tối thiểu
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+
+/products/{productId}/reviews:
+  get:
+    tags: [Review]
+    summary: Đánh giá của một sản phẩm
+    security: []
+    parameters:
+      - name: productId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Limit'
+      - name: rating
+        in: query
+        schema: { type: integer, minimum: 1, maximum: 5 }
+    responses:
+      '200':
+        description: Trang đánh giá
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        items:
+                          type: array
+                          items: { $ref: '#/components/schemas/Review' }
+                        pagination: { $ref: '#/components/schemas/Pagination' }
+  post:
+    tags: [Review]
+    summary: Viết đánh giá
+    description: |
+      **Còn nợ:** hiện chưa bắt buộc đã mua hàng, và `orderItemId` chưa được set
+      lúc tạo nên `verifiedPurchase` mới chỉ đúng với dữ liệu seed — README 5.14.1.
+    parameters:
+      - name: productId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [rating]
+            properties:
+              rating: { type: integer, minimum: 1, maximum: 5 }
+              title: { type: string }
+              content: { type: string }
+    responses:
+      '201':
+        description: Đánh giá vừa tạo
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data: { $ref: '#/components/schemas/Review' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '409':
+        description: Đã đánh giá sản phẩm này rồi
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Error' }
+
+/products/{productId}/reviews/summary:
+  get:
+    tags: [Review]
+    summary: Điểm trung bình và phân bố sao
+    security: []
+    parameters:
+      - name: productId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      '200':
+        description: Tổng hợp đánh giá
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Envelope'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        averageRating: { type: number }
+                        reviewCount: { type: integer }
+                        distribution:
+                          type: object
+                          description: Số lượt theo từng mức sao.
+                          additionalProperties: { type: integer }
+
+/reviews/{reviewId}:
+  patch:
+    tags: [Review]
+    summary: Sửa đánh giá của mình
+    parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              rating: { type: integer, minimum: 1, maximum: 5 }
+              title: { type: string }
+              content: { type: string }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+  delete:
+    tags: [Review]
+    summary: Xoá đánh giá của mình
+    parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '401': { $ref: '#/components/responses/Unauthorized' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }

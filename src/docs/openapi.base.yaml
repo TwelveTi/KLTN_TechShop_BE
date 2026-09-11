@@ -1,0 +1,545 @@
+openapi: 3.0.3
+
+info:
+  title: AI Tech Shop API
+  version: 1.0.0
+  description: |
+    REST API của hệ thống thương mại điện tử AI Tech Shop (khoá luận tốt nghiệp).
+
+    ## Khuôn phản hồi
+
+    Mọi endpoint trả về cùng một khuôn (`utils/ApiResponse`):
+
+    ```json
+    { "code": 200, "message": "Success", "data": { } }
+    ```
+
+    Lỗi dùng đúng khuôn đó, `data` được thay bằng các trường phụ tuỳ ngữ cảnh
+    (`requestId`, `retryAfterSeconds`, ...):
+
+    ```json
+    { "code": 400, "message": "Email must be a valid email" }
+    ```
+
+    ## Xác thực
+
+    - **Access token** — JWT sống 15 phút, gửi qua `Authorization: Bearer <token>`.
+    - **Refresh token** — sống 7 ngày, nằm trong cookie `httpOnly`, tự gửi kèm
+      request tới `POST /auth/refresh`. Không đọc được từ JavaScript, nên Swagger UI
+      không hiển thị nó.
+
+    ## Rate limit
+
+    Toàn site dùng chung một limiter (mặc định 300 request/15 phút ở production).
+    Nhóm `/auth/*` có hạn mức riêng hẹp hơn nhiều theo từng loại endpoint — chi
+    tiết ở README 5.1.2. Vượt hạn mức trả `429` kèm `retryAfterSeconds`.
+
+    ## Ghi chú về độ chi tiết
+
+    Các luồng chính (auth, catalogue, giỏ hàng, đơn hàng, thanh toán, gợi ý, AI) có
+    schema đầy đủ cho cả request lẫn response. Các endpoint CRUD của admin mô tả
+    đầy đủ đường dẫn, tham số và quyền, nhưng `data` để ở dạng object chung — chúng
+    trả về chính entity tương ứng đã mô tả trong `components.schemas`.
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local
+  - url: /api/v1
+    description: Cùng origin với server đang chạy
+
+tags:
+  - name: Auth
+    description: Đăng ký, đăng nhập, phiên, mật khẩu
+  - name: User
+    description: Hồ sơ người dùng và sổ địa chỉ
+  - name: Catalogue
+    description: Sản phẩm, danh mục, thương hiệu (công khai)
+  - name: Cart
+    description: Giỏ hàng
+  - name: Order
+    description: Đặt hàng và theo dõi đơn
+  - name: Payment
+    description: Thanh toán VNPay
+  - name: Discount
+    description: Mã giảm giá
+  - name: Review
+    description: Đánh giá sản phẩm
+  - name: Behaviour
+    description: Ghi nhận hành vi và lịch sử tìm kiếm
+  - name: Recommendation
+    description: Gợi ý sản phẩm
+  - name: AI
+    description: Trợ lý tư vấn, so sánh, giải thích gợi ý
+  - name: Admin
+    description: Quản trị (yêu cầu role ADMIN)
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token lấy từ `POST /auth/login`.
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    SlugPath:
+      name: slug
+      in: path
+      required: true
+      schema: { type: string }
+    SessionId:
+      name: X-Session-Id
+      in: header
+      required: false
+      description: |
+        Định danh khách chưa đăng nhập, do client sinh và giữ nguyên giữa các lần
+        vào trang. Dùng để nhóm sự kiện của cùng một khách; **không bao giờ** được
+        dùng để phân quyền.
+      schema: { type: string, maxLength: 100 }
+
+  schemas:
+    Envelope:
+      type: object
+      properties:
+        code: { type: integer, example: 200 }
+        message: { type: string, example: Success }
+        data: { nullable: true }
+
+    Error:
+      type: object
+      properties:
+        code: { type: integer, example: 400 }
+        message: { type: string }
+        requestId: { type: string, format: uuid }
+
+    Pagination:
+      type: object
+      properties:
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+        totalPages: { type: integer }
+
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        fullName: { type: string }
+        phone: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        role: { type: string, enum: [ADMIN, CUSTOMER] }
+        status: { type: string, enum: [ACTIVE, INACTIVE, BANNED] }
+        emailVerifiedAt: { type: string, format: date-time, nullable: true }
+        lastLoginAt: { type: string, format: date-time, nullable: true }
+
+    Address:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        receiverName: { type: string }
+        receiverPhone: { type: string }
+        province: { type: string }
+        district: { type: string }
+        ward: { type: string, nullable: true }
+        addressLine: { type: string }
+        postalCode: { type: string, nullable: true }
+        isDefault: { type: boolean }
+
+    Category:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        parentId: { type: string, format: uuid, nullable: true }
+        name: { type: string }
+        slug: { type: string }
+        description: { type: string, nullable: true }
+        imageUrl: { type: string, nullable: true }
+        isActive: { type: boolean }
+        sortOrder: { type: integer }
+        productCount:
+          type: integer
+          description: Đã gộp cả sản phẩm của danh mục con.
+        children:
+          type: array
+          items: { $ref: '#/components/schemas/Category' }
+
+    Brand:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        slug: { type: string }
+        logoUrl: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        isActive: { type: boolean }
+        productCount: { type: integer }
+
+    Product:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        categoryId: { type: string, format: uuid }
+        brandId: { type: string, format: uuid }
+        name: { type: string }
+        slug: { type: string }
+        sku: { type: string, nullable: true }
+        shortDescription: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        basePrice: { type: string, description: DECIMAL(15,2) trả về dạng chuỗi }
+        salePrice: { type: string, nullable: true }
+        stockQuantity: { type: integer }
+        soldCount: { type: integer }
+        viewCount: { type: integer }
+        averageRating: { type: string }
+        reviewCount: { type: integer }
+        status: { type: string, enum: [ACTIVE, INACTIVE, DRAFT] }
+        isFeatured: { type: boolean }
+        category: { $ref: '#/components/schemas/Category' }
+        brand: { $ref: '#/components/schemas/Brand' }
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              imageUrl: { type: string }
+              isPrimary: { type: boolean }
+              sortOrder: { type: integer }
+        specifications:
+          type: array
+          items: { $ref: '#/components/schemas/ProductSpecification' }
+
+    ProductSpecification:
+      type: object
+      description: |
+        Giá trị lưu theo kiểu của definition. `valueText` **luôn** được giữ để hiển
+        thị đúng thứ admin gõ; `valueNumber` là con số để máy so sánh và lọc.
+      properties:
+        name: { type: string, example: RAM }
+        key: { type: string, example: ram }
+        dataType: { type: string, enum: [STRING, NUMBER, BOOLEAN, JSON] }
+        unit: { type: string, nullable: true }
+        valueText: { type: string, nullable: true, example: 18GB Unified Memory }
+        valueNumber: { type: number, nullable: true, example: 18 }
+        valueBoolean: { type: boolean, nullable: true }
+
+    CartItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        variantId: { type: string, format: uuid, nullable: true }
+        quantity: { type: integer }
+        unitPrice: { type: number }
+        totalPrice: { type: number }
+        product: { $ref: '#/components/schemas/Product' }
+
+    Cart:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CartItem' }
+        subtotal: { type: number }
+        itemCount: { type: integer }
+
+    OrderItem:
+      type: object
+      description: Snapshot tại thời điểm đặt — không đổi khi sản phẩm gốc đổi.
+      properties:
+        id: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        variantId: { type: string, format: uuid, nullable: true }
+        productName: { type: string }
+        productSku: { type: string, nullable: true }
+        productImageUrl: { type: string, nullable: true }
+        variantName: { type: string, nullable: true }
+        unitPrice: { type: string }
+        quantity: { type: integer }
+        totalPrice: { type: string }
+
+    Order:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        orderCode: { type: string }
+        receiverName: { type: string }
+        receiverPhone: { type: string }
+        shippingAddress: { type: string }
+        subtotalPrice: { type: string }
+        shippingFee: { type: string, description: '30.000đ, miễn phí từ 1.000.000đ' }
+        discountAmount: { type: string }
+        totalPrice: { type: string }
+        status:
+          type: string
+          enum: [PENDING, PAID, PROCESSING, SHIPPING, DELIVERED, CANCELLED, REFUNDED]
+        paymentStatus: { type: string, enum: [UNPAID, PAID, FAILED, REFUNDED] }
+        note: { type: string, nullable: true }
+        paidAt: { type: string, format: date-time, nullable: true }
+        cancelledAt: { type: string, format: date-time, nullable: true }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
+
+    Review:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        productId: { type: string, format: uuid }
+        orderItemId: { type: string, format: uuid, nullable: true }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        title: { type: string, nullable: true }
+        content: { type: string, nullable: true }
+        status: { type: string, enum: [PENDING, APPROVED, REJECTED] }
+        verifiedPurchase: { type: boolean }
+        reviewedAt: { type: string, format: date-time }
+
+    Discount:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        discountType: { type: string, enum: [PERCENT, FIXED] }
+        value: { type: string }
+        maxDiscountAmount: { type: string, nullable: true, description: Chặn trần khi giảm theo % }
+        minOrderValue: { type: string, nullable: true }
+        usageLimit: { type: integer, nullable: true }
+        usedCount: { type: integer }
+        usageLimitPerUser: { type: integer, nullable: true }
+        startsAt: { type: string, format: date-time, nullable: true }
+        endsAt: { type: string, format: date-time, nullable: true }
+        status: { type: string, enum: [ACTIVE, PAUSED, EXPIRED] }
+
+    RecommendationItem:
+      type: object
+      properties:
+        itemId:
+          type: string
+          format: uuid
+          nullable: true
+          description: |
+            Dòng `recommendation_items` đã lưu. `null` với dải của khách vãng lai
+            (không được lưu) — khi đó không gọi được `/ai/recommendations/:itemId/explain`.
+        product: { $ref: '#/components/schemas/Product' }
+        score: { type: number }
+        reason: { type: string, description: Thành phần thắng, dùng làm nhãn hiển thị }
+
+    BehaviourEvent:
+      type: object
+      required: [behaviorType]
+      properties:
+        behaviorType:
+          type: string
+          enum: [CLICK_RECOMMENDATION, FAVORITE]
+          description: |
+            Chỉ hai loại này được client báo. Mọi loại khác (`VIEW_PRODUCT`,
+            `SEARCH`, `ADD_TO_CART`, `PURCHASE`) đều ghi ở server.
+        productId: { type: string, format: uuid, nullable: true }
+        categoryId: { type: string, format: uuid, nullable: true }
+        metadata: { type: object, nullable: true }
+
+    PreferenceProfile:
+      type: object
+      properties:
+        preferredCategories:
+          type: array
+          description: Tối đa 5, đã sắp theo điểm giảm dần.
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              score: { type: number }
+        preferredBrands:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string, format: uuid }
+              score: { type: number }
+        preferredTags:
+          type: array
+          items: { type: string }
+          description: Hiện luôn rỗng — README 6.5.
+        preferredSpecs:
+          type: object
+          description: Hiện luôn rỗng — README 6.5.
+        minPrice:
+          type: number
+          nullable: true
+          description: |
+            Bao lồi của các tín hiệu CÓ Ý ĐỊNH (`PURCHASE`, `ADD_TO_CART`,
+            `FAVORITE`) — không suy giảm theo thời gian. Ngó qua một máy 30 triệu
+            không kéo ngân sách lên.
+        maxPrice: { type: number, nullable: true }
+        averagePrice:
+          type: number
+          nullable: true
+          description: Trung bình **có trọng số suy giảm** — điểm giá đang nhắm.
+        lastCalculatedAt: { type: string, format: date-time }
+
+    AiAnswer:
+      type: object
+      properties:
+        conversationId: { type: string, format: uuid }
+        answer:
+          type: string
+          description: Văn của model. Không bao giờ được parse để dựng thẻ sản phẩm.
+        products:
+          type: array
+          description: Dòng lấy từ database. Thẻ sản phẩm dựng từ đây.
+          items: { $ref: '#/components/schemas/Product' }
+        grounding: { $ref: '#/components/schemas/AiGrounding' }
+        model: { type: string, example: gemini-3.6-flash }
+
+    ProductWrite:
+      type: object
+      required: [name, categoryId, brandId, basePrice]
+      properties:
+        name: { type: string, maxLength: 255 }
+        categoryId: { type: string, format: uuid }
+        brandId: { type: string, format: uuid }
+        sku: { type: string, maxLength: 100 }
+        shortDescription: { type: string, maxLength: 500 }
+        description: { type: string }
+        basePrice: { type: number }
+        salePrice: { type: number, nullable: true }
+        stockQuantity: { type: integer }
+        status: { type: string, enum: [ACTIVE, INACTIVE, DRAFT] }
+        isFeatured: { type: boolean }
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              imageUrl: { type: string }
+              publicId: { type: string }
+              isPrimary: { type: boolean }
+              sortOrder: { type: integer }
+        specifications:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string, example: RAM }
+              value:
+                description: Giá trị đo được, để so sánh và lọc.
+                oneOf:
+                  - { type: number }
+                  - { type: string }
+                  - { type: boolean }
+              valueText:
+                type: string
+                description: Chữ hiển thị, ví dụ `18GB Unified Memory`. Gửi cả hai khi đã biết con số.
+        variants:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              sku: { type: string }
+              price: { type: number }
+              stockQuantity: { type: integer }
+              attributes: { type: object }
+
+    DiscountWrite:
+      type: object
+      required: [code, discountType, value]
+      properties:
+        code: { type: string }
+        name: { type: string }
+        description: { type: string }
+        discountType: { type: string, enum: [PERCENT, FIXED] }
+        value: { type: number }
+        maxDiscountAmount:
+          type: number
+          nullable: true
+          description: Bắt buộc về mặt nghiệp vụ với `PERCENT` — nếu không thì giảm % không có trần.
+        minOrderValue: { type: number, nullable: true }
+        usageLimit: { type: integer, nullable: true }
+        usageLimitPerUser: { type: integer, nullable: true }
+        startsAt: { type: string, format: date-time, nullable: true }
+        endsAt: { type: string, format: date-time, nullable: true }
+        status: { type: string, enum: [ACTIVE, PAUSED, EXPIRED] }
+
+    AiGrounding:
+      type: object
+      description: |
+        Bộ lọc mà backend **thực sự** đã chạy trên database, kèm số dòng trả về.
+        Đây là bằng chứng hiển thị được cho tuyên bố trung tâm của dự án: trợ lý
+        truy vấn dữ liệu thật chứ không trả lời từ trí nhớ của model.
+      properties:
+        tool: { type: string, example: search_products }
+        filters: { type: object }
+        resultCount: { type: integer }
+
+  responses:
+    Ok:
+      description: Thành công
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Envelope' }
+    Created:
+      description: Đã tạo
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Envelope' }
+    BadRequest:
+      description: Payload không hợp lệ
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Thiếu hoặc sai access token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Không đủ quyền
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Không tìm thấy
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Xung đột trạng thái
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    TooManyRequests:
+      description: Vượt hạn mức
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Error'
+              - type: object
+                properties:
+                  retryAfterSeconds: { type: integer }
+    ServiceUnavailable:
+      description: Tính năng phụ thuộc dịch vụ ngoài chưa được cấu hình
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

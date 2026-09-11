@@ -16,10 +16,14 @@ const {
   notFoundHandler,
   errorHandler,
 } = require("../middlewares/errorHandler");
+const { mountDocs } = require("../docs");
 
 const API_PREFIX = "/api/v1";
 
 function route(app) {
+  // Swagger UI ở `/api/docs`, spec thô ở `/api/docs.json`.
+  mountDocs(app);
+
   app.use(API_PREFIX, authRoute);
   app.use(API_PREFIX, userRoute);
   app.use(API_PREFIX, productRoute);

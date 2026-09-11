@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
+    "docs:verify": "node src/docs/verify.js",
     "seed": "node src/seed/index.js",
     "seed:reset": "node src/seed/index.js --reset",
     "seed:catalog": "node src/seed/catalog.js",
@@ -30,6 +31,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.0",
     "helmet": "^8.3.0",
+    "js-yaml": "^5.4.1",
     "jsonwebtoken": "^9.0.3",
     "kafkajs": "^2.2.4",
     "multer": "^2.2.0",
@@ -39,7 +41,8 @@
     "passport-google-oauth20": "^2.0.0",
     "sequelize": "^6.37.8",
     "sharp": "^0.35.3",
-    "streamifier": "^0.1.1"
+    "streamifier": "^0.1.1",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
