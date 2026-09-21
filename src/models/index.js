@@ -46,6 +46,7 @@ db.RecommendationItem = require("./recommendationItemModel")(sequelize, Sequeliz
 db.AiConversation = require("./aiConversationModel")(sequelize, Sequelize.DataTypes);
 db.AiMessage = require("./aiMessageModel")(sequelize, Sequelize.DataTypes);
 db.AiRecommendedProduct = require("./aiRecommendedProductModel")(sequelize, Sequelize.DataTypes);
+db.DocumentChunk = require("./documentChunkModel")(sequelize, Sequelize.DataTypes);
 
 Object.keys(db).forEach((modelName) => {
   if (db[modelName] && db[modelName].associate) {

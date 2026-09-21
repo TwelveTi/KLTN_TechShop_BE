@@ -32,3 +32,6 @@ Thumbs.db
 *.sln
 *.sw?
 *.md
+
+# RAG corpus: app data the embed seeder reads, not documentation.
+!src/data/policies/*.md

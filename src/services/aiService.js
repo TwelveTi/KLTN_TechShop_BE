@@ -2,6 +2,7 @@ const { Type } = require("@google/genai");
 
 const aiRepository = require("../repositories/aiRepository");
 const recommendationRepository = require("../repositories/recommendationRepository");
+const ragService = require("./ragService");
 const { getAgent } = require("./ai/prompts");
 const explanationPrompt = require("./ai/prompts/explanation");
 const {
@@ -114,6 +115,29 @@ const FIND_BY_NAME_TOOL = {
   },
 };
 
+const SEARCH_KNOWLEDGE_BASE_TOOL = {
+  name: "search_knowledge_base",
+  description:
+    "Search the knowledge base for store policies, product descriptions, and customer reviews. " +
+    "Use this for questions about return/warranty/shipping/payment policies, subjective product " +
+    "qualities (battery life, build quality, user experience), or what other customers said.",
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      query: {
+        type: Type.STRING,
+        description: "The search query in natural language.",
+      },
+      sourceTypes: {
+        type: Type.ARRAY,
+        items: { type: Type.STRING, enum: ["POLICY", "PRODUCT", "REVIEW"] },
+        description: "Filter by source type. Omit to search all types.",
+      },
+    },
+    required: ["query"],
+  },
+};
+
 /**
  * Tool khả dụng, tra theo tên.
  *
@@ -125,6 +149,7 @@ const FIND_BY_NAME_TOOL = {
 const TOOLS = {
   [SEARCH_PRODUCTS_TOOL.name]: SEARCH_PRODUCTS_TOOL,
   [FIND_BY_NAME_TOOL.name]: FIND_BY_NAME_TOOL,
+  [SEARCH_KNOWLEDGE_BASE_TOOL.name]: SEARCH_KNOWLEDGE_BASE_TOOL,
 };
 
 // question is the part the model can most afford to forget.
@@ -220,7 +245,7 @@ class AiService {
       content: message,
     });
 
-    const { answer, products, toolCalls, toolRecords, usage, model } = await this.runWithFallback(
+    const { answer, products, ragSources, toolCalls, toolRecords, usage, model } = await this.runWithFallback(
       // Bản sao `contents` cho MỖI lần thử: vòng lặp đẩy thêm vào mảng này (lượt
       // của model, kết quả tool, câu nhắc trả lời). Dùng chung một mảng thì lần
       // thử trên model dự phòng bắt đầu từ đống rác của lần trước.
@@ -255,14 +280,20 @@ class AiService {
 
     await aiRepository.linkRecommendedProducts(assistantMessage.id, products);
 
+    const sources = (ragSources || []).map((r) => ({
+      content: r.content,
+      sourceType: r.sourceType,
+      sourceName: r.sourceName,
+      score: Math.round(r.score * 1000) / 1000,
+    }));
+
     return {
       conversationId: conversation.id,
       messageId: assistantMessage.id,
       userMessageId: userMessage.id,
       answer,
       products,
-      // Surfaced so the thesis can show the grounding actually happened, and so
-      // an answer with no query behind it is visible rather than assumed.
+      sources,
       grounding: {
         toolCalls,
         productCount: products.length,
@@ -582,6 +613,7 @@ class AiService {
     };
 
     let products = [];
+    let ragSources = [];
     const toolCalls = [];
     // Bản ghi TOOL chờ ghi xuống DB. Gom ở đây chứ không ghi ngay, vì vòng lặp
     // này có thể bị chạy lại nguyên vẹn trên model dự phòng.
@@ -641,6 +673,7 @@ class AiService {
         return {
           answer: response.text || "Xin lỗi, hiện tại tôi chưa trả lời được câu hỏi này.",
           products,
+          ragSources,
           toolCalls,
           toolRecords,
           usage,
@@ -659,7 +692,12 @@ class AiService {
       for (const call of calls) {
         const result = await this.runTool(call);
         products = result.products.length > 0 ? result.products : products;
-        toolCalls.push({ name: call.name, args: call.args || {}, resultCount: result.products.length });
+        if (result.ragSources?.length > 0) ragSources = result.ragSources;
+        toolCalls.push({
+          name: call.name,
+          args: call.args || {},
+          resultCount: result.payload?.count ?? result.products.length,
+        });
         if (result.record) toolRecords.push(result.record);
 
         responseParts.push({
@@ -694,6 +732,10 @@ class AiService {
       };
     }
 
+    if (call.name === SEARCH_KNOWLEDGE_BASE_TOOL.name) {
+      return this.runKnowledgeBaseTool(call);
+    }
+
     const byName = call.name === FIND_BY_NAME_TOOL.name;
     const args = byName ? normaliseNameArgs(call.args || {}) : normaliseSearchArgs(call.args || {});
 
@@ -706,16 +748,10 @@ class AiService {
         : await aiRepository.searchProducts(args);
 
       payload = {
-        // Named `products` rather than returned bare so a zero-result search
-        // reads as an explicit empty list. The model treats a missing key as an
-        // error and retries; an empty array is an answer.
         products: products.map((product) => toModelView(product, { verbose: byName })),
         count: products.length,
       };
 
-      // Tên nào không tra ra sản phẩm phải được nói rõ. Trả về im lặng thiếu
-      // một cột thì model sẽ so sánh hai sản phẩm và lờ đi cái thứ ba khách vừa
-      // nhắc — trông như nó cố tình bỏ qua.
       if (byName && products.length < args.names.length) {
         payload.notFound = args.names.filter(
           (name) => !products.some((product) => tokenOverlap(name, product.name) >= 0.5),
@@ -740,6 +776,48 @@ class AiService {
           tool: call.name,
           args,
           productIds: products.map((product) => product.id),
+        },
+      },
+    };
+  }
+
+  async runKnowledgeBaseTool(call) {
+    const args = call.args || {};
+    const query = String(args.query || "").trim();
+    const sourceTypes = Array.isArray(args.sourceTypes) ? args.sourceTypes : null;
+
+    let results = [];
+    let payload;
+
+    try {
+      results = await ragService.search(query, { sourceTypes });
+      payload = {
+        results: results.map((r) => ({
+          content: r.content,
+          sourceType: r.sourceType,
+          sourceName: r.sourceName,
+          score: Math.round(r.score * 1000) / 1000,
+        })),
+        count: results.length,
+      };
+    } catch (error) {
+      logger.error("Knowledge base search failed", {
+        query,
+        error: logger.serializeError(error),
+      });
+      payload = { error: "Knowledge base search failed", results: [], count: 0 };
+    }
+
+    return {
+      products: [],
+      ragSources: results,
+      payload,
+      record: {
+        role: "TOOL",
+        content: JSON.stringify({ query, sourceTypes }),
+        structuredData: {
+          tool: call.name,
+          args: { query, sourceTypes },
         },
       },
     };
