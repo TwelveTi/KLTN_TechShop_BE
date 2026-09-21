@@ -94,9 +94,12 @@ app.use(rateLimit({
 
 route(app);
 
+// Mặc định 0.0.0.0 chứ không phải localhost: trong container, bind localhost thì
+// tiến trình vẫn chạy và vẫn ghi log "Server is running", nhưng không request nào
+// từ ngoài container tới được.
 connectDB().then(async () => {
   const port = process.env.PORT || 3000;
-  const hostname = process.env.HOST_NAME || "localhost";
+  const hostname = process.env.HOST_NAME || "0.0.0.0";
 
   server.listen(port, hostname, () => {
     console.log(`Server is running at http://${hostname}:${port}`);
@@ -110,6 +113,13 @@ connectDB().then(async () => {
       error: logger.serializeError(error),
     });
   }
+}).catch((error) => {
+  // Thoát với mã lỗi để nền tảng triển khai khởi động lại, thay vì để tiến trình
+  // sống mà không hề lắng nghe cổng nào.
+  logger.error("Database connection failed on startup", {
+    error: logger.serializeError(error),
+  });
+  process.exit(1);
 });
 
 async function shutdown(signal) {
