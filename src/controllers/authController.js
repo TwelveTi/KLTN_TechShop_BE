@@ -129,7 +129,7 @@ class AuthController {
 
       return res.redirect(`${frontendUrl}/?login=google`);
     } catch {
-      return res.redirect(`${frontendUrl}/auth?oauth=error`);
+      return res.redirect(`${frontendUrl}/login?oauth=error`);
     }
   }
 }

@@ -18,7 +18,9 @@ const sessionController = require("../controllers/sessionController");
 const { passport, googleEnabled } = require("../configs/passport");
 const { createRateLimiter, byIpAndEmail, MINUTE, HOUR } = require("../utils/rateLimit");
 
-const FRONTEND_URL = (process.env.FRONTEND_URL).replace(/\/+$/, "");
+// Same fallback as authController: an unset FRONTEND_URL would otherwise make the
+// OAuth failure redirect relative to the API instead of the frontend.
+const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/+$/, "");
 
 // Limiter chung theo IP ở `index.js` (300 req/15 phút ở production) là hạn mức
 // cho MỌI traffic gộp lại — duyệt sản phẩm, gọi giỏ hàng, tải ảnh. Nó rộng đúng
@@ -135,7 +137,7 @@ if (googleEnabled) {
     "/auth/google/callback",
     passport.authenticate("google", {
       session: false,
-      failureRedirect: `${FRONTEND_URL}/auth?oauth=error`,
+      failureRedirect: `${FRONTEND_URL}/login?oauth=error`,
     }),
     asyncHandler(authController.googleCallback),
   );
