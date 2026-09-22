@@ -1,4 +1,3 @@
-const { Op } = require("sequelize");
 const db = require("../models");
 
 // Data-access for the admin order console. Kept 1:1 with adminOrderService so

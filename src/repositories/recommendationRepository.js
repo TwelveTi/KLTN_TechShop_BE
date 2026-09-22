@@ -1,4 +1,4 @@
-const { Op, fn, col } = require("sequelize");
+const { Op } = require("sequelize");
 const db = require("../models");
 
 // Data-access for the recommender: the candidate catalogue, the signals it

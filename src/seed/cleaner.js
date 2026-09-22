@@ -70,7 +70,7 @@ async function cleanDatabase() {
   for (const table of tables) {
     try {
       await db.sequelize.query(`TRUNCATE TABLE \`${table}\`;`);
-    } catch (error) {
+    } catch {
       // If table doesn't exist yet, it's fine
     }
   }

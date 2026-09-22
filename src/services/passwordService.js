@@ -102,7 +102,7 @@ class PasswordService {
     }
 
     const transaction = await passwordRepository.beginTransaction();
-    let issuedOtp = null;
+    let issuedOtp;
 
     try {
       const latest = await passwordRepository.findLatestOtpByUser(user.id, { transaction, lock: true });
@@ -135,7 +135,7 @@ class PasswordService {
     }
 
     const transaction = await passwordRepository.beginTransaction();
-    let issuedOtp = null;
+    let issuedOtp;
 
     try {
       const latest = await passwordRepository.findLatestOtpByUser(user.id, { transaction, lock: true });

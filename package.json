@@ -4,15 +4,18 @@
   "description": "AI Tech Shop là hệ thống backend cho website bán đồ công nghệ được xây dựng bằng **Node.js**. Dự án hướng đến mục tiêu trở thành một sản phẩm hoàn chỉnh phục vụ:",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test tests/",
+    "lint": "eslint .",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "docs:verify": "node src/docs/verify.js",
     "seed": "node src/seed/index.js",
     "seed:reset": "node src/seed/index.js --reset",
     "seed:catalog": "node src/seed/catalog.js",
+    "embed": "node src/seed/embedChunks.js",
     "simulate": "node src/seed/simulate/index.js",
     "measure": "node src/seed/simulate/measure.js",
+    "measure:rag": "node src/seed/rag/measureRag.js",
     "simulate:reset": "node src/seed/simulate/index.js --reset"
   },
   "keywords": [
@@ -46,6 +49,9 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "globals": "^17.12.0",
     "nodemon": "^3.1.14"
   },
   "engines": {

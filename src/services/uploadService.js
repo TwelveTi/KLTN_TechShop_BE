@@ -34,7 +34,7 @@ class UploadService {
       try {
         const parsedValue = JSON.parse(value);
         return Array.isArray(parsedValue) ? parsedValue.filter(Boolean) : [value];
-      } catch (error) {
+      } catch {
         return [value];
       }
     }

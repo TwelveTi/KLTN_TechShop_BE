@@ -35,3 +35,6 @@ Thumbs.db
 
 # RAG corpus: app data the embed seeder reads, not documentation.
 !src/data/policies/*.md
+
+# Cache embedding câu hỏi của bộ đo RAG: sinh lại được, vài MB.
+src/seed/rag/cache/
