@@ -157,5 +157,9 @@ module.exports = {
   reloadChunks,
   embedText,
   embedBatch,
+  // Bộ đo xếp hạng lại tại chỗ nên phải dùng đúng hàm chấm điểm của production.
+  cosineSimilarity,
   EMBEDDING_MODEL,
+  DEFAULT_K,
+  DEFAULT_THRESHOLD,
 };

@@ -18,6 +18,16 @@ function estimateTokens(text) {
   return Math.ceil(text.length / 4);
 }
 
+// Chunk phải có ít nhất một dòng nội dung dưới heading. Phần đứng trước `##` đầu
+// tiên của mỗi tệp thường chỉ còn đúng dòng tiêu đề: nó ăn điểm cosine cao vì
+// trùng chủ đề câu hỏi nhưng không mang thông tin nào cho mô hình.
+function hasBody(text) {
+  return text.split("\n").some((line) => {
+    const trimmed = line.trim();
+    return trimmed.length > 0 && !trimmed.startsWith("#");
+  });
+}
+
 // Chunk policy file theo heading. Mỗi heading ## tạo chunk mới.
 function chunkPolicyFile(filename, content) {
   const lines = content.split("\n");
@@ -32,7 +42,7 @@ function chunkPolicyFile(filename, content) {
     } else if (line.startsWith("## ")) {
       if (current.length > 0) {
         const text = current.join("\n").trim();
-        if (text.length > 20) {
+        if (hasBody(text)) {
           chunks.push(text);
         }
       }
@@ -44,7 +54,7 @@ function chunkPolicyFile(filename, content) {
 
   if (current.length > 0) {
     const text = current.join("\n").trim();
-    if (text.length > 20) {
+    if (hasBody(text)) {
       chunks.push(text);
     }
   }
@@ -189,6 +199,21 @@ async function run() {
     process.exit(0);
   }
 
+  // `--dry-run`: xem kết quả cắt chunk mà không truncate bảng và không tốn quota.
+  if (process.argv.includes("--dry-run")) {
+    console.log("\nPolicy chunks theo tài liệu:");
+    const byDoc = new Map();
+    policyChunks.forEach((c) => byDoc.set(c.sourceName, (byDoc.get(c.sourceName) || 0) + 1));
+    [...byDoc].forEach(([name, n]) => console.log(`  ${String(n).padStart(3)}  ${name}`));
+
+    const shortest = [...policyChunks].sort((a, b) => a.content.length - b.content.length).slice(0, 5);
+    console.log("\nNăm chunk ngắn nhất:");
+    shortest.forEach((c) => console.log(`  ${String(c.content.length).padStart(5)} ký tự  ${JSON.stringify(c.content.slice(0, 50))}`));
+
+    console.log("\nDry run, không ghi gì vào database.");
+    process.exit(0);
+  }
+
   console.log("\nTruncating document_chunks...");
   await db.DocumentChunk.destroy({ where: {}, truncate: true });
 
@@ -218,7 +243,12 @@ async function run() {
   process.exit(0);
 }
 
-run().catch((error) => {
-  console.error("Embed chunks failed:", error);
-  process.exit(1);
-});
+// Chỉ tự chạy khi gọi trực tiếp, để bộ test require được các hàm cắt chunk.
+if (require.main === module) {
+  run().catch((error) => {
+    console.error("Embed chunks failed:", error);
+    process.exit(1);
+  });
+}
+
+module.exports = { chunkPolicyFile, hasBody, estimateTokens };
