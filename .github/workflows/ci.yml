@@ -1,0 +1,141 @@
+name: CI
+
+# Sáu chặng nối tiếp: build → lint → test → quét bảo mật → Docker → triển khai.
+# Chặng sau chỉ chạy khi chặng trước xanh, nên log đọc được như một đường ống.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  # Khoá giả chỉ dùng trong CI. src/utils/jwt.js chặn boot nếu khoá ngắn hơn 32
+  # ký tự, nên không có hai biến này thì mọi lệnh nạp module đều hỏng.
+  JWT_SECRET: ci-placeholder-secret-not-used-anywhere-real
+  JWT_REFRESH_SECRET: ci-placeholder-refresh-secret-not-real-either
+  # Ba biến Google là giá trị giả nhưng BẮT BUỘC phải có. `configs/passport.js`
+  # chỉ đăng ký hai route OAuth khi cả ba cùng tồn tại, nên thiếu chúng thì
+  # `docs:verify` báo hai đường dẫn thừa trong tài liệu và chặng build đỏ oan.
+  GOOGLE_CLIENT_ID: ci-placeholder-client-id
+  GOOGLE_CLIENT_SECRET: ci-placeholder-client-secret
+  GOOGLE_REDIRECT_URI: http://localhost:3000/api/v1/auth/google/callback
+
+jobs:
+  build:
+    name: 1 · Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Cài phụ thuộc đúng theo lockfile
+        run: npm ci
+
+      # Backend không có bước biên dịch, nên "build" ở đây là kiểm tra tài liệu
+      # API khớp với route thật. Lệch một đường dẫn là hỏng hợp đồng với frontend.
+      - name: Đối chiếu Swagger với route trong code
+        run: npm run docs:verify
+
+  lint:
+    name: 2 · Lint
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  test:
+    name: 3 · Test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+
+      # Bộ test không cần database: toàn bộ là logic chấm điểm và truy hồi thuần.
+      - run: npm test
+
+  security:
+    name: 4 · Quét bảo mật
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+
+      # Chặn ở mức high. Hai lỗi moderate còn lại thuộc uuid qua sequelize, muốn
+      # vá phải hạ sequelize về v3 nên cố ý không vá — xem README 10.4.
+      - name: npm audit
+        run: npm audit --audit-level=high
+
+      - name: Trivy quét mã nguồn và phụ thuộc
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+  docker:
+    name: 5 · Docker
+    needs: [lint, test, security]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dựng image
+        run: docker build -t techshop-be:${{ github.sha }} .
+
+      # Quét chính image sẽ chạy trên môi trường công khai, không chỉ quét mã nguồn.
+      # `ignore-unfixed` để chỉ chặn ở những lỗ hổng thật sự vá được.
+      - name: Trivy quét image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: techshop-be:${{ github.sha }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+
+  deploy:
+    name: 6 · Triển khai staging
+    needs: docker
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Chưa cấu hình token thì bỏ qua chứ không báo đỏ: đường ống vẫn phải dùng
+      # được trước khi tài khoản Railway sẵn sàng.
+      - name: Đẩy lên Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "::warning::Chưa có RAILWAY_TOKEN trong secrets, bỏ qua bước triển khai."
+            exit 0
+          fi
+          npx -y @railway/cli@latest up --detach
