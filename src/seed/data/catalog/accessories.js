@@ -1,0 +1,553 @@
+/**
+ * Phụ kiện — 45 sản phẩm trên bốn danh mục lá tách ra từ "Phụ Kiện & Màn Hình".
+ *
+ * Bốn lá này có bộ định nghĩa thông số riêng chứ không dùng chung, vì một củ sạc
+ * không có tấm nền còn một ổ SSD không có tần số quét. Xem phần cuối
+ * `specs.data.js`.
+ */
+
+const accessories = [
+  // ── Màn Hình Máy Tính ─────────────────────────────────────────────────────
+  {
+    key: "lgUltragear27gp850", name: "Màn hình Gaming LG UltraGear 27GP850-B (27 inch 2K Nano IPS 180Hz)",
+    brand: "lg", cat: "monitor", price: 8990000, sale: 7490000, stock: 24, sold: 96, views: 4240,
+    published: "2026-01-16", tags: ["gaming-cao-cap", "hot-deal", "ban-chay-nhat"],
+    blurb: "Màn gaming 2K bán chạy nhất, tấm nền Nano IPS phản hồi 1ms và phủ 98% DCI-P3.",
+    specs: {
+      panelType: "Nano IPS", resolution: "QHD 2560x1440, phủ 98% DCI-P3", refreshRate: [180, "180Hz, phản hồi 1ms GtG"],
+      screenSize: [27, "27 inch tỉ lệ 16:9"], brightness: [400, "400 nits, đạt chuẩn DisplayHDR 400"],
+      connectivity: "2x HDMI 2.0, 1x DisplayPort 1.4, 2x USB 3.0, jack tai nghe 3.5mm",
+    },
+    variants: [{ label: "27 inch 2K 180Hz - Đen", attrs: { Size: "27 inch", Color: "Black" } }],
+  },
+  {
+    key: "lgUltragear32gs95ue", name: "Màn hình Gaming LG UltraGear 32GS95UE (32 inch 4K OLED 240Hz)",
+    brand: "lg", cat: "monitor", price: 32990000, sale: 29990000, stock: 7, sold: 16, views: 2840,
+    published: "2026-03-06", tags: ["gaming-cao-cap", "flagship-dinh-cao", "san-pham-moi"],
+    blurb: "Màn OLED chuyển được giữa 4K 240Hz và Full HD 480Hz bằng một phím tắt trên màn hình.",
+    specs: {
+      panelType: "WOLED chống chói", resolution: "UHD 3840x2160 (đổi được sang FHD 1920x1080)", refreshRate: [240, "240Hz ở 4K, 480Hz ở Full HD, phản hồi 0.03ms"],
+      screenSize: [32, "31.5 inch tỉ lệ 16:9"], brightness: [1300, "1300 nits đỉnh HDR"],
+      connectivity: "2x HDMI 2.1, 1x DisplayPort 2.1, 3x USB 3.0, jack tai nghe 3.5mm",
+    },
+    variants: [{ label: "32 inch 4K OLED 240Hz - Đen", attrs: { Size: "32 inch", Color: "Black" } }],
+  },
+  {
+    key: "lgUltrafine27us500", name: "Màn hình đồ hoạ LG UltraFine 27US500-W (27 inch 4K IPS)",
+    brand: "lg", cat: "monitor", price: 7990000, sale: 6890000, stock: 20, sold: 74, views: 3260,
+    published: "2026-01-24", tags: ["van-phong-hoc-tap", "hot-deal"],
+    blurb: "Màn 4K giá mềm cho làm việc văn phòng, chữ nhỏ vẫn sắc nét khi ngồi gần.",
+    specs: {
+      panelType: "IPS", resolution: "UHD 3840x2160, phủ 98% sRGB", refreshRate: [60, "60Hz, phản hồi 5ms GtG"],
+      screenSize: [27, "27 inch tỉ lệ 16:9"], brightness: [400, "400 nits, đạt chuẩn DisplayHDR 400"],
+      connectivity: "2x HDMI 2.0, 1x DisplayPort 1.4, jack tai nghe 3.5mm",
+    },
+    variants: [{ label: "27 inch 4K - Trắng", attrs: { Size: "27 inch", Color: "White" } }],
+  },
+  {
+    key: "dellS2722dgm", name: "Màn hình Gaming Dell S2722DGM (27 inch 2K VA cong 165Hz)",
+    brand: "dell", cat: "monitor", price: 6490000, sale: 5490000, stock: 28, sold: 118, views: 4180,
+    published: "2026-01-19", tags: ["gaming-cao-cap", "hot-deal", "ban-chay-nhat"],
+    blurb: "Màn cong 1500R giá dưới 6 triệu, độ tương phản cao nên xem phim tối thấy rõ chi tiết.",
+    specs: {
+      panelType: "VA cong 1500R", resolution: "QHD 2560x1440, phủ 99% sRGB", refreshRate: [165, "165Hz, phản hồi 1ms MPRT"],
+      screenSize: [27, "27 inch tỉ lệ 16:9"], brightness: [350, "350 nits"],
+      connectivity: "2x HDMI 2.0, 1x DisplayPort 1.2, jack tai nghe 3.5mm",
+    },
+    variants: [{ label: "27 inch 2K cong 165Hz - Đen", attrs: { Size: "27 inch", Color: "Black" } }],
+  },
+  {
+    key: "dellU2723qe", name: "Màn hình đồ hoạ Dell UltraSharp U2723QE (27 inch 4K IPS Black)",
+    brand: "dell", cat: "monitor", price: 15990000, sale: 13990000, stock: 12, sold: 34, views: 2480,
+    published: "2026-02-08", tags: ["van-phong-hoc-tap", "flagship-dinh-cao", "hot-deal"],
+    blurb: "Màn 4K chuẩn màu có hub USB-C cấp 90W, cắm một sợi dây vừa xuất hình vừa sạc laptop.",
+    specs: {
+      panelType: "IPS Black, tương phản 2000:1", resolution: "UHD 3840x2160, phủ 100% sRGB và 98% DCI-P3", refreshRate: [60, "60Hz, phản hồi 5ms GtG"],
+      screenSize: [27, "27 inch tỉ lệ 16:9"], brightness: [400, "400 nits, đạt chuẩn DisplayHDR 400"],
+      connectivity: "USB-C 90W upstream, DisplayPort 1.4 in/out nối chuỗi, HDMI 2.0, RJ45 LAN, 4x USB-A",
+    },
+    variants: [{ label: "27 inch 4K IPS Black - Bạc", attrs: { Size: "27 inch", Color: "Platinum Silver" } }],
+  },
+  {
+    key: "dellP2422h", name: "Màn hình văn phòng Dell P2422H (24 inch Full HD IPS)",
+    brand: "dell", cat: "monitor", price: 3690000, sale: 3190000, stock: 42, sold: 186, views: 5240,
+    published: "2026-01-08", tags: ["van-phong-hoc-tap", "hot-deal", "ban-chay-nhat", "thiet-ke-cong-thai-hoc"],
+    blurb: "Màn văn phòng 24 inch có chân đế nâng hạ xoay dọc, giá dưới 4 triệu.",
+    specs: {
+      panelType: "IPS", resolution: "Full HD 1920x1080, phủ 99% sRGB", refreshRate: [60, "60Hz, phản hồi 5ms GtG"],
+      screenSize: [24, "23.8 inch tỉ lệ 16:9"], brightness: [250, "250 nits"],
+      connectivity: "DisplayPort 1.2, HDMI 1.4, VGA, 4x USB-A 3.2",
+    },
+    variants: [{ label: "24 inch Full HD - Đen", attrs: { Size: "24 inch", Color: "Black" } }],
+  },
+  {
+    key: "samsungOdysseyG5", name: "Màn hình Gaming Samsung Odyssey G5 LC27G55T (27 inch 2K VA cong 144Hz)",
+    brand: "samsung", cat: "monitor", price: 5490000, sale: 4590000, stock: 34, sold: 148, views: 4680,
+    published: "2026-01-21", tags: ["gaming-cao-cap", "hot-deal", "ban-chay-nhat"],
+    blurb: "Màn cong 1000R ôm sát tầm nhìn, lựa chọn 2K rẻ nhất trong nhóm màn hình gaming.",
+    specs: {
+      panelType: "VA cong 1000R", resolution: "QHD 2560x1440", refreshRate: [144, "144Hz, phản hồi 1ms MPRT"],
+      screenSize: [27, "27 inch tỉ lệ 16:9"], brightness: [250, "250 nits, đạt chuẩn HDR10"],
+      connectivity: "1x HDMI 2.0, 1x DisplayPort 1.2, jack tai nghe 3.5mm",
+    },
+    variants: [{ label: "27 inch 2K cong 144Hz - Đen", attrs: { Size: "27 inch", Color: "Black" } }],
+  },
+  {
+    key: "samsungOdysseyG9", name: "Màn hình Gaming Samsung Odyssey G9 LC49G95T (49 inch siêu rộng 240Hz)",
+    brand: "samsung", cat: "monitor", price: 27990000, sale: 23990000, stock: 6, sold: 12, views: 2640,
+    published: "2026-02-15", tags: ["gaming-cao-cap", "flagship-dinh-cao", "hot-deal"],
+    blurb: "Màn siêu rộng 49 inch bằng hai màn 27 inch ghép lại, không còn viền ngăn ở giữa.",
+    specs: {
+      panelType: "QLED VA cong 1000R", resolution: "DQHD 5120x1440 tỉ lệ 32:9", refreshRate: [240, "240Hz, phản hồi 1ms GtG"],
+      screenSize: [49, "49 inch tỉ lệ 32:9"], brightness: [1000, "1000 nits đỉnh, đạt chuẩn DisplayHDR 1000"],
+      connectivity: "1x HDMI 2.0, 2x DisplayPort 1.4, 2x USB 3.0, jack tai nghe 3.5mm",
+    },
+    variants: [{ label: "49 inch DQHD 240Hz - Trắng", attrs: { Size: "49 inch", Color: "White" } }],
+  },
+  {
+    key: "samsungViewfinity32", name: "Màn hình đồ hoạ Samsung ViewFinity S8 S32B800 (32 inch 4K IPS USB-C)",
+    brand: "samsung", cat: "monitor", price: 11990000, sale: 9990000, stock: 14, sold: 42, views: 2820,
+    published: "2026-02-19", tags: ["van-phong-hoc-tap", "hot-deal"],
+    blurb: "Màn 32 inch 4K có USB-C cấp 90W, đủ rộng để mở hai cửa sổ cạnh nhau mà không phải chia nhỏ.",
+    specs: {
+      panelType: "IPS", resolution: "UHD 3840x2160, phủ 99% sRGB", refreshRate: [60, "60Hz, phản hồi 5ms GtG"],
+      screenSize: [32, "31.5 inch tỉ lệ 16:9"], brightness: [350, "350 nits, đạt chuẩn HDR10"],
+      connectivity: "USB-C 90W upstream, DisplayPort 1.2, HDMI 2.0, RJ45 LAN, 3x USB-A",
+    },
+    variants: [{ label: "32 inch 4K USB-C - Đen", attrs: { Size: "32 inch", Color: "Black" } }],
+  },
+  {
+    key: "benqPd2705u", name: "Màn hình đồ hoạ BenQ PD2705U DesignVue (27 inch 4K IPS)",
+    brand: "benq", cat: "monitor", price: 13490000, sale: 11990000, stock: 11, sold: 28, views: 2240,
+    published: "2026-02-11", tags: ["van-phong-hoc-tap", "hot-deal"],
+    blurb: "Màn cân màu sẵn tại nhà máy Delta E dưới 3, có chế độ xem trước bản in CAD và hoạt hình.",
+    specs: {
+      panelType: "IPS", resolution: "UHD 3840x2160, phủ 99% sRGB và 95% DCI-P3", refreshRate: [60, "60Hz, phản hồi 5ms GtG"],
+      screenSize: [27, "27 inch tỉ lệ 16:9"], brightness: [350, "350 nits, đạt chuẩn DisplayHDR 400"],
+      connectivity: "USB-C 65W, DisplayPort 1.4, 2x HDMI 2.0, 3x USB-A 3.1",
+    },
+    variants: [{ label: "27 inch 4K DesignVue - Xám", attrs: { Size: "27 inch", Color: "Dark Gray" } }],
+  },
+  {
+    key: "benqGw2790", name: "Màn hình văn phòng BenQ GW2790 (27 inch Full HD IPS 100Hz)",
+    brand: "benq", cat: "monitor", price: 3290000, sale: 2790000, stock: 46, sold: 212, views: 5860,
+    published: "2026-01-12", tags: ["van-phong-hoc-tap", "hot-deal", "ban-chay-nhat"],
+    blurb: "Màn 27 inch giá rẻ có công nghệ lọc ánh sáng xanh và chống nhấp nháy, đỡ mỏi mắt khi làm lâu.",
+    specs: {
+      panelType: "IPS", resolution: "Full HD 1920x1080, phủ 99% sRGB", refreshRate: [100, "100Hz, phản hồi 5ms GtG"],
+      screenSize: [27, "27 inch tỉ lệ 16:9"], brightness: [250, "250 nits"],
+      connectivity: "2x HDMI 1.4, 1x DisplayPort 1.2, jack tai nghe 3.5mm, loa 2W tích hợp",
+    },
+    variants: [{ label: "27 inch Full HD 100Hz - Đen", attrs: { Size: "27 inch", Color: "Black" } }],
+  },
+  {
+    key: "viewsonicVx2479", name: "Màn hình ViewSonic VX2479-HD-PRO (24 inch Full HD IPS 180Hz)",
+    brand: "viewsonic", cat: "monitor", price: 2890000, sale: 2390000, stock: 52, sold: 246, views: 6420,
+    published: "2026-01-15", tags: ["gaming-cao-cap", "hot-deal", "ban-chay-nhat"],
+    blurb: "Màn hình rẻ nhất trong kho có 180Hz, phù hợp chơi esports với ngân sách hạn chế.",
+    specs: {
+      panelType: "IPS", resolution: "Full HD 1920x1080", refreshRate: [180, "180Hz, phản hồi 1ms MPRT"],
+      screenSize: [24, "23.8 inch tỉ lệ 16:9"], brightness: [250, "250 nits"],
+      connectivity: "2x HDMI 2.0, 1x DisplayPort 1.2, jack tai nghe 3.5mm",
+    },
+    variants: [{ label: "24 inch Full HD 180Hz - Đen", attrs: { Size: "24 inch", Color: "Black" } }],
+  },
+  {
+    key: "viewsonicVp2776", name: "Màn hình đồ hoạ ViewSonic ColorPro VP2776 (27 inch 2K IPS 165Hz)",
+    brand: "viewsonic", cat: "monitor", price: 16990000, stock: 8, sold: 14, views: 1840,
+    published: "2026-03-04", tags: ["van-phong-hoc-tap", "san-pham-moi"],
+    blurb: "Màn cân màu kèm thiết bị đo màu gắn sẵn, không cần mua colorimeter rời.",
+    specs: {
+      panelType: "IPS chống chói", resolution: "QHD 2560x1440, phủ 100% sRGB và 98% DCI-P3", refreshRate: [165, "165Hz, phản hồi 3ms GtG"],
+      screenSize: [27, "27 inch tỉ lệ 16:9"], brightness: [350, "350 nits, đạt chuẩn DisplayHDR 400"],
+      connectivity: "USB-C 90W, 2x HDMI 2.0, DisplayPort 1.4, RJ45 LAN, 4x USB-A",
+    },
+    variants: [{ label: "27 inch 2K ColorPro - Đen", attrs: { Size: "27 inch", Color: "Black" } }],
+  },
+  {
+    key: "gigabyteM27q", name: "Màn hình Gaming GIGABYTE M27Q X (27 inch 2K IPS 240Hz)",
+    brand: "gigabyte", cat: "monitor", price: 10490000, sale: 8990000, stock: 16, sold: 48, views: 2960,
+    published: "2026-02-21", tags: ["gaming-cao-cap", "hot-deal"],
+    blurb: "Màn 240Hz có cả KVM tích hợp, dùng một bộ chuột phím cho hai máy tính cắm chung.",
+    specs: {
+      panelType: "SS IPS", resolution: "QHD 2560x1440, phủ 93% DCI-P3", refreshRate: [240, "240Hz, phản hồi 0.3ms MPRT"],
+      screenSize: [27, "27 inch tỉ lệ 16:9"], brightness: [400, "400 nits, đạt chuẩn DisplayHDR 400"],
+      connectivity: "USB-C 18W, 2x HDMI 2.0, DisplayPort 1.4, 2x USB 3.0, có KVM tích hợp",
+    },
+    variants: [{ label: "27 inch 2K 240Hz - Đen", attrs: { Size: "27 inch", Color: "Black" } }],
+  },
+
+  // ── Chuột & Bàn Phím ──────────────────────────────────────────────────────
+  {
+    key: "logitechMxMaster3SMac", name: "Chuột không dây Logitech MX Master 3S for Mac",
+    brand: "logitech", cat: "peripheral", price: 2690000, sale: 2290000, stock: 28, sold: 104, views: 3640,
+    published: "2026-02-03", tags: ["thiet-ke-cong-thai-hoc", "van-phong-hoc-tap", "hot-deal"],
+    blurb: "Bản dành riêng cho macOS, cuộn ngang mượt và nút chỉnh sẵn cho Mission Control.",
+    specs: {
+      panelType: "Công tắc Quiet Clicks giảm 90% tiếng click", resolution: "Cảm biến Darkfield 8000 DPI", refreshRate: [125, "125 Hz"],
+      weight: [141, "141 g"], batteryLife: [70, "70 ngày cho một lần sạc đầy"],
+      connectivity: "Bluetooth Low Energy và đầu thu Logi Bolt, chuyển giữa 3 thiết bị",
+    },
+    variants: [{ label: "Xám Space", attrs: { Color: "Space Gray" } }, { label: "Bạc", attrs: { Color: "Pale Gray" } }],
+  },
+  {
+    key: "logitechMxAnywhere3s", name: "Chuột không dây Logitech MX Anywhere 3S",
+    brand: "logitech", cat: "peripheral", price: 1890000, sale: 1590000, stock: 36, sold: 148, views: 4280,
+    published: "2026-02-03", tags: ["thiet-ke-cong-thai-hoc", "mong-nhe-pin-trau", "hot-deal", "ban-chay-nhat"],
+    blurb: "Chuột nhỏ bỏ vừa túi laptop, dùng được cả trên mặt kính nhờ cảm biến Darkfield.",
+    specs: {
+      panelType: "Công tắc Quiet Clicks", resolution: "Cảm biến Darkfield 8000 DPI", refreshRate: [125, "125 Hz"],
+      weight: [99, "99 g"], batteryLife: [70, "70 ngày cho một lần sạc đầy"],
+      connectivity: "Bluetooth Low Energy và đầu thu Logi Bolt, chuyển giữa 3 thiết bị",
+    },
+    variants: [{ label: "Xám Graphite", attrs: { Color: "Graphite" } }, { label: "Hồng Nhạt", attrs: { Color: "Pale Grey" } }],
+  },
+  {
+    key: "logitechGProXSuperlight2", name: "Chuột Gaming Logitech G Pro X Superlight 2",
+    brand: "logitech", cat: "peripheral", price: 3690000, sale: 3190000, stock: 22, sold: 86, views: 3480,
+    published: "2026-02-17", tags: ["gaming-cao-cap", "hot-deal"],
+    blurb: "Chuột thi đấu nhẹ 60g với cảm biến 32000 DPI, chuẩn của tuyển thủ FPS chuyên nghiệp.",
+    specs: {
+      panelType: "Công tắc quang học lai LIGHTFORCE", resolution: "Cảm biến HERO 2 độ phân giải 32000 DPI", refreshRate: [2000, "2000 Hz"],
+      weight: [60, "60 g"], batteryLife: [4, "4 ngày chơi liên tục (95 giờ)"],
+      connectivity: "Đầu thu Lightspeed 2.4GHz, sạc USB-C",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }, { label: "Trắng", attrs: { Color: "White" } }],
+  },
+  {
+    key: "logitechMxKeysMini", name: "Bàn phím không dây Logitech MX Keys Mini",
+    brand: "logitech", cat: "peripheral", price: 2290000, sale: 1990000, stock: 30, sold: 118, views: 3820,
+    published: "2026-01-29", tags: ["thiet-ke-cong-thai-hoc", "van-phong-hoc-tap", "hot-deal", "ban-chay-nhat"],
+    blurb: "Bàn phím gọn bỏ cụm phím số, kéo chuột lại gần thân người hơn nên vai đỡ mỏi.",
+    specs: {
+      panelType: "Cơ chế kéo cắt phím lõm hình cầu", resolution: "Không áp dụng cho bàn phím", refreshRate: [125, "125 Hz"],
+      weight: [506, "506 g"], batteryLife: [10, "10 ngày khi bật đèn nền, 5 tháng khi tắt"],
+      connectivity: "Bluetooth Low Energy và Logi Bolt, chuyển giữa 3 thiết bị, sạc USB-C",
+    },
+    variants: [{ label: "Xám Graphite", attrs: { Color: "Graphite" } }, { label: "Hồng Rose", attrs: { Color: "Rose" } }],
+  },
+  {
+    key: "logitechG502X", name: "Chuột Gaming Logitech G502 X Lightspeed",
+    brand: "logitech", cat: "peripheral", price: 3290000, sale: 2790000, stock: 26, sold: 96, views: 3260,
+    published: "2026-02-09", tags: ["gaming-cao-cap", "hot-deal"],
+    blurb: "Chuột có 13 nút lập trình và bánh cuộn thả tự do, hợp chơi MMO và làm việc bảng tính.",
+    specs: {
+      panelType: "Công tắc quang học lai LIGHTFORCE", resolution: "Cảm biến HERO 25K độ phân giải 25600 DPI", refreshRate: [1000, "1000 Hz"],
+      weight: [102, "102 g"], batteryLife: [6, "6 ngày chơi liên tục (140 giờ)"],
+      connectivity: "Đầu thu Lightspeed 2.4GHz, sạc USB-C",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }, { label: "Trắng", attrs: { Color: "White" } }],
+  },
+  {
+    key: "razerDeathadderV3Pro", name: "Chuột Gaming Razer DeathAdder V3 Pro",
+    brand: "razer", cat: "peripheral", price: 3890000, sale: 3390000, stock: 19, sold: 68, views: 2940,
+    published: "2026-02-13", tags: ["gaming-cao-cap", "thiet-ke-cong-thai-hoc", "hot-deal"],
+    blurb: "Dáng cầm ngả tay kinh điển của Razer, nhẹ 63g và pin chơi được cả tuần.",
+    specs: {
+      panelType: "Công tắc quang học Razer thế hệ 3", resolution: "Cảm biến Focus Pro 30K độ phân giải 30000 DPI", refreshRate: [1000, "1000 Hz (lên 4000 Hz với đầu thu HyperPolling)"],
+      weight: [63, "63 g"], batteryLife: [4, "4 ngày chơi liên tục (90 giờ)"],
+      connectivity: "Đầu thu HyperSpeed 2.4GHz, sạc USB-C",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }, { label: "Trắng", attrs: { Color: "White" } }],
+  },
+  {
+    key: "razerBlackwidowV4", name: "Bàn phím cơ Gaming Razer BlackWidow V4 X (switch Green)",
+    brand: "razer", cat: "peripheral", price: 3290000, sale: 2790000, stock: 23, sold: 74, views: 2680,
+    published: "2026-02-20", tags: ["gaming-cao-cap", "hot-deal"],
+    blurb: "Bàn phím full-size có 6 phím macro riêng bên trái và kê tay từ tính tháo ra được.",
+    specs: {
+      panelType: "Switch cơ Razer Green clicky, hành trình 4mm", resolution: "Không áp dụng cho bàn phím", refreshRate: [1000, "1000 Hz"],
+      weight: [1100, "1100 g"], batteryLife: [0, "Không dùng pin, cắm dây USB trực tiếp"],
+      connectivity: "Dây USB-A bện dù, có cổng USB passthrough",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }],
+  },
+  {
+    key: "keychronK2Pro", name: "Bàn phím cơ không dây Keychron K2 Pro (75% hot-swap)",
+    brand: "keychron", cat: "peripheral", price: 2490000, sale: 2090000, stock: 32, sold: 128, views: 4120,
+    published: "2026-01-25", tags: ["thiet-ke-cong-thai-hoc", "van-phong-hoc-tap", "hot-deal", "ban-chay-nhat"],
+    blurb: "Bàn phím 75% thay switch không cần hàn, có sẵn keycap cho cả Windows lẫn macOS trong hộp.",
+    specs: {
+      panelType: "Switch cơ Gateron G Pro hot-swap 3 chân và 5 chân", resolution: "Không áp dụng cho bàn phím", refreshRate: [1000, "1000 Hz khi cắm dây"],
+      weight: [826, "826 g"], batteryLife: [10, "10 ngày khi bật đèn nền RGB, 30 ngày khi tắt"],
+      connectivity: "Bluetooth 5.1 ghép 3 thiết bị, dây USB-C, tương thích phần mềm QMK/VIA",
+    },
+    variants: [{ label: "Khung nhôm - Xám", attrs: { Color: "Space Gray", Frame: "Aluminium" } },
+      { label: "Khung nhựa - Đen", attrs: { Color: "Black", Frame: "Plastic" }, delta: -600000 }],
+  },
+  {
+    key: "keychronQ1Max", name: "Bàn phím cơ không dây Keychron Q1 Max (75% khung nhôm gasket)",
+    brand: "keychron", cat: "peripheral", price: 5490000, sale: 4890000, stock: 14, sold: 38, views: 2340,
+    published: "2026-03-05", tags: ["thiet-ke-cong-thai-hoc", "flagship-dinh-cao", "san-pham-moi"],
+    blurb: "Khung nhôm CNC nặng 1.6kg gắn gasket, gõ êm và không trượt trên bàn.",
+    specs: {
+      panelType: "Switch cơ Gateron Jupiter hot-swap, lắp kiểu gasket", resolution: "Không áp dụng cho bàn phím", refreshRate: [1000, "1000 Hz khi cắm dây"],
+      weight: [1600, "1600 g"], batteryLife: [12, "12 ngày khi bật đèn nền, 40 ngày khi tắt"],
+      connectivity: "Bluetooth 5.1, đầu thu 2.4GHz, dây USB-C, tương thích QMK/VIA",
+    },
+    variants: [{ label: "Xám Carbon", attrs: { Color: "Carbon Black", Frame: "Aluminium" } },
+      { label: "Bạc Shell", attrs: { Color: "Shell White", Frame: "Aluminium" } }],
+  },
+  {
+    key: "keychronK8", name: "Bàn phím cơ không dây Keychron K8 (TKL hot-swap)",
+    brand: "keychron", cat: "peripheral", price: 1990000, sale: 1690000, stock: 38, sold: 156, views: 4580,
+    published: "2026-01-25", tags: ["van-phong-hoc-tap", "hot-deal", "ban-chay-nhat"],
+    blurb: "Bàn phím TKL dưới 2 triệu, bỏ cụm phím số nhưng giữ nguyên hàng phím chức năng.",
+    specs: {
+      panelType: "Switch cơ Gateron G Pro hot-swap", resolution: "Không áp dụng cho bàn phím", refreshRate: [1000, "1000 Hz khi cắm dây"],
+      weight: [850, "850 g"], batteryLife: [9, "9 ngày khi bật đèn nền, 30 ngày khi tắt"],
+      connectivity: "Bluetooth 5.1 ghép 3 thiết bị, dây USB-C",
+    },
+    variants: [{ label: "Khung nhựa - Đen", attrs: { Color: "Black", Frame: "Plastic" } }],
+  },
+  {
+    key: "steelseriesAerox3", name: "Chuột Gaming SteelSeries Aerox 3 Wireless",
+    brand: "steelseries", cat: "peripheral", price: 2490000, sale: 2090000, stock: 27, sold: 92, views: 3040,
+    published: "2026-02-11", tags: ["gaming-cao-cap", "chong-nuoc-chuan-ip", "hot-deal"],
+    blurb: "Vỏ đục lỗ tổ ong nặng 68g nhưng vẫn đạt chuẩn chống nước IP54 nhờ lớp phủ chống ẩm.",
+    specs: {
+      panelType: "Công tắc quang học Golden Micro IP54", resolution: "Cảm biến TrueMove Air độ phân giải 18000 DPI", refreshRate: [1000, "1000 Hz"],
+      weight: [68, "68 g"], batteryLife: [8, "8 ngày chơi liên tục (200 giờ) khi tắt đèn"],
+      connectivity: "Bluetooth 5.0, đầu thu Quantum 2.0 2.4GHz, sạc USB-C",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Onyx" } }, { label: "Trắng", attrs: { Color: "Snow" } }],
+  },
+  {
+    key: "steelseriesApexPro", name: "Bàn phím cơ Gaming SteelSeries Apex Pro TKL 2023",
+    brand: "steelseries", cat: "peripheral", price: 5990000, sale: 5290000, stock: 12, sold: 32, views: 2280,
+    published: "2026-02-23", tags: ["gaming-cao-cap", "flagship-dinh-cao", "hot-deal"],
+    blurb: "Switch từ tính chỉnh được điểm nhận phím từ 0.1mm tới 4mm, nhạy nhất trong nhóm bàn phím.",
+    specs: {
+      panelType: "Switch từ tính OmniPoint 2.0 chỉnh hành trình 0.1-4.0mm", resolution: "Không áp dụng cho bàn phím", refreshRate: [1000, "1000 Hz"],
+      weight: [960, "960 g"], batteryLife: [0, "Không dùng pin, cắm dây USB trực tiếp"],
+      connectivity: "Dây USB-C tháo rời, có màn hình OLED nhỏ trên phím",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }],
+  },
+  {
+    key: "logitechMxKeysCombo", name: "Bộ bàn phím và chuột không dây Logitech MX Keys Combo for Business",
+    brand: "logitech", cat: "peripheral", price: 4290000, sale: 3690000, stock: 18, sold: 54, views: 2160,
+    published: "2026-02-05", tags: ["thiet-ke-cong-thai-hoc", "van-phong-hoc-tap", "hot-deal"],
+    blurb: "Bộ đôi bàn phím và chuột dùng chung một đầu thu Logi Bolt, đỡ chiếm hai cổng USB.",
+    specs: {
+      panelType: "Bàn phím kéo cắt phím lõm, chuột dùng công tắc Quiet Clicks", resolution: "Chuột cảm biến Darkfield 8000 DPI", refreshRate: [125, "125 Hz"],
+      weight: [810, "810 g bàn phím, 141 g chuột"], batteryLife: [10, "Bàn phím 10 ngày có đèn nền, chuột 70 ngày"],
+      connectivity: "Chung một đầu thu Logi Bolt, đều hỗ trợ Bluetooth Low Energy",
+    },
+    variants: [{ label: "Xám Graphite", attrs: { Color: "Graphite" } }],
+  },
+  {
+    key: "razerProClickMini", name: "Chuột văn phòng Razer Pro Click Mini",
+    brand: "razer", cat: "peripheral", price: 1990000, sale: 1690000, stock: 24, sold: 68, views: 2140,
+    published: "2026-01-27", tags: ["thiet-ke-cong-thai-hoc", "van-phong-hoc-tap", "hot-deal"],
+    blurb: "Chuột im lặng gần như hoàn toàn, dùng pin AA nên không phải nhớ cắm sạc.",
+    specs: {
+      panelType: "Công tắc cơ im lặng giảm 90% tiếng click", resolution: "Cảm biến quang học 12000 DPI", refreshRate: [125, "125 Hz"],
+      weight: [88, "88 g chưa gồm pin"], batteryLife: [30, "30 ngày với 2 pin AA (khoảng 725 giờ)"],
+      connectivity: "Bluetooth 5.1 ghép 3 thiết bị và đầu thu HyperSpeed 2.4GHz",
+    },
+    variants: [{ label: "Trắng Mercury", attrs: { Color: "Mercury White" } }],
+  },
+  {
+    key: "logitechG915Tkl", name: "Bàn phím cơ không dây Logitech G915 TKL (switch GL Tactile)",
+    brand: "logitech", cat: "peripheral", price: 5490000, sale: 4690000, stock: 11, sold: 28, views: 2040,
+    published: "2026-02-27", tags: ["gaming-cao-cap", "mong-nhe-pin-trau", "hot-deal"],
+    blurb: "Bàn phím cơ mỏng chỉ 22mm với switch hành trình thấp, pin 40 giờ khi bật hết đèn RGB.",
+    specs: {
+      panelType: "Switch cơ GL Tactile hành trình thấp 2.7mm", resolution: "Không áp dụng cho bàn phím", refreshRate: [1000, "1000 Hz"],
+      weight: [810, "810 g"], batteryLife: [2, "40 giờ khi bật đèn RGB đầy, vài tháng khi tắt đèn"],
+      connectivity: "Đầu thu Lightspeed 2.4GHz và Bluetooth, sạc USB-C",
+    },
+    variants: [{ label: "Đen Carbon", attrs: { Color: "Carbon" } }],
+  },
+  {
+    key: "ugreenMouseErgo", name: "Chuột công thái học không dây UGREEN Vertical Mouse",
+    brand: "ugreen", cat: "peripheral", price: 690000, sale: 549000, stock: 54, sold: 218, views: 5240,
+    published: "2026-01-18", tags: ["thiet-ke-cong-thai-hoc", "hot-deal", "ban-chay-nhat"],
+    blurb: "Chuột dựng đứng giữ cổ tay ở tư thế bắt tay tự nhiên, phụ kiện rẻ nhất trong nhóm.",
+    specs: {
+      panelType: "Công tắc cơ im lặng", resolution: "Cảm biến quang học 4000 DPI chỉnh 4 mức", refreshRate: [125, "125 Hz"],
+      weight: [109, "109 g"], batteryLife: [60, "60 ngày cho một lần sạc đầy"],
+      connectivity: "Bluetooth 5.0 ghép 2 thiết bị và đầu thu 2.4GHz, sạc USB-C",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }],
+  },
+  {
+    key: "asusRogAzoth", name: "Bàn phím cơ không dây ASUS ROG Azoth (75% gasket)",
+    brand: "asus", cat: "peripheral", price: 6490000, sale: 5790000, stock: 9, sold: 21, views: 1980,
+    published: "2026-03-11", tags: ["gaming-cao-cap", "flagship-dinh-cao", "san-pham-moi"],
+    blurb: "Bàn phím gaming có màn OLED nhỏ và bộ đồ nghề tra dầu switch kèm trong hộp.",
+    specs: {
+      panelType: "Switch cơ ROG NX hot-swap, lắp gasket ba lớp tiêu âm", resolution: "Không áp dụng cho bàn phím", refreshRate: [1000, "1000 Hz"],
+      weight: [1186, "1186 g"], batteryLife: [8, "8 ngày khi bật đèn RGB (khoảng 2000 giờ khi tắt)"],
+      connectivity: "Đầu thu ROG SpeedNova 2.4GHz, Bluetooth ghép 3 thiết bị, dây USB-C",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }],
+  },
+  {
+    key: "logitechPebbleCombo", name: "Bộ bàn phím và chuột không dây Logitech Pebble 2 Combo",
+    brand: "logitech", cat: "peripheral", price: 1290000, sale: 1090000, stock: 48, sold: 196, views: 4860,
+    published: "2026-02-07", tags: ["van-phong-hoc-tap", "mong-nhe-pin-trau", "hot-deal", "ban-chay-nhat"],
+    blurb: "Bộ phím chuột mỏng nhẹ nhiều màu, gõ rất êm nên dùng được trong phòng họp hoặc thư viện.",
+    specs: {
+      panelType: "Bàn phím kéo cắt siêu mỏng, chuột công tắc SilentTouch", resolution: "Chuột cảm biến quang học 4000 DPI", refreshRate: [125, "125 Hz"],
+      weight: [415, "415 g bàn phím, 76 g chuột"], batteryLife: [1095, "Bàn phím 3 năm và chuột 2 năm với pin AAA"],
+      connectivity: "Bluetooth Low Energy và đầu thu Logi Bolt",
+    },
+    variants: [{ label: "Trắng", attrs: { Color: "Off White" } }, { label: "Xanh Tonal", attrs: { Color: "Tonal Blue" } }],
+  },
+
+  // ── Sạc & Pin Dự Phòng ────────────────────────────────────────────────────
+  {
+    key: "ankerNano3", name: "Củ sạc nhanh Anker Nano 3 30W GaN (1 cổng USB-C)",
+    brand: "anker", cat: "charging", price: 490000, sale: 390000, stock: 86, sold: 412, views: 9240,
+    published: "2026-01-11", tags: ["hot-deal", "ban-chay-nhat"],
+    blurb: "Củ sạc nhỏ bằng đốt ngón tay cái, đủ sạc nhanh iPhone và iPad cơ bản.",
+    specs: {
+      power: [30, "30W qua cổng USB-C"], portCount: [1, "1 cổng USB-C"],
+      connectivity: "1x USB-C hỗ trợ Power Delivery 3.0 và PPS, chân cắm gập được",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }, { label: "Xanh Dương", attrs: { Color: "Blue" } }],
+  },
+  {
+    key: "ankerPrime67w", name: "Củ sạc nhanh Anker Prime 67W GaN (3 cổng)",
+    brand: "anker", cat: "charging", price: 1190000, sale: 990000, stock: 52, sold: 226, views: 6180,
+    published: "2026-01-23", tags: ["hot-deal", "ban-chay-nhat"],
+    blurb: "Một củ sạc cho cả laptop, điện thoại và tai nghe cùng lúc khi đi công tác.",
+    specs: {
+      power: [67, "67W tổng, chia động theo thiết bị đang cắm"], portCount: [3, "3 cổng (2 USB-C + 1 USB-A)"],
+      connectivity: "2x USB-C (tối đa 67W một cổng), 1x USB-A (tối đa 22.5W)",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }],
+  },
+  {
+    key: "ankerPowerbank737", name: "Pin dự phòng Anker 737 PowerCore 24000mAh 140W",
+    brand: "anker", cat: "charging", price: 3490000, sale: 2890000, stock: 24, sold: 96, views: 3620,
+    published: "2026-02-06", tags: ["hot-deal", "ban-chay-nhat"],
+    blurb: "Pin dự phòng sạc được cả MacBook Pro 16, có màn hình hiển thị công suất đang vào ra.",
+    specs: {
+      power: [140, "140W qua cổng USB-C"], capacity: [24000, "24000 mAh (86.4 Wh, mang lên máy bay được)"],
+      portCount: [3, "3 cổng (2 USB-C + 1 USB-A)"],
+      connectivity: "2x USB-C hỗ trợ Power Delivery 3.1, 1x USB-A, có màn hình LCD thông số",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }],
+  },
+  {
+    key: "ankerPowerbank10k", name: "Pin dự phòng Anker PowerCore 10000mAh 30W",
+    brand: "anker", cat: "charging", price: 890000, sale: 690000, stock: 74, sold: 348, views: 8240,
+    published: "2026-01-09", tags: ["hot-deal", "ban-chay-nhat", "mong-nhe-pin-trau"],
+    blurb: "Pin dự phòng phổ thông nhất, sạc đầy iPhone khoảng hai lần và bỏ vừa túi áo khoác.",
+    specs: {
+      power: [30, "30W qua cổng USB-C"], capacity: [10000, "10000 mAh (36 Wh)"],
+      portCount: [2, "2 cổng (1 USB-C + 1 USB-A)"],
+      connectivity: "1x USB-C vào ra hai chiều, 1x USB-A 18W",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }, { label: "Trắng", attrs: { Color: "White" } }],
+  },
+  {
+    key: "ugreenHub9in1", name: "Hub chuyển đổi UGREEN Revodok Pro 9 trong 1 (USB-C)",
+    brand: "ugreen", cat: "charging", price: 1490000, sale: 1190000, stock: 42, sold: 168, views: 5240,
+    published: "2026-02-14", tags: ["van-phong-hoc-tap", "hot-deal", "ban-chay-nhat"],
+    blurb: "Hub cho laptop chỉ có cổng USB-C, thêm lại HDMI, LAN và khe thẻ nhớ trong một lần cắm.",
+    specs: {
+      power: [100, "100W sạc xuyên qua cho laptop"], portCount: [9, "9 cổng"],
+      connectivity: "HDMI 4K60Hz, RJ45 Gigabit, 3x USB-A 3.0, USB-C data, USB-C PD 100W, khe SD và microSD",
+    },
+    variants: [{ label: "Xám Space", attrs: { Color: "Space Gray" } }],
+  },
+  {
+    key: "ugreenNexode100w", name: "Củ sạc nhanh UGREEN Nexode 100W GaN (4 cổng)",
+    brand: "ugreen", cat: "charging", price: 1690000, sale: 1390000, stock: 38, sold: 142, views: 4620,
+    published: "2026-02-18", tags: ["hot-deal", "ban-chay-nhat"],
+    blurb: "Bốn cổng cho cả gia đình cắm chung một ổ điện, sạc laptop và ba thiết bị nhỏ cùng lúc.",
+    specs: {
+      power: [100, "100W tổng, chia động theo thiết bị đang cắm"], portCount: [4, "4 cổng (3 USB-C + 1 USB-A)"],
+      connectivity: "3x USB-C (tối đa 100W một cổng), 1x USB-A 22.5W",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }, { label: "Trắng", attrs: { Color: "White" } }],
+  },
+  {
+    key: "ankerMagsafe622", name: "Pin dự phòng từ tính Anker MagGo 622 5000mAh (có chân đế)",
+    brand: "anker", cat: "charging", price: 1290000, sale: 1090000, stock: 36, sold: 128, views: 4180,
+    published: "2026-02-22", tags: ["hot-deal", "mong-nhe-pin-trau"],
+    blurb: "Pin hít nam châm vào lưng iPhone và gập ra thành chân đế, xem video không phải cầm máy.",
+    specs: {
+      power: [12, "12W sạc không dây từ tính, 12W qua cổng USB-C"], capacity: [5000, "5000 mAh (18 Wh)"],
+      portCount: [1, "1 cổng USB-C"],
+      connectivity: "1x USB-C vào ra hai chiều, sạc không dây từ tính tương thích MagSafe",
+    },
+    variants: [{ label: "Đen", attrs: { Color: "Black" } }, { label: "Xanh Mint", attrs: { Color: "Mint" } }],
+  },
+
+  // ── Ổ Cứng & Thẻ Nhớ ──────────────────────────────────────────────────────
+  {
+    key: "samsungT7Shield1tb", name: "Ổ cứng di động Samsung T7 Shield 1TB (USB 3.2 Gen 2)",
+    brand: "samsungStorage", cat: "storage", price: 2490000, sale: 2090000, stock: 44, sold: 186, views: 5620,
+    published: "2026-01-20", tags: ["chong-nuoc-chuan-ip", "hot-deal", "ban-chay-nhat"],
+    blurb: "Ổ SSD bọc cao su chống va đập, chuẩn IP65 nên mang đi quay phim ngoài trời được.",
+    specs: {
+      capacity: [1024, "1TB"], readSpeed: [1050, "1050 MB/s đọc tuần tự, 1000 MB/s ghi"],
+      interface: "USB 3.2 Gen 2 (10Gbps)", connectivity: "1x USB-C, kèm cáp USB-C sang USB-C và USB-C sang USB-A",
+    },
+    variants: [{ label: "1TB - Đen", attrs: { Capacity: "1TB", Color: "Black" } },
+      { label: "2TB - Đen", attrs: { Capacity: "2TB", Color: "Black" }, delta: 2200000 }],
+  },
+  {
+    key: "samsungT92tb", name: "Ổ cứng di động Samsung T9 2TB (USB 3.2 Gen 2x2)",
+    brand: "samsungStorage", cat: "storage", price: 5990000, sale: 5290000, stock: 18, sold: 52, views: 2840,
+    published: "2026-02-26", tags: ["flagship-dinh-cao", "hot-deal"],
+    blurb: "Ổ nhanh nhất trong kho với 2000 MB/s, dựng video 4K trực tiếp trên ổ mà không phải chép về máy.",
+    specs: {
+      capacity: [2048, "2TB"], readSpeed: [2000, "2000 MB/s đọc tuần tự, 1950 MB/s ghi"],
+      interface: "USB 3.2 Gen 2x2 (20Gbps)", connectivity: "1x USB-C, kèm hai loại cáp trong hộp",
+    },
+    variants: [{ label: "2TB - Đen", attrs: { Capacity: "2TB", Color: "Black" } }],
+  },
+  {
+    key: "sandiskExtremePro1tb", name: "Ổ cứng di động SanDisk Extreme Pro V2 1TB (USB 3.2 Gen 2x2)",
+    brand: "sandisk", cat: "storage", price: 3690000, sale: 3190000, stock: 26, sold: 88, views: 3260,
+    published: "2026-02-04", tags: ["chong-nuoc-chuan-ip", "hot-deal"],
+    blurb: "Vỏ nhôm tản nhiệt và chuẩn IP55, có móc treo bằng silicon để móc vào balo máy ảnh.",
+    specs: {
+      capacity: [1024, "1TB"], readSpeed: [2000, "2000 MB/s đọc tuần tự, 2000 MB/s ghi"],
+      interface: "USB 3.2 Gen 2x2 (20Gbps)", connectivity: "1x USB-C, kèm cáp USB-C và đầu chuyển USB-A",
+    },
+    variants: [{ label: "1TB - Đen", attrs: { Capacity: "1TB", Color: "Black" } }],
+  },
+  {
+    key: "sandiskExtremeSd128", name: "Thẻ nhớ SanDisk Extreme PRO SDXC 128GB (200MB/s)",
+    brand: "sandisk", cat: "storage", price: 890000, sale: 690000, stock: 62, sold: 264, views: 6480,
+    published: "2026-01-13", tags: ["hot-deal", "ban-chay-nhat"],
+    blurb: "Thẻ nhớ máy ảnh chuẩn V30, quay video 4K liên tục không bị ngắt giữa chừng.",
+    specs: {
+      capacity: [128, "128GB"], readSpeed: [200, "200 MB/s đọc, 90 MB/s ghi"],
+      interface: "SDXC UHS-I, phân loại tốc độ U3 và V30", connectivity: "Khe thẻ SD tiêu chuẩn trên máy ảnh và laptop",
+    },
+    variants: [{ label: "128GB", attrs: { Capacity: "128GB" } }, { label: "256GB", attrs: { Capacity: "256GB" }, delta: 600000 }],
+  },
+  {
+    key: "sandiskExtremeMicro256", name: "Thẻ nhớ SanDisk Extreme microSDXC 256GB (190MB/s)",
+    brand: "sandisk", cat: "storage", price: 990000, sale: 790000, stock: 58, sold: 238, views: 6140,
+    published: "2026-01-13", tags: ["hot-deal", "ban-chay-nhat"],
+    blurb: "Thẻ microSD cho máy quay hành trình, điện thoại Android và Nintendo Switch.",
+    specs: {
+      capacity: [256, "256GB"], readSpeed: [190, "190 MB/s đọc, 130 MB/s ghi"],
+      interface: "microSDXC UHS-I, phân loại A2, U3 và V30", connectivity: "Khe microSD, kèm đầu chuyển sang khe SD tiêu chuẩn",
+    },
+    variants: [{ label: "256GB", attrs: { Capacity: "256GB" } }, { label: "512GB", attrs: { Capacity: "512GB" }, delta: 800000 }],
+  },
+  {
+    key: "samsung990Pro1tb", name: "Ổ cứng SSD gắn trong Samsung 990 PRO 1TB (NVMe PCIe 4.0)",
+    brand: "samsungStorage", cat: "storage", price: 2890000, sale: 2490000, stock: 32, sold: 118, views: 3840,
+    published: "2026-02-10", tags: ["gaming-cao-cap", "flagship-dinh-cao", "hot-deal"],
+    blurb: "Ổ NVMe nhanh nhất để nâng cấp máy tính hoặc lắp vào PlayStation 5, có tản nhiệt sẵn.",
+    specs: {
+      capacity: [1024, "1TB"], readSpeed: [7450, "7450 MB/s đọc tuần tự, 6900 MB/s ghi"],
+      interface: "NVMe PCIe 4.0 x4, chuẩn M.2 2280", connectivity: "Khe M.2 trên bo mạch chủ hoặc khe mở rộng của PlayStation 5",
+    },
+    variants: [{ label: "1TB - có tản nhiệt", attrs: { Capacity: "1TB", Heatsink: "Có" } },
+      { label: "2TB - có tản nhiệt", attrs: { Capacity: "2TB", Heatsink: "Có" }, delta: 2400000 }],
+  },
+];
+
+module.exports = accessories;

@@ -469,4 +469,14 @@ const usersData = [
   },
 ];
 
-module.exports = usersData;
+// 24 người mua chỉ dùng để đánh giá, sinh trong `buildFamilyReviews.js`.
+//
+// Cần thêm vì `reviews` có chỉ mục duy nhất trên (user_id, product_id): 12
+// khách viết tay ở trên không đủ cặp cho 202 sản phẩm, mà để một người đứng tên
+// gần 50 bài đánh giá thì trang sản phẩm nhìn cũng không thật.
+//
+// Họ KHÔNG có địa chỉ giao hàng và không xuất hiện trong `orders.data.js` —
+// đúng như một tài khoản chỉ mua một lần rồi để lại nhận xét.
+const { extraReviewers } = require("./buildFamilyReviews");
+
+module.exports = [...usersData, ...extraReviewers];

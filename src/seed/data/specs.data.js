@@ -52,11 +52,40 @@ const specDefinitionsData = [
   { categoryKey: "smartwatch", key: "waterResistance", name: "Khả năng chống nước", dataType: "STRING", unit: "ATM/m", isFilterable: true, isComparable: true, sortOrder: 4 },
   { categoryKey: "smartwatch", key: "healthFeatures", name: "Cảm biến & Sức khỏe", dataType: "STRING", unit: null, isFilterable: false, isComparable: false, sortOrder: 5 },
 
-  // Accessories & Monitor specifications
-  { categoryKey: "accessories", key: "panelType", name: "Tấm nền / Loại switch", dataType: "STRING", unit: null, isFilterable: true, isComparable: true, sortOrder: 1 },
-  { categoryKey: "accessories", key: "resolution", name: "Độ phân giải / DPI", dataType: "STRING", unit: null, isFilterable: true, isComparable: true, sortOrder: 2 },
-  { categoryKey: "accessories", key: "refreshRate", name: "Tần số quét", dataType: "NUMBER", unit: "Hz", isFilterable: true, isComparable: true, sortOrder: 3 },
-  { categoryKey: "accessories", key: "connectivity", name: "Cổng kết nối", dataType: "STRING", unit: null, isFilterable: true, isComparable: false, sortOrder: 4 },
+  // Accessories.
+  //
+  // Khai trên từng danh mục LÁ chứ không khai trên "accessories" rồi để
+  // taxonomySeeder chép xuống. Bốn lá ở đây đo những thứ không cùng bản chất —
+  // một củ sạc không có tấm nền, một ổ SSD không có tần số quét — nên chép
+  // chung sẽ đẻ ra định nghĩa rỗng ở mọi lá và trang Admin Specifications hiện
+  // "Tấm nền / Loại switch" dưới mục Sạc & Pin Dự Phòng.
+  //
+  // `capacity` xuất hiện hai lần với hai đơn vị (mAh cho sạc, GB cho ổ cứng).
+  // Đúng quy ước đã ghi ở đầu tệp: khác danh mục thì khác định nghĩa, nên hai
+  // đơn vị không bao giờ rơi vào cùng một trục so sánh.
+  { categoryKey: "monitor", key: "panelType", name: "Tấm nền", dataType: "STRING", unit: null, isFilterable: true, isComparable: true, sortOrder: 1 },
+  { categoryKey: "monitor", key: "resolution", name: "Độ phân giải", dataType: "STRING", unit: null, isFilterable: true, isComparable: true, sortOrder: 2 },
+  { categoryKey: "monitor", key: "refreshRate", name: "Tần số quét", dataType: "NUMBER", unit: "Hz", isFilterable: true, isComparable: true, sortOrder: 3 },
+  { categoryKey: "monitor", key: "screenSize", name: "Kích thước màn hình", dataType: "NUMBER", unit: "inch", isFilterable: true, isComparable: true, sortOrder: 4 },
+  { categoryKey: "monitor", key: "brightness", name: "Độ sáng tối đa", dataType: "NUMBER", unit: "nits", isFilterable: false, isComparable: true, sortOrder: 5 },
+  { categoryKey: "monitor", key: "connectivity", name: "Cổng kết nối", dataType: "STRING", unit: null, isFilterable: true, isComparable: false, sortOrder: 6 },
+
+  { categoryKey: "peripheral", key: "panelType", name: "Loại switch / Cơ chế phím", dataType: "STRING", unit: null, isFilterable: true, isComparable: true, sortOrder: 1 },
+  { categoryKey: "peripheral", key: "resolution", name: "Cảm biến / DPI", dataType: "STRING", unit: null, isFilterable: true, isComparable: true, sortOrder: 2 },
+  { categoryKey: "peripheral", key: "refreshRate", name: "Tần số phản hồi", dataType: "NUMBER", unit: "Hz", isFilterable: true, isComparable: true, sortOrder: 3 },
+  { categoryKey: "peripheral", key: "weight", name: "Trọng lượng", dataType: "NUMBER", unit: "g", isFilterable: true, isComparable: true, sortOrder: 4 },
+  { categoryKey: "peripheral", key: "batteryLife", name: "Thời lượng pin", dataType: "NUMBER", unit: "ngày", isFilterable: false, isComparable: true, sortOrder: 5 },
+  { categoryKey: "peripheral", key: "connectivity", name: "Kết nối", dataType: "STRING", unit: null, isFilterable: true, isComparable: false, sortOrder: 6 },
+
+  { categoryKey: "charging", key: "power", name: "Công suất tối đa", dataType: "NUMBER", unit: "W", isFilterable: true, isComparable: true, sortOrder: 1 },
+  { categoryKey: "charging", key: "capacity", name: "Dung lượng pin", dataType: "NUMBER", unit: "mAh", isFilterable: true, isComparable: true, sortOrder: 2 },
+  { categoryKey: "charging", key: "portCount", name: "Số cổng", dataType: "NUMBER", unit: "cổng", isFilterable: true, isComparable: true, sortOrder: 3 },
+  { categoryKey: "charging", key: "connectivity", name: "Cổng kết nối", dataType: "STRING", unit: null, isFilterable: true, isComparable: false, sortOrder: 4 },
+
+  { categoryKey: "storage", key: "capacity", name: "Dung lượng", dataType: "NUMBER", unit: "GB", isFilterable: true, isComparable: true, sortOrder: 1 },
+  { categoryKey: "storage", key: "readSpeed", name: "Tốc độ đọc tối đa", dataType: "NUMBER", unit: "MB/s", isFilterable: true, isComparable: true, sortOrder: 2 },
+  { categoryKey: "storage", key: "interface", name: "Chuẩn kết nối", dataType: "STRING", unit: null, isFilterable: true, isComparable: true, sortOrder: 3 },
+  { categoryKey: "storage", key: "connectivity", name: "Cổng kết nối", dataType: "STRING", unit: null, isFilterable: false, isComparable: false, sortOrder: 4 },
 ];
 
 module.exports = specDefinitionsData;

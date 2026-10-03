@@ -1,6 +1,9 @@
 /**
  * Seed data for Orders, OrderItems, OrderStatusHistories, and Payments
- * Spanning over the past 30 days to populate the Admin Revenue Dashboard
+ *
+ * Trải trên 30 ngày gần nhất để dashboard doanh thu của admin có số liệu. Ngày
+ * viết ở đây là ngày tương đối, không phải ngày thật — xem phần dời mốc thời
+ * gian ở cuối tệp.
  */
 
 const ordersData = [
@@ -366,4 +369,25 @@ const ordersData = [
   },
 ];
 
-module.exports = ordersData;
+// Dời toàn bộ mốc thời gian về sát ngày chạy seed.
+//
+// Ngày ở trên ghi cứng trong khoảng 15/07 - 11/08/2026, đúng "30 ngày gần đây"
+// so với lúc viết. Nhưng dashboard doanh thu mặc định chỉ hỏi 30 ngày trở lại,
+// nên mỗi tháng trôi qua là biểu đồ lại rỗng thêm — kiểm ngày 26/09 thì khoảng
+// mặc định trả về 0 đồng / 0 đơn, trong khi cả năm 2026 có 328 triệu và 12 đơn.
+// Tới kỳ bảo vệ tháng 12 thì chắc chắn trống trơn.
+//
+// Cách dời giữ nguyên KHOẢNG CÁCH giữa các đơn mà tác giả đã sắp — đơn cũ nhất
+// vẫn cách đơn mới nhất 27 ngày — chỉ kéo cả cụm lên sao cho đơn mới nhất rơi
+// vào hôm qua. `history` dùng `offsetMinutes` tính từ `createdAt` nên tự theo.
+const NEWEST_AUTHORED = new Date("2026-08-11T00:00:00Z").getTime();
+const SHIFT_MS = Date.now() - 24 * 60 * 60 * 1000 - NEWEST_AUTHORED;
+
+const shift = (date) => (date ? new Date(date.getTime() + SHIFT_MS) : date);
+
+module.exports = ordersData.map((order) => ({
+  ...order,
+  createdAt: shift(order.createdAt),
+  paidAt: shift(order.paidAt),
+  cancelledAt: shift(order.cancelledAt),
+}));

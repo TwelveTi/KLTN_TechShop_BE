@@ -72,6 +72,42 @@ class ProductRepository {
     return cat ? cat.id : NO_MATCH_ID;
   }
 
+  // Một danh mục cha đại diện cho cả nhánh con của nó. Lọc theo đúng một
+  // `categoryId` làm mọi danh mục cha trả về rỗng, trong khi `productCount` của
+  // `catalogService` lại cộng dồn từ các con — chip ghi "8 sản phẩm" nhưng bấm
+  // vào không có gì. `aiRepository.resolveCategoryIds` đã xử lý đúng cho luồng
+  // AI; đây là chỗ tương ứng cho luồng duyệt danh sách.
+  async expandCategorySubtree(rootId) {
+    const rows = await db.Category.findAll({ attributes: ["id", "parentId"], raw: true });
+
+    const childrenOf = rows.reduce((map, row) => {
+      if (!row.parentId) return map;
+      (map[row.parentId] = map[row.parentId] || []).push(row.id);
+      return map;
+    }, {});
+
+    // BFS kèm `seen`: một dòng `parentId` trỏ vòng lại sẽ treo request thay vì
+    // chỉ trả thiếu vài sản phẩm.
+    const seen = new Set([rootId]);
+    const queue = [rootId];
+
+    while (queue.length > 0) {
+      const current = queue.shift();
+      for (const child of childrenOf[current] || []) {
+        if (seen.has(child)) continue;
+        seen.add(child);
+        queue.push(child);
+      }
+    }
+
+    return [...seen];
+  }
+
+  async resolveCategoryIds(catParam) {
+    const rootId = await this.resolveCategoryId(catParam);
+    return rootId === NO_MATCH_ID ? [NO_MATCH_ID] : this.expandCategorySubtree(rootId);
+  }
+
   // Resolve an already-parsed list of brand tokens (UUIDs and/or slugs/names) to
   // brand ids.
   async resolveBrandIdsFromList(brandList) {
@@ -108,7 +144,8 @@ class ProductRepository {
 
     const catParam = query.categoryId || query.category || query.categorySlug;
     if (catParam && catParam !== "all" && catParam !== "ALL") {
-      where.categoryId = await this.resolveCategoryId(catParam);
+      const categoryIds = await this.resolveCategoryIds(catParam);
+      where.categoryId = categoryIds.length === 1 ? categoryIds[0] : { [Op.in]: categoryIds };
     }
 
     const brandParam = query.brandId || query.brands || query.brand;

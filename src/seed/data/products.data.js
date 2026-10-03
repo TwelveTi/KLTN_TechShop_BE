@@ -24,8 +24,11 @@ const productsData = [
     shortDescription: "MacBook Pro 14 M3 Pro mạnh mẽ với màn hình Liquid Retina XDR 120Hz và pin 18 tiếng.",
     description: "MacBook Pro 14 inch trang bị chip Apple M3 Pro với 11 nhân CPU và 14 nhân GPU mang lại sức mạnh vượt trội cho các tác vụ lập trình, dựng phim 4K/8K và thiết kế đồ họa nặng. Màn hình Liquid Retina XDR đạt độ sáng đỉnh 1600 nits, tần số quét ProMotion 120Hz mượt mà cùng thời lượng pin bền bỉ đến 18 giờ liên tục.",
     basePrice: 49990000,
+    // 33 chứ không phải 25: ba biến thể bên dưới cộng lại là 15+10+8. Trang chi
+    // tiết đọc `stockQuantity` của sản phẩm nên nó từng ghi "còn 25" trong khi
+    // chọn đủ ba biến thể lại mua được 33 cái.
     salePrice: 46990000,
-    stockQuantity: 25,
+    stockQuantity: 33,
     soldCount: 42,
     viewCount: 1520,
     status: "ACTIVE",
@@ -696,7 +699,7 @@ const productsData = [
     name: "Tai nghe chống ồn không dây Sony WH-1000XM5",
     slug: "tai-nghe-chong-on-sony-wh-1000xm5",
     sku: "SONY-WH1000XM5",
-    categoryKey: "audio",
+    categoryKey: "headphone",
     brandKey: "sony",
     shortDescription: "Vua chống ồn chủ động với 2 bộ xử lý và 8 micro, chất âm Hi-Res Audio không dây và pin 30 giờ.",
     description: "Sony WH-1000XM5 thiết lập tiêu chuẩn mới cho tai nghe chống ồn cao cấp. Thiết kế thanh thoát êm ái, bộ xử lý tích hợp V1 kết hợp bộ xử lý chống ồn HD QN1, hỗ trợ codec LDAC và công nghệ đàm thoại khử ồn AI bằng sóng âm thanh.",
@@ -749,7 +752,7 @@ const productsData = [
     name: "Tai nghe Apple AirPods Pro 2 (Cổng sạc USB-C / Chip H2)",
     slug: "apple-airpods-pro-2-usb-c",
     sku: "APPLE-APP2-USBC",
-    categoryKey: "audio",
+    categoryKey: "headphone",
     brandKey: "apple",
     shortDescription: "Chống ồn chủ động gấp đôi, âm thanh thích ứng Adaptive Audio và chuẩn kháng nước bụi IP54.",
     description: "AirPods Pro 2 trang bị chip Apple H2 mang đến khả năng chống ồn thông minh, chế độ Xuyên Âm thích ứng (Adaptive Audio) tự động giảm tiếng ồn môi trường và âm thanh không gian cá nhân hóa Personal Spatial Audio sống động.",
@@ -791,7 +794,7 @@ const productsData = [
     name: "Loa Bluetooth Marshall Stanmore III",
     slug: "loa-bluetooth-marshall-stanmore-iii",
     sku: "MARSHALL-STAN3",
-    categoryKey: "audio",
+    categoryKey: "speaker",
     brandKey: "marshall",
     shortDescription: "Loa gia đình huyền thoại âm thanh stereo rộng mở, công suất 80W và thiết kế đậm chất vintage.",
     description: "Marshall Stanmore III là điểm nhấn nghệ thuật cho không gian sống hiện đại. Được tái thiết kế với âm trường rộng hơn, loa tweeter hướng ra ngoài và ống dẫn sóng cải tiến, đem lại âm thanh Rock n Roll nội lực bao trùm căn phòng.",
@@ -830,7 +833,9 @@ const productsData = [
     ],
     specifications: [
       { key: "driverSize", name: "Kích thước màng loa", valueText: "1 Loa Woofer 50W + 2 Loa Tweeter 15W" },
-      { key: "batteryLife", name: "Thời lượng pin", valueText: "Cắm nguồn điện trực tiếp 100-240V" },
+      // 0 chứ không phải bỏ trống: loa cắm điện thì câu trả lời là "không có
+      // pin", còn bỏ trống đọc ra là "chưa rõ" và rơi khỏi mọi bộ lọc số.
+      { key: "batteryLife", name: "Thời lượng pin", valueText: "Không dùng pin, cắm nguồn điện trực tiếp 100-240V", valueNumber: 0 },
       { key: "bluetoothVersion", name: "Chuẩn Bluetooth", valueText: "Bluetooth 5.2 (Hỗ trợ LE Audio), AUX 3.5mm, RCA" },
       { key: "ancSupport", name: "Chống ồn chủ động (ANC)", valueText: "Không áp dụng", valueBoolean: false },
       { key: "waterproofRating", name: "Chuẩn kháng nước", valueText: "Sử dụng cố định trong nhà" },
@@ -843,7 +848,7 @@ const productsData = [
     name: "Tai nghe True Wireless Sony WF-1000XM5",
     slug: "tai-nghe-true-wireless-sony-wf-1000xm5",
     sku: "SONY-WF1000XM5",
-    categoryKey: "audio",
+    categoryKey: "headphone",
     brandKey: "sony",
     shortDescription: "Tai nghe in-ear chống ồn hàng đầu thế giới với Dynamic Driver X và cảm biến truyền dẫn qua xương.",
     description: "Sony WF-1000XM5 nhỏ gọn hơn 25% và nhẹ hơn 20% so với thế hệ trước. Trang bị Dynamic Driver X tái tạo âm trầm sâu lắng và giọng hát trong trẻo, 3 micro trên mỗi tai nghe cùng công nghệ AI chống ồn khử gió tối tân.",
@@ -1005,7 +1010,7 @@ const productsData = [
     name: "Chuột không dây công thái học Logitech MX Master 3S",
     slug: "chuot-logitech-mx-master-3s",
     sku: "LOGI-MXM3S",
-    categoryKey: "accessories",
+    categoryKey: "peripheral",
     brandKey: "logitech",
     shortDescription: "Chuột làm việc số 1 thế giới với cuộn từ tính MagSpeed 1000 dòng/giây, nút bấm êm Quiet Clicks và cảm biến 8K DPI.",
     description: "Logitech MX Master 3S là vũ khí tối thượng của lập trình viên và nhà thiết kế. Cảm biến Darkfield 8.000 DPI lướt êm trên mọi bề mặt kể cả mặt kính trong suốt, tính năng Quiet Clicks giảm 90% tiếng ồn và pin sạc dùng 70 ngày.",
@@ -1046,6 +1051,8 @@ const productsData = [
       { key: "panelType", name: "Tấm nền / Loại switch", valueText: "Công tắc switch bấm êm Quiet Clicks (giảm 90% tiếng click)" },
       { key: "resolution", name: "Độ phân giải / DPI", valueText: "Cảm biến Darkfield 8.000 DPI (chỉnh bước 50 DPI)" },
       { key: "refreshRate", name: "Tần số quét", valueText: "125 Hz (Polled over Bluetooth / Logi Bolt)", valueNumber: 125 },
+      { key: "weight", name: "Trọng lượng", valueText: "141 g", valueNumber: 141 },
+      { key: "batteryLife", name: "Thời lượng pin", valueText: "70 ngày cho một lần sạc đầy", valueNumber: 70 },
       { key: "connectivity", name: "Cổng kết nối", valueText: "Đầu thu USB Logi Bolt + Bluetooth Low Energy (kết nối 3 thiết bị)" },
     ],
     tagSlugs: ["thiet-ke-cong-thai-hoc", "ban-chay-nhat", "hot-deal"],
@@ -1056,7 +1063,7 @@ const productsData = [
     name: "Bàn phím không dây Logitech MX Keys S",
     slug: "ban-phim-logitech-mx-keys-s",
     sku: "LOGI-MXKEYS-S",
-    categoryKey: "accessories",
+    categoryKey: "peripheral",
     brandKey: "logitech",
     shortDescription: "Bàn phím phím lõm Perfect Stroke gõ êm mượt, đèn nền tự động sáng Smart Illumination và Smart Actions.",
     description: "Logitech MX Keys S mang lại trải nghiệm gõ phím chuẩn xác và thanh thoát. Phím lõm theo đầu ngón tay, đèn nền tự động cảm biến khoảng cách tay, phím macro thông minh Smart Actions tự động hóa chuỗi thao tác phức tạp chỉ bằng 1 nút nhấn.",
@@ -1086,7 +1093,9 @@ const productsData = [
     specifications: [
       { key: "panelType", name: "Tấm nền / Loại switch", valueText: "Cơ chế kéo cắt Perfect Stroke phím lõm hình cầu" },
       { key: "resolution", name: "Độ phân giải / DPI", valueText: "Không áp dụng" },
-      { key: "refreshRate", name: "Tần số quét", valueText: "Kết nối nhanh qua Logi Bolt / Bluetooth" },
+      { key: "refreshRate", name: "Tần số phản hồi", valueText: "125 Hz qua Logi Bolt / Bluetooth", valueNumber: 125 },
+      { key: "weight", name: "Trọng lượng", valueText: "810 g", valueNumber: 810 },
+      { key: "batteryLife", name: "Thời lượng pin", valueText: "10 ngày khi bật đèn nền, 5 tháng khi tắt", valueNumber: 10 },
       { key: "connectivity", name: "Cổng kết nối", valueText: "USB-C sạc nhanh, kết nối 3 thiết bị Easy-Switch" },
     ],
     tagSlugs: ["thiet-ke-cong-thai-hoc", "van-phong-hoc-tap"],
@@ -1097,7 +1106,7 @@ const productsData = [
     name: "Màn hình Gaming LG UltraGear 27GR95QE-B (27 inch 2K OLED 240Hz 0.03ms)",
     slug: "man-hinh-lg-ultragear-27gr95qe-oled-240hz",
     sku: "LG-27GR95QE",
-    categoryKey: "accessories",
+    categoryKey: "monitor",
     brandKey: "lg",
     shortDescription: "Màn hình gaming OLED đỉnh cao 240Hz tốc độ phản hồi 0.03ms, tương thích G-SYNC và FreeSync Premium.",
     description: "LG UltraGear 27GR95QE-B đem lại trải nghiệm chơi game esports không độ trễ. Tấm nền OLED tự phát sáng với độ tương phản 1.500.000:1, thời gian phản hồi siêu tốc 0.03ms (GtG) và độ phủ màu 98.5% DCI-P3 chân thực đến từng chi tiết.",
@@ -1128,6 +1137,8 @@ const productsData = [
       { key: "panelType", name: "Tấm nền / Loại switch", valueText: "OLED tự phát sáng (Anti-Glare / Low Reflection)" },
       { key: "resolution", name: "Độ phân giải / DPI", valueText: "QHD 2K (2560 x 1440), 98.5% DCI-P3" },
       { key: "refreshRate", name: "Tần số quét", valueText: "240Hz, phản hồi 0.03ms (GtG)", valueNumber: 240 },
+      { key: "screenSize", name: "Kích thước màn hình", valueText: "27 inch (tỉ lệ 16:9)", valueNumber: 27 },
+      { key: "brightness", name: "Độ sáng tối đa", valueText: "1000 nits đỉnh HDR, 200 nits SDR toàn màn", valueNumber: 1000 },
       { key: "connectivity", name: "Cổng kết nối", valueText: "2x HDMI 2.1, 1x DisplayPort 1.4, 2x USB 3.0, Jack tai nghe 4 cực DTS HP:X" },
     ],
     tagSlugs: ["gaming-cao-cap", "flagship-dinh-cao", "hot-deal"],
@@ -1138,7 +1149,7 @@ const productsData = [
     name: "Màn hình đồ họa Dell UltraSharp U2724D (27 inch 2K IPS Black 120Hz)",
     slug: "man-hinh-dell-ultrasharp-u2724d-27-inch-2k",
     sku: "DELL-U2724D",
-    categoryKey: "accessories",
+    categoryKey: "monitor",
     brandKey: "dell",
     shortDescription: "Màn hình chuẩn màu đồ họa công nghệ IPS Black tương phản 2000:1, tần số quét 120Hz và cảm biến ánh sáng tự động.",
     description: "Dell UltraSharp U2724D là tiêu chuẩn vàng cho các nhà thiết kế đồ họa, nhiếp ảnh gia và coder. Tấm nền IPS Black cho màu đen sâu hơn 41%, Delta E < 2 chuẩn màu nhà máy, chân đế công thái học xoay 90 độ linh hoạt.",
@@ -1169,6 +1180,8 @@ const productsData = [
       { key: "panelType", name: "Tấm nền / Loại switch", valueText: "IPS Black (Độ tương phản 2000:1)" },
       { key: "resolution", name: "Độ phân giải / DPI", valueText: "QHD (2560 x 1440), 100% sRGB, 98% Display P3" },
       { key: "refreshRate", name: "Tần số quét", valueText: "120Hz mượt mà", valueNumber: 120 },
+      { key: "screenSize", name: "Kích thước màn hình", valueText: "27 inch (tỉ lệ 16:9)", valueNumber: 27 },
+      { key: "brightness", name: "Độ sáng tối đa", valueText: "350 nits, có cảm biến ánh sáng môi trường", valueNumber: 350 },
       { key: "connectivity", name: "Cổng kết nối", valueText: "DisplayPort 1.4 (in/out nối chuỗi), HDMI, USB-C upstream, 3x USB-A 10Gbps" },
     ],
     tagSlugs: ["van-phong-hoc-tap", "ban-chay-nhat"],
@@ -1182,8 +1195,8 @@ const productsData = [
     name: "Củ sạc nhanh Anker Prime 100W GaN 3 Cổng (2C1A)",
     slug: "cu-sac-nhanh-anker-prime-100w-gan",
     sku: "ANKER-PRIME-100W",
-    categoryKey: "accessories",
-    brandKey: "xiaomi", // Brand placeholder
+    categoryKey: "charging",
+    brandKey: "anker",
     shortDescription: "Củ sạc siêu nhỏ gọn công suất 100W GaNPrime sạc cùng lúc MacBook, iPhone và iPad.",
     description: "Anker Prime 100W GaN sở hữu công nghệ tản nhiệt ActiveShield 2.0 đo nhiệt độ 3 triệu lần mỗi ngày. Kích thước nhỏ hơn 43% so với củ sạc 96W thông thường của Apple.",
     basePrice: 1690000,
@@ -1210,6 +1223,8 @@ const productsData = [
       },
     ],
     specifications: [
+      { key: "power", name: "Công suất tối đa", valueText: "100W tổng, chia động theo thiết bị đang cắm", valueNumber: 100 },
+      { key: "portCount", name: "Số cổng", valueText: "3 cổng (2 USB-C + 1 USB-A)", valueNumber: 3 },
       { key: "connectivity", name: "Cổng kết nối", valueText: "2x USB-C (Max 100W), 1x USB-A (Max 22.5W)" },
     ],
     tagSlugs: ["hot-deal"],
@@ -1296,7 +1311,7 @@ const productsData = [
     name: "Loa Marshall Stanmore II (Dòng Cũ Đã Ngưng Kinh Doanh)",
     slug: "loa-marshall-stanmore-ii-ngung-kinh-doanh",
     sku: "MARSHALL-STAN2-OLD",
-    categoryKey: "audio",
+    categoryKey: "speaker",
     brandKey: "marshall",
     shortDescription: "Sản phẩm thế hệ cũ đã ngưng phân phối chính hãng.",
     description: "Marshall Stanmore II đời cũ được lưu trữ trên hệ thống để tra cứu bảo hành.",
@@ -1328,4 +1343,24 @@ const productsData = [
   },
 ];
 
-module.exports = productsData;
+// Catalogue mở rộng: 175 sản phẩm nữa, nâng tổng lên 202.
+//
+// Hai nguồn cố ý khác nhau về cách viết. Danh sách phía trên viết tay từng bản
+// ghi, gồm cả bốn ca biên (DRAFT, INACTIVE, OUT_OF_STOCK, tồn kho thấp) mà
+// `orders.data.js` và `reviews.data.js` tham chiếu tới theo `key` — đừng đổi
+// khoá của chúng. Phần dưới sinh từ bảng dòng sản phẩm trong `catalog/`, nơi chỉ
+// khai dữ liệu thật rồi để `buildFamilyProducts` lo phần khuôn mẫu.
+//
+// Lý do phải nới: 24 sản phẩm ACTIVE là quá ít để lõi đề tài hiện ra. K=10 của
+// rail gợi ý khi đó chiếm 42% kho hàng nên mọi thước đo đều bão hoà, và một câu
+// hỏi tư vấn tầm giá phổ biến chỉ tìm được đúng hai ứng viên.
+const catalogFamilies = require("./catalog");
+const { buildFamilyProducts } = require("./buildFamilyProducts");
+const { assertValid } = require("./catalog/validate");
+
+const allProducts = [...productsData, ...buildFamilyProducts(catalogFamilies)];
+
+// Ném lỗi ngay khi nạp module, trước khi seeder kịp chạm vào cơ sở dữ liệu.
+assertValid(catalogFamilies, allProducts);
+
+module.exports = allProducts;

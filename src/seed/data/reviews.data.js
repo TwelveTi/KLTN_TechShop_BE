@@ -1011,4 +1011,13 @@ const reviewsData = [
   },
 ];
 
-module.exports = reviewsData;
+// Đánh giá cho 175 sản phẩm của catalogue mở rộng, sinh từ cùng bảng dòng sản
+// phẩm mà `buildFamilyProducts` dùng.
+//
+// Hai ràng buộc ghi ở đầu tệp này được bộ sinh giữ nguyên: mỗi sản phẩm có 3-4
+// bài APPROVED, và bài cuối luôn là 2-3 sao để `findRepresentativeReviews` còn
+// có cái đưa vào phần nhược điểm. Chi tiết ở `buildFamilyReviews.js`.
+const catalogFamilies = require("./catalog");
+const { buildFamilyReviews } = require("./buildFamilyReviews");
+
+module.exports = [...reviewsData, ...buildFamilyReviews(catalogFamilies)];
