@@ -4,9 +4,19 @@ const adminRepository = require("../repositories/adminRepository");
 
 // Admin management of the catalog taxonomy. User management moved to
 // userService, which serves both admins and the users themselves.
+// Gắn số sản phẩm (mọi trạng thái) vào từng dòng, để admin thấy danh mục/hãng nào còn hàng trước khi xoá.
+const withProductCount = (rows, counts, key) => {
+  const totals = new Map(counts.map((row) => [row[key], Number(row.total)]));
+  return rows.map((row) => ({ ...row.get({ plain: true }), productCount: totals.get(row.id) || 0 }));
+};
+
 class AdminService {
   async getAllCategories() {
-    return adminRepository.findAllCategories();
+    const [categories, counts] = await Promise.all([
+      adminRepository.findAllCategories(),
+      adminRepository.countProductsByCategory(),
+    ]);
+    return withProductCount(categories, counts, "categoryId");
   }
 
   async buildUniqueCategorySlug(name, currentCategoryId = null, requestedSlug = null) {
@@ -80,7 +90,11 @@ class AdminService {
   }
 
   async getAllBrands() {
-    return adminRepository.findAllBrands();
+    const [brands, counts] = await Promise.all([
+      adminRepository.findAllBrands(),
+      adminRepository.countProductsByBrand(),
+    ]);
+    return withProductCount(brands, counts, "brandId");
   }
 
   async createBrand(data) {

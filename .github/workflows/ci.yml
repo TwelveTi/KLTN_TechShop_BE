@@ -59,6 +59,24 @@ jobs:
     name: 3 · Test
     needs: build
     runs-on: ubuntu-latest
+    # Test API (tests/api) chạy trên MySQL thật; mỗi file tự tạo DB `*_test` riêng.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ci-root
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -67,7 +85,7 @@ jobs:
           cache: npm
       - run: npm ci
 
-      # Bộ test không cần database: toàn bộ là logic chấm điểm và truy hồi thuần.
+      # Unit test logic chấm điểm/truy hồi + test API auth và đặt hàng.
       - run: npm test
 
   security:
@@ -84,11 +102,13 @@ jobs:
 
       # Chặn ở mức high. Hai lỗi moderate còn lại thuộc uuid qua sequelize, muốn
       # vá phải hạ sequelize về v3 nên cố ý không vá — xem README 10.4.
+      # `--omit=dev` khớp với image (Dockerfile cài --omit=dev): nodemon không lên
+      # production, mà braces trong nodemon chưa có bản vá.
       - name: npm audit
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Trivy quét mã nguồn và phụ thuộc
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -109,7 +129,7 @@ jobs:
       # Quét chính image sẽ chạy trên môi trường công khai, không chỉ quét mã nguồn.
       # `ignore-unfixed` để chỉ chặn ở những lỗ hổng thật sự vá được.
       - name: Trivy quét image
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: techshop-be:${{ github.sha }}
           severity: HIGH,CRITICAL

@@ -385,9 +385,23 @@ const SHIFT_MS = Date.now() - 24 * 60 * 60 * 1000 - NEWEST_AUTHORED;
 
 const shift = (date) => (date ? new Date(date.getTime() + SHIFT_MS) : date);
 
-module.exports = ordersData.map((order) => ({
-  ...order,
-  createdAt: shift(order.createdAt),
-  paidAt: shift(order.paidAt),
-  cancelledAt: shift(order.cancelledAt),
-}));
+// Mã đơn mang ngày tạo, nên phải sinh lại theo ngày đã dời, giữ số thứ tự cuối.
+const shiftOrderCode = (code, createdAt) => {
+  const datePart = [
+    createdAt.getFullYear(),
+    String(createdAt.getMonth() + 1).padStart(2, "0"),
+    String(createdAt.getDate()).padStart(2, "0"),
+  ].join("");
+  return `ORD-${datePart}-${code.split("-").pop()}`;
+};
+
+module.exports = ordersData.map((order) => {
+  const createdAt = shift(order.createdAt);
+  return {
+    ...order,
+    orderCode: shiftOrderCode(order.orderCode, createdAt),
+    createdAt,
+    paidAt: shift(order.paidAt),
+    cancelledAt: shift(order.cancelledAt),
+  };
+});

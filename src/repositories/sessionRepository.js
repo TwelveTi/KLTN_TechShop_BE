@@ -28,14 +28,16 @@ class SessionRepository {
     });
   }
 
+  // Thu hồi phiên = hết hạn ngay, để reuse-grace của refresh không cứu được nó.
   revoke(session, { transaction } = {}) {
-    return session.update({ revokedAt: new Date() }, { transaction });
+    const now = new Date();
+    return session.update({ revokedAt: now, expiresAt: now }, { transaction });
   }
 
   async revokeOthers(userId, currentTokenHash, { transaction } = {}) {
     const now = new Date();
     const [revokedCount] = await db.RefreshToken.update(
-      { revokedAt: now },
+      { revokedAt: now, expiresAt: now },
       {
         where: {
           ...this.activeWhere(userId, now),

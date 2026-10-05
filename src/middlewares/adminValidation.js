@@ -136,8 +136,10 @@ const validateImages = (images, errors, required = false) => {
       errors.push(`Image ${index + 1} url is required`);
     }
 
-    if (!image.publicId) {
-      errors.push(`Image ${index + 1} public id is required`);
+    // publicId để trống là hợp lệ: ảnh seed là URL ngoài, không nằm trên Cloudinary.
+    // Bắt buộc nó thì admin không lưu lại được bất kỳ sản phẩm seed nào.
+    if (image.publicId === "") {
+      image.publicId = null;
     }
   });
 };

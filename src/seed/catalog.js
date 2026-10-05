@@ -9,6 +9,7 @@ const { seedCartAndWishlist } = require("./seeders/cartWishlistSeeder");
 const { seedOrders } = require("./seeders/orderSeeder");
 const { seedReviews } = require("./seeders/reviewSeeder");
 const { seedBehaviors, buildPreferenceProfiles } = require("./seeders/behaviorSeeder");
+const { seedDiscounts } = require("./seeders/discountSeeder");
 
 /**
  * Runner for the modular catalogue seed under `src/seed/seeders/`.
@@ -30,6 +31,7 @@ const { seedBehaviors, buildPreferenceProfiles } = require("./seeders/behaviorSe
 async function seedAll() {
   return db.sequelize.transaction(async (transaction) => {
     const userMap = await seedUsers(transaction);
+    await seedDiscounts(transaction);
     const taxonomies = await seedTaxonomy(transaction);
     const { productMap, variantMap } = await seedProducts(taxonomies, transaction);
     await seedCartAndWishlist(userMap, productMap, variantMap, transaction);
@@ -103,6 +105,7 @@ async function main() {
     product_variants: db.ProductVariant,
     specification_definitions: db.SpecificationDefinition,
     product_specifications: db.ProductSpecification,
+    discounts: db.Discount,
     orders: db.Order,
     order_items: db.OrderItem,
     reviews: db.Review,

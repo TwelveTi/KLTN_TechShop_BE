@@ -42,8 +42,8 @@ class ReviewService {
       rating: review.rating,
       title: review.title,
       content: review.content,
-      // Verified purchase is proven solely by a linked order item. Orders do
-      // not exist yet, so this is always false until that link is populated.
+      // Verified purchase is proven solely by a linked order item, set at
+      // creation when the user has a DELIVERED order containing the product.
       verifiedPurchase: Boolean(review.orderItemId),
       createdAt: review.createdAt,
       updatedAt: review.updatedAt,
@@ -141,19 +141,22 @@ class ReviewService {
       // from the request body.
       await this.assertReviewableProduct(productId, transaction);
 
-      // One active review per user per product (order_item_id is NULL for now,
-      // so the DB unique index cannot enforce this; do it at the app level).
+      // One active review per user per product. order_item_id may be NULL, so
+      // the DB unique index cannot enforce this; do it at the app level.
       const existing = await reviewRepository.findExisting(userId, productId, { transaction });
 
       if (existing) {
         throw new AppError("You have already reviewed this product", 409);
       }
 
+      // Ai cũng review được; đã nhận hàng thì gắn dòng hàng để hiện nhãn "Verified purchase".
+      const deliveredItem = await reviewRepository.findDeliveredOrderItem(userId, productId, { transaction });
+
       const review = await reviewRepository.create(
         {
           userId,
           productId,
-          orderItemId: null,
+          orderItemId: deliveredItem ? deliveredItem.id : null,
           rating: data.rating,
           title: data.title ?? null,
           content: data.content ?? null,

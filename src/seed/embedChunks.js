@@ -214,12 +214,26 @@ async function run() {
     process.exit(0);
   }
 
-  console.log("\nTruncating document_chunks...");
-  await db.DocumentChunk.destroy({ where: {}, truncate: true });
+  // `--resume`: không truncate, chỉ embed chunk chưa có trong bảng. Dùng khi lượt
+  // trước dừng giữa chừng vì hết hạn mức embedding của free tier.
+  let pending = allChunks;
+  if (process.argv.includes("--resume")) {
+    const keyOf = (c) => `${c.sourceType}|${c.sourceId || c.sourceName}|${c.chunkIndex}`;
+    const existing = await db.DocumentChunk.findAll({
+      attributes: ["sourceType", "sourceId", "sourceName", "chunkIndex"],
+      raw: true,
+    });
+    const done = new Set(existing.map(keyOf));
+    pending = allChunks.filter((c) => !done.has(keyOf(c)));
+    console.log(`\nResume: ${done.size} chunks already embedded, ${pending.length} left.`);
+  } else {
+    console.log("\nTruncating document_chunks...");
+    await db.DocumentChunk.destroy({ where: {}, truncate: true });
+  }
 
   console.log(`Embedding in batches of ${BATCH_SIZE}...`);
-  for (let i = 0; i < allChunks.length; i += BATCH_SIZE) {
-    const batch = allChunks.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < pending.length; i += BATCH_SIZE) {
+    const batch = pending.slice(i, i + BATCH_SIZE);
     const texts = batch.map((c) => c.content);
 
     const embeddings = await embedBatch(texts);
@@ -233,7 +247,7 @@ async function run() {
     await db.DocumentChunk.bulkCreate(rows);
     console.log(`  Batch ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.length} chunks embedded`);
 
-    if (i + BATCH_SIZE < allChunks.length) {
+    if (i + BATCH_SIZE < pending.length) {
       await sleep(BATCH_DELAY_MS);
     }
   }

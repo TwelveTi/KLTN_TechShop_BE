@@ -64,6 +64,16 @@ class ReviewRepository {
     });
   }
 
+  // Dòng hàng gần nhất của sản phẩm này trong một đơn ĐÃ GIAO của chính người dùng.
+  findDeliveredOrderItem(userId, productId, { transaction } = {}) {
+    return db.OrderItem.findOne({
+      where: { productId },
+      include: [{ model: db.Order, as: "order", attributes: [], where: { userId, status: "DELIVERED" } }],
+      order: [["createdAt", "DESC"]],
+      transaction,
+    });
+  }
+
   findExisting(userId, productId, { transaction } = {}) {
     return db.Review.findOne({ where: { userId, productId }, transaction });
   }

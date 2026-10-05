@@ -64,9 +64,12 @@ class AuthRepository {
     return db.RefreshToken.create(data, { transaction });
   }
 
+  // Logout cũng cho token hết hạn ngay, như passwordRepository, để reuse-grace
+  // của refresh không xoay được token vừa đăng xuất.
   async revokeByTokenHash(tokenHash, { transaction } = {}) {
+    const now = new Date();
     const [count] = await db.RefreshToken.update(
-      { revokedAt: new Date() },
+      { revokedAt: now, expiresAt: now },
       { where: { tokenHash, revokedAt: null }, transaction },
     );
     return count;

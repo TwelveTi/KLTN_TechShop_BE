@@ -1,5 +1,12 @@
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const db = require("../models");
+
+// Giá khách thực trả, cùng luật với pricing.resolveUnitPrice và thẻ sản phẩm ở FE:
+// giá sale chỉ tính khi > 0 và nhỏ hơn giá gốc. Lọc và sắp xếp theo giá đều dùng nó.
+const EFFECTIVE_PRICE = Sequelize.literal(
+  "(CASE WHEN `Product`.`sale_price` > 0 AND `Product`.`sale_price` < `Product`.`base_price` " +
+    "THEN `Product`.`sale_price` ELSE `Product`.`base_price` END)",
+);
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const NO_MATCH_ID = "00000000-0000-0000-0000-000000000000";
@@ -35,8 +42,10 @@ class ProductRepository {
   buildOrder(sort) {
     const sortMap = {
       newest: [["createdAt", "DESC"]],
-      priceAsc: [["basePrice", "ASC"]],
-      priceDesc: [["basePrice", "DESC"]],
+      // Sắp theo tên cột `effectivePrice` chọn sẵn ở findAndCountProducts, vì khi
+      // phân trang kèm include, Sequelize bọc truy vấn vào subquery và tên cột gốc mất đi.
+      priceAsc: [[Sequelize.literal("effectivePrice"), "ASC"]],
+      priceDesc: [[Sequelize.literal("effectivePrice"), "DESC"]],
       bestSelling: [["soldCount", "DESC"]],
       rating: [["averageRating", "DESC"]],
     };
@@ -170,14 +179,15 @@ class ProductRepository {
       where.name = { [Op.like]: `%${query.keyword.trim()}%` };
     }
 
-    if (query.minPrice || query.maxPrice) {
-      where.basePrice = {};
-      if (query.minPrice) {
-        where.basePrice[Op.gte] = Number(query.minPrice);
-      }
-      if (query.maxPrice) {
-        where.basePrice[Op.lte] = Number(query.maxPrice);
-      }
+    const priceConditions = [];
+    if (Number(query.minPrice) > 0) {
+      priceConditions.push(Sequelize.where(EFFECTIVE_PRICE, Op.gte, Number(query.minPrice)));
+    }
+    if (Number(query.maxPrice) > 0) {
+      priceConditions.push(Sequelize.where(EFFECTIVE_PRICE, Op.lte, Number(query.maxPrice)));
+    }
+    if (priceConditions.length > 0) {
+      where[Op.and] = priceConditions;
     }
 
     if (query.inStock === true || query.inStock === "true" || query.inStock === "1" || query.inStock === 1) {
@@ -201,6 +211,7 @@ class ProductRepository {
 
     const { rows, count } = await db.Product.findAndCountAll({
       where,
+      attributes: { include: [[EFFECTIVE_PRICE, "effectivePrice"]] },
       include: [
         { model: db.Category, as: "category" },
         { model: db.Brand, as: "brand" },

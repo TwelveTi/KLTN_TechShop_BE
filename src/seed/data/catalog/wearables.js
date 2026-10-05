@@ -15,7 +15,7 @@ const wearables = [
     specs: {
       caseSize: [45, "45mm khung nhôm"], screenType: "LTPO OLED luôn hiển thị, sáng tối đa 2000 nits",
       batteryLife: [18, "18 giờ dùng thường, 36 giờ ở chế độ tiết kiệm pin"],
-      waterResistance: "Chống nước 50m (5 ATM), bơi hồ và tắm biển được",
+      waterResistance: "50m (5 ATM), bơi hồ và tắm biển được",
       healthFeatures: "Nhịp tim, điện tâm đồ ECG, nồng độ oxy máu SpO2, nhiệt độ cổ tay, phát hiện té ngã và tai nạn",
     },
     variants: [{ label: "45mm GPS - Đen Midnight", attrs: { Color: "Midnight", Size: "45mm", Connectivity: "GPS" } },
@@ -29,7 +29,7 @@ const wearables = [
     specs: {
       caseSize: [40, "40mm khung nhôm"], screenType: "Retina OLED, sáng tối đa 1000 nits",
       batteryLife: [18, "18 giờ dùng thường"],
-      waterResistance: "Chống nước 50m (5 ATM), bơi hồ được",
+      waterResistance: "50m (5 ATM), bơi hồ được",
       healthFeatures: "Nhịp tim, phát hiện té ngã và tai nạn, theo dõi giấc ngủ",
     },
     variants: [{ label: "40mm GPS - Đen Midnight", attrs: { Color: "Midnight", Size: "40mm", Connectivity: "GPS" } },
@@ -43,7 +43,7 @@ const wearables = [
     specs: {
       caseSize: [44, "44mm khung nhôm"], screenType: "Super AMOLED luôn hiển thị, sáng tối đa 2000 nits",
       batteryLife: [40, "40 giờ khi tắt màn luôn hiển thị"],
-      waterResistance: "Chống nước 50m (5 ATM) và đạt chuẩn quân đội MIL-STD-810H",
+      waterResistance: "50m (5 ATM) và đạt chuẩn quân đội MIL-STD-810H",
       healthFeatures: "Nhịp tim, ECG, SpO2, thành phần cơ thể BIA, chỉ số AGEs, theo dõi giấc ngủ nâng cao",
     },
     variants: [{ label: "44mm Bluetooth - Xanh", attrs: { Color: "Green", Size: "44mm", Connectivity: "Bluetooth" } },
@@ -57,7 +57,7 @@ const wearables = [
     specs: {
       caseSize: [40, "40mm khung nhôm"], screenType: "Super AMOLED, sáng tối đa 1000 nits",
       batteryLife: [40, "40 giờ khi tắt màn luôn hiển thị"],
-      waterResistance: "Chống nước 50m (5 ATM) và đạt chuẩn quân đội MIL-STD-810H",
+      waterResistance: "50m (5 ATM) và đạt chuẩn quân đội MIL-STD-810H",
       healthFeatures: "Nhịp tim, ECG, SpO2, theo dõi giấc ngủ và cảnh báo ngã",
     },
     variants: [{ label: "40mm - Đen", attrs: { Color: "Black", Size: "40mm", Connectivity: "Bluetooth" } },
@@ -71,7 +71,7 @@ const wearables = [
     specs: {
       caseSize: [46, "46mm khung polymer sợi gia cường"], screenType: "AMOLED cảm ứng, có chế độ luôn hiển thị",
       batteryLife: [312, "13 ngày chế độ đồng hồ (312 giờ), 20 giờ khi bật GPS liên tục"],
-      waterResistance: "Chống nước 50m (5 ATM), bơi hồ và bơi biển",
+      waterResistance: "50m (5 ATM), bơi hồ và bơi biển",
       healthFeatures: "Nhịp tim, SpO2, biến thiên nhịp tim HRV, chỉ số Training Readiness và VO2 Max",
     },
     variants: [{ label: "46mm - Đen", attrs: { Color: "Black", Size: "46mm" } }],
@@ -84,7 +84,7 @@ const wearables = [
     specs: {
       caseSize: [45, "45mm khung polymer đạt chuẩn quân đội MIL-STD-810"], screenType: "MIP đơn sắc luôn hiển thị, đọc rõ dưới nắng gắt",
       batteryLife: [672, "28 ngày chế độ đồng hồ (672 giờ), 30 giờ khi bật GPS"],
-      waterResistance: "Chống nước 100m (10 ATM), lặn ống thở được",
+      waterResistance: "100m (10 ATM), lặn ống thở được",
       healthFeatures: "Nhịp tim, SpO2, theo dõi giấc ngủ, chỉ số căng thẳng và Body Battery",
     },
     variants: [{ label: "45mm - Xám Graphite", attrs: { Color: "Graphite", Size: "45mm" } },
@@ -98,7 +98,7 @@ const wearables = [
     specs: {
       caseSize: [46, "46mm khung thép không gỉ"], screenType: "AMOLED cảm ứng 466x466, có chế độ luôn hiển thị",
       batteryLife: [336, "14 ngày dùng thường (336 giờ), 7 ngày khi bật hết cảm biến"],
-      waterResistance: "Chống nước 50m (5 ATM), có chế độ bơi hồ và bơi biển",
+      waterResistance: "50m (5 ATM), có chế độ bơi hồ và bơi biển",
       healthFeatures: "Nhịp tim TruSeen 5.5, SpO2, theo dõi giấc ngủ TruSleep, đo căng thẳng và chu kỳ kinh nguyệt",
     },
     variants: [{ label: "46mm - Đen", attrs: { Color: "Black", Size: "46mm" } },
@@ -112,7 +112,7 @@ const wearables = [
     specs: {
       caseSize: [43, "43mm khung nhôm siêu nhẹ 26g"], screenType: "AMOLED 1.82 inch, sáng tối đa 1500 nits",
       batteryLife: [240, "10 ngày dùng thường (240 giờ)"],
-      waterResistance: "Chống nước 50m (5 ATM)",
+      waterResistance: "50m (5 ATM)",
       healthFeatures: "Nhịp tim, SpO2, theo dõi giấc ngủ và đo mức căng thẳng",
     },
     variants: [{ label: "Xanh Mint", attrs: { Color: "Mint Green" } }, { label: "Xám", attrs: { Color: "Gray" } }],
@@ -125,7 +125,7 @@ const wearables = [
     specs: {
       caseSize: [47, "47mm khung thép không gỉ, bezel thay được"], screenType: "AMOLED 1.43 inch, sáng tối đa 600 nits",
       batteryLife: [360, "15 ngày chế độ cơ bản (360 giờ), 5 ngày khi bật hết tính năng"],
-      waterResistance: "Chống nước 50m (5 ATM)",
+      waterResistance: "50m (5 ATM)",
       healthFeatures: "Nhịp tim, SpO2, theo dõi giấc ngủ và đo mức căng thẳng",
     },
     variants: [{ label: "47mm - Bạc", attrs: { Color: "Silver", Size: "47mm" } }, { label: "47mm - Đen", attrs: { Color: "Black", Size: "47mm" } }],
@@ -138,7 +138,7 @@ const wearables = [
     specs: {
       caseSize: [46, "46mm thân nhựa siêu nhẹ 15.8g"], screenType: "AMOLED 1.62 inch, sáng tối đa 1200 nits",
       batteryLife: [504, "21 ngày dùng thường (504 giờ)"],
-      waterResistance: "Chống nước 50m (5 ATM)",
+      waterResistance: "50m (5 ATM)",
       healthFeatures: "Nhịp tim, SpO2, theo dõi giấc ngủ và ghi lại 150 chế độ tập",
     },
     variants: [{ label: "Đen", attrs: { Color: "Black" } }, { label: "Trắng Sứ", attrs: { Color: "Porcelain" } }],
@@ -151,7 +151,7 @@ const wearables = [
     specs: {
       caseSize: [49, "49mm khung titan cấp hàng không"], screenType: "LTPO OLED luôn hiển thị, sáng tối đa 3000 nits",
       batteryLife: [36, "36 giờ dùng thường, 72 giờ ở chế độ tiết kiệm pin"],
-      waterResistance: "Chống nước 100m (10 ATM), đạt chuẩn EN13319 cho lặn tới 40m",
+      waterResistance: "100m (10 ATM), đạt chuẩn EN13319 cho lặn tới 40m",
       healthFeatures: "Nhịp tim, ECG, SpO2, nhiệt độ cổ tay, GPS hai băng tần, còi báo động 86dB",
     },
     variants: [{ label: "49mm Titan - Dây Ocean Xanh", attrs: { Color: "Titanium", Size: "49mm", Connectivity: "GPS + Cellular" } }],
@@ -164,7 +164,7 @@ const wearables = [
     specs: {
       caseSize: [45, "45mm viền nhôm"], screenType: "AMOLED 1.4 inch cảm ứng, có chế độ luôn hiển thị",
       batteryLife: [336, "14 ngày chế độ đồng hồ (336 giờ), 26 giờ khi bật GPS"],
-      waterResistance: "Chống nước 50m (5 ATM)",
+      waterResistance: "50m (5 ATM)",
       healthFeatures: "Nhịp tim, SpO2, HRV, Body Battery, điểm giấc ngủ và huấn luyện thở",
     },
     variants: [{ label: "45mm - Đen Slate", attrs: { Color: "Slate", Size: "45mm" } }],

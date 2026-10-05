@@ -92,11 +92,20 @@ async function loadChunks() {
     try {
       const db = require("../models");
       const rows = await db.DocumentChunk.findAll({
-        attributes: ["id", "sourceType", "sourceId", "sourceName", "chunkIndex", "content", "embedding"],
+        attributes: ["id", "sourceType", "sourceId", "sourceName", "chunkIndex", "content", "embedding", "embeddingModel"],
         raw: true,
       });
 
-      chunks = rows.map((row) => ({
+      // Chỉ giữ chunk sinh bằng đúng model mã hoá câu hỏi: vector hai model khác nhau so cosine là vô nghĩa.
+      const usable = rows.filter((row) => row.embeddingModel === EMBEDDING_MODEL);
+      if (usable.length < rows.length) {
+        logger.warn(
+          `RAG: skipped ${rows.length - usable.length} chunks embedded with another model; run \`npm run embed\``,
+          { expectedModel: EMBEDDING_MODEL },
+        );
+      }
+
+      chunks = usable.map((row) => ({
         id: row.id,
         sourceType: row.sourceType,
         sourceId: row.sourceId,

@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op, fn, col } = require("sequelize");
 const db = require("../models");
 
 // Data-access for admin management of categories and brands. Users are owned by
@@ -65,6 +65,23 @@ class AdminRepository {
 
   destroyBrand(brand) {
     return brand.destroy();
+  }
+
+  // ---- Đếm sản phẩm, mọi trạng thái, một GROUP BY cho mỗi bảng ----
+  countProductsByCategory() {
+    return db.Product.findAll({
+      attributes: ["categoryId", [fn("COUNT", col("id")), "total"]],
+      group: ["categoryId"],
+      raw: true,
+    });
+  }
+
+  countProductsByBrand() {
+    return db.Product.findAll({
+      attributes: ["brandId", [fn("COUNT", col("id")), "total"]],
+      group: ["brandId"],
+      raw: true,
+    });
   }
 }
 

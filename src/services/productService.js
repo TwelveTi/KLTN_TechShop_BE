@@ -460,8 +460,12 @@ class ProductService {
 
       await transaction.commit();
 
+      // Chỉ xoá trên Cloudinary ảnh đã bị bỏ khỏi danh sách; ảnh vẫn giữ thì phải để nguyên.
       if (uploadService) {
-        await uploadService.deleteMany(oldImages.map((image) => image.publicId));
+        const keptIds = new Set((data.images || []).map((image) => image.publicId).filter(Boolean));
+        await uploadService.deleteMany(
+          oldImages.map((image) => image.publicId).filter((publicId) => !keptIds.has(publicId)),
+        );
       }
 
       return this.getProductById(product.id);
