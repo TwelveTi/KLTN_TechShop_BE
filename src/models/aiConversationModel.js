@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       conversationType: {
-        type: DataTypes.ENUM("CUSTOMER_SUPPORT", "PRODUCT_ADVISOR", "PRODUCT_COMPARISON"),
+        type: DataTypes.ENUM("PRODUCT_ADVISOR", "PRODUCT_COMPARISON"),
         allowNull: false,
       },
       status: {

@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       },
       paymentMethod: {
-        type: DataTypes.ENUM("COD", "VNPAY", "MOMO", "STRIPE"),
+        type: DataTypes.ENUM("COD", "VNPAY"),
         allowNull: false,
       },
       amount: {

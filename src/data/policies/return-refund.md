@@ -24,7 +24,7 @@ Một số sản phẩm không thuộc diện đổi trả bao gồm phần mề
 
 ### Bước 1: Gửi yêu cầu
 
-Khách hàng đăng nhập tài khoản trên website TechShop, vào mục "Đơn hàng của tôi", chọn đơn hàng cần đổi trả và nhấn "Yêu cầu đổi trả". Khách hàng cần nêu rõ lý do và đính kèm hình ảnh hoặc video minh chứng nếu sản phẩm bị lỗi. Ngoài ra, khách hàng cũng có thể gọi hotline 1900 xxxx để nhân viên hỗ trợ tạo yêu cầu.
+Website chưa có chức năng gửi yêu cầu đổi trả trực tuyến. Khách hàng gọi hotline 1900 xxxx, gửi email đến hotro@techshop.vn hoặc đến showroom, cung cấp mã đơn hàng hiển thị trong mục "My orders", nêu rõ lý do và gửi kèm hình ảnh hoặc video minh chứng nếu sản phẩm bị lỗi. Nhân viên TechShop sẽ tạo yêu cầu đổi trả cho khách hàng.
 
 ### Bước 2: Xét duyệt
 
@@ -40,6 +40,4 @@ Sau khi nhận được sản phẩm, bộ phận kiểm tra sẽ xác nhận t�
 
 ## Chính sách hoàn tiền
 
-Hoàn tiền được xử lý theo phương thức thanh toán ban đầu của khách hàng. Đơn hàng thanh toán qua VNPay, thẻ tín dụng hoặc chuyển khoản ngân hàng sẽ được hoàn tiền trong vòng 5 đến 7 ngày làm việc kể từ ngày xác nhận. Đơn hàng thanh toán bằng tiền mặt (COD) sẽ được hoàn qua chuyển khoản ngân hàng trong vòng 3 đến 5 ngày làm việc, khách hàng cần cung cấp số tài khoản ngân hàng.
-
-Trong trường hợp khách hàng chọn nhận điểm thưởng thay vì hoàn tiền, TechShop sẽ cộng điểm tương ứng 110% giá trị hoàn tiền vào tài khoản thành viên. Điểm thưởng này có thể sử dụng cho các đơn hàng tiếp theo và có hiệu lực trong 12 tháng.
+Hoàn tiền được xử lý theo phương thức thanh toán ban đầu của khách hàng. Đơn hàng thanh toán qua VNPay sẽ được hoàn tiền về thẻ hoặc tài khoản đã dùng để thanh toán trong vòng 5 đến 7 ngày làm việc kể từ ngày xác nhận. Đơn hàng thanh toán bằng tiền mặt (COD) sẽ được hoàn qua chuyển khoản ngân hàng trong vòng 3 đến 5 ngày làm việc, khách hàng cần cung cấp số tài khoản ngân hàng.

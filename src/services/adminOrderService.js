@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const AppError = require("../utils/AppError");
 const adminOrderRepository = require("../repositories/adminOrderRepository");
+const discountService = require("./discountService");
 
 const ORDER_STATUSES = ["PENDING", "PAID", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED", "REFUNDED"];
 const PAYMENT_STATUSES = ["UNPAID", "PAID", "FAILED", "REFUNDED"];
@@ -80,7 +81,8 @@ class AdminOrderService {
     const transaction = await adminOrderRepository.beginTransaction();
 
     try {
-      const order = await adminOrderRepository.findOrderById(id, { transaction });
+      // Khoá dòng để admin và khách cùng huỷ một đơn không hoàn kho, nhả voucher hai lần.
+      const order = await adminOrderRepository.findOrderById(id, { transaction, lock: true });
 
       if (!order) {
         throw new AppError("Order not found", 404);
@@ -104,6 +106,8 @@ class AdminOrderService {
         // give it back — otherwise every cancelled order permanently shrinks
         // the sellable inventory.
         await this.restoreStock(order.id, transaction);
+        // Cùng thứ tự khoá với lúc khách tự huỷ: sản phẩm trước, voucher sau.
+        await discountService.releaseForOrder(order.id, transaction);
       }
       if (status === "PAID" && !order.paidAt) {
         updates.paidAt = new Date();

@@ -6,19 +6,17 @@ TechShop vận hành tổng đài hỗ trợ khách hàng qua số hotline 1900 
 
 Khi gọi đến tổng đài, khách hàng sẽ được hướng dẫn chọn phím theo nhu cầu. Phím 1 để tư vấn mua hàng và thông tin sản phẩm. Phím 2 để kiểm tra trạng thái đơn hàng và vận chuyển. Phím 3 để yêu cầu bảo hành và hỗ trợ kỹ thuật. Phím 4 để khiếu nại và góp ý dịch vụ. Phím 0 để gặp trực tiếp nhân viên tư vấn.
 
-Thành viên hạng Platinum được kết nối trực tiếp đến chuyên viên tư vấn riêng mà không cần chờ đợi trong hàng đợi.
-
 ## Hỗ trợ qua email
 
 Khách hàng có thể gửi email đến các địa chỉ chuyên biệt theo nhu cầu. Địa chỉ hotro@techshop.vn dành cho các yêu cầu hỗ trợ chung, thắc mắc về đơn hàng và tài khoản. Địa chỉ baohanh@techshop.vn dành cho các yêu cầu bảo hành và hỗ trợ kỹ thuật. Địa chỉ khieunai@techshop.vn dành cho các phản ánh, khiếu nại về chất lượng dịch vụ.
 
 TechShop cam kết phản hồi email trong vòng 4 giờ làm việc kể từ khi nhận được. Các email gửi ngoài giờ hành chính sẽ được xử lý vào buổi sáng ngày làm việc tiếp theo. Để được hỗ trợ nhanh nhất, khách hàng nên cung cấp đầy đủ mã đơn hàng, mô tả vấn đề chi tiết và đính kèm hình ảnh minh họa nếu có.
 
-## Live Chat trên website
+## Trợ lý AI trên website
 
-Tính năng live chat được tích hợp trực tiếp trên website TechShop, hoạt động từ 8:00 đến 22:00 hàng ngày. Khách hàng nhấn vào biểu tượng chat ở góc dưới bên phải màn hình để bắt đầu cuộc trò chuyện với nhân viên tư vấn. Thời gian chờ kết nối trung bình dưới 30 giây.
+Website TechShop có trợ lý AI hoạt động 24/7. Khách hàng mở trợ lý bằng nút "Ask the AI advisor" ở trang chủ, không cần đăng nhập. Trợ lý tư vấn chọn sản phẩm theo nhu cầu và ngân sách dựa trên sản phẩm đang bán và thông số thật trong cửa hàng, so sánh các sản phẩm khi khách hàng chọn chế độ "Compare products", và trả lời câu hỏi về chính sách bán hàng, vận chuyển, đổi trả và bảo hành kèm nguồn trích dẫn.
 
-Ngoài giờ hoạt động của live chat, hệ thống chatbot tự động sẽ hỗ trợ trả lời các câu hỏi phổ biến về sản phẩm, đơn hàng, chính sách bảo hành và vận chuyển. Nếu chatbot không thể giải đáp thỏa đáng, yêu cầu sẽ được ghi nhận và chuyển đến nhân viên xử lý trong giờ hành chính.
+Trợ lý AI không xem được thông tin đơn hàng hay tài khoản của khách hàng và không thay thế nhân viên. Các yêu cầu về đơn hàng, đổi trả, bảo hành hoặc khiếu nại, khách hàng vui lòng liên hệ tổng đài, email hoặc showroom. Website chưa có kênh trò chuyện trực tiếp với nhân viên.
 
 ## Hỗ trợ qua mạng xã hội
 

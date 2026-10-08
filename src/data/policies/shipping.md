@@ -2,17 +2,11 @@
 
 ## Phí vận chuyển
 
-TechShop miễn phí vận chuyển cho tất cả đơn hàng có giá trị từ 500.000 VND trở lên trên toàn quốc. Đối với đơn hàng dưới 500.000 VND, phí vận chuyển được tính theo bảng giá của đơn vị vận chuyển, dao động từ 15.000 VND đến 40.000 VND tùy khu vực.
+Khi đặt hàng trên website, TechShop áp dụng một hình thức giao hàng tiêu chuẩn với phí 30.000 VND cho mỗi đơn hàng trên toàn quốc. Đơn hàng có tổng giá trị sản phẩm từ 1.000.000 VND trở lên được miễn phí vận chuyển. Ngưỡng miễn phí được tính trên giá trị sản phẩm trước khi trừ mã giảm giá. Phí vận chuyển được hiển thị ở trang thanh toán trước khi khách hàng xác nhận đặt hàng.
 
-Khách hàng tại nội thành Hà Nội và TP. Hồ Chí Minh được miễn phí giao hàng cho mọi đơn hàng không giới hạn giá trị, áp dụng cho giao hàng tiêu chuẩn.
+Website hiện chưa có lựa chọn giao hàng nhanh trong ngày.
 
 ## Thời gian giao hàng
-
-### Giao hàng nhanh trong ngày
-
-Dịch vụ giao hàng trong ngày áp dụng cho đơn hàng đặt trước 14:00 tại nội thành Hà Nội và TP. Hồ Chí Minh. Sản phẩm sẽ được giao trong vòng 2 đến 4 giờ kể từ khi đơn hàng được xác nhận. Phí giao hàng nhanh là 30.000 VND, miễn phí cho đơn hàng từ 2.000.000 VND trở lên.
-
-### Giao hàng tiêu chuẩn
 
 Khu vực nội thành các thành phố lớn như Hà Nội, TP. Hồ Chí Minh, Đà Nẵng, Cần Thơ và Hải Phòng sẽ nhận hàng trong vòng 1 đến 2 ngày làm việc. Khu vực ngoại thành và các tỉnh lân cận thời gian giao hàng từ 2 đến 3 ngày làm việc. Các tỉnh miền Trung và khu vực xa trung tâm thời gian giao hàng từ 3 đến 5 ngày làm việc. Khu vực miền núi, hải đảo và vùng sâu vùng xa thời gian giao hàng có thể lên đến 5 đến 7 ngày làm việc.
 
@@ -20,13 +14,11 @@ Thời gian giao hàng được tính từ thời điểm đơn hàng được x
 
 ## Đơn vị vận chuyển
 
-TechShop hợp tác với các đơn vị vận chuyển uy tín bao gồm Giao Hàng Nhanh (GHN), Giao Hàng Tiết Kiệm (GHTK), Viettel Post và J&T Express. Đối với các sản phẩm giá trị cao trên 20.000.000 VND, TechShop sử dụng đội ngũ giao hàng riêng để đảm bảo an toàn tuyệt đối.
+TechShop hợp tác với các đơn vị vận chuyển uy tín bao gồm Giao Hàng Nhanh (GHN), Giao Hàng Tiết Kiệm (GHTK), Viettel Post và J&T Express. Đối với các sản phẩm giá trị cao trên 20.000.000 VND, TechShop sử dụng đội ngũ giao hàng riêng để đảm bảo an toàn.
 
 ## Theo dõi đơn hàng
 
-Sau khi đơn hàng được giao cho đơn vị vận chuyển, khách hàng sẽ nhận được mã vận đơn qua SMS và email. Khách hàng có thể theo dõi trạng thái đơn hàng trực tiếp trên website TechShop trong mục "Đơn hàng của tôi" hoặc trên ứng dụng của đơn vị vận chuyển.
-
-TechShop cập nhật trạng thái đơn hàng theo thời gian thực bao gồm các trạng thái: đã xác nhận, đang đóng gói, đã giao cho vận chuyển, đang vận chuyển, đang giao hàng và đã giao thành công.
+Khách hàng theo dõi đơn hàng trong mục "My orders" trên website. Mỗi đơn hàng hiển thị trạng thái hiện tại, lần lượt là chờ xác nhận, đã thanh toán, đang xử lý, đang giao hàng và đã giao. Đơn hàng cũng có thể ở trạng thái đã hủy hoặc đã hoàn tiền. Website không gửi mã vận đơn qua SMS hay email. Khách hàng cần thêm thông tin về hành trình giao hàng có thể liên hệ hotline 1900 xxxx kèm mã đơn hàng.
 
 ## Kiểm tra hàng khi nhận
 

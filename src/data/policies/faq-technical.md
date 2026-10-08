@@ -24,7 +24,7 @@ Nếu gặp khó khăn khi kích hoạt bảo hành, khách hàng liên hệ b�
 
 ### Kiểm tra thời hạn bảo hành
 
-Khách hàng có thể kiểm tra thời hạn bảo hành sản phẩm bất cứ lúc nào bằng cách đăng nhập tài khoản TechShop, vào mục "Sản phẩm của tôi". Hệ thống hiển thị ngày mua, thời hạn bảo hành và ngày hết hạn cho từng sản phẩm. Ngoài ra, TechShop sẽ gửi email nhắc nhở trước 30 ngày khi bảo hành sắp hết hạn để khách hàng cân nhắc mua gói bảo hành mở rộng.
+Thời hạn bảo hành được tính từ ngày mua hàng. Khách hàng xem ngày đặt của từng đơn hàng trong mục "My orders" trên website, rồi đối chiếu với thời hạn bảo hành của nhóm sản phẩm trong chính sách bảo hành. Website không có trang riêng hiển thị thời hạn bảo hành và không gửi email nhắc khi bảo hành sắp hết hạn. Để được xác nhận chính xác, khách hàng liên hệ baohanh@techshop.vn hoặc hotline 1900 xxxx kèm mã đơn hàng.
 
 ## Driver và phần mềm
 

@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       },
       provider: {
-        type: DataTypes.ENUM("LOCAL", "GOOGLE", "FACEBOOK"),
+        type: DataTypes.ENUM("LOCAL", "GOOGLE"),
         allowNull: false,
       },
       providerUserId: {
@@ -54,7 +54,7 @@ module.exports = (sequelize, DataTypes) => {
           if (this.provider === "LOCAL" && !this.passwordHash) {
             throw new Error("LOCAL provider requires passwordHash");
           }
-          if (["GOOGLE", "FACEBOOK"].includes(this.provider) && !this.providerUserId) {
+          if (this.provider === "GOOGLE" && !this.providerUserId) {
             throw new Error("OAuth provider requires providerUserId");
           }
         },

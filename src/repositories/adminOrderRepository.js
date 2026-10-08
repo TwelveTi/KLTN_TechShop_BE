@@ -90,8 +90,11 @@ class AdminOrderRepository {
     });
   }
 
-  findOrderById(id, { transaction } = {}) {
-    return db.Order.findByPk(id, { transaction });
+  findOrderById(id, { transaction, lock } = {}) {
+    return db.Order.findByPk(id, {
+      transaction,
+      ...(lock ? { lock: transaction.LOCK.UPDATE } : {}),
+    });
   }
 
   updateOrder(order, updates, { transaction } = {}) {
