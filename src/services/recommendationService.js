@@ -787,6 +787,17 @@ class RecommendationService {
       throw new AppError("Product not found", 404);
     }
 
+    limit = Number(limit) || DEFAULT_LIMIT;
+    const canPersist = persist && Boolean(userId || sessionId);
+
+    // Dùng lại dải còn hạn để F5 giữ nguyên itemId và lời giải thích AI đã lưu.
+    if (canPersist) {
+      const cached = await this.readCachedSimilar({ userId, sessionId, productId, limit });
+      if (cached) {
+        return cached;
+      }
+    }
+
     const rows = await recommendationRepository.findSimilarTo(productId, { limit: limit * 2 });
 
     // The matrix can be stale relative to the catalogue, so an inactive or
@@ -804,15 +815,56 @@ class RecommendationService {
         reasonMetadata: { sourceProductId: productId, similarityType: row.similarityType },
       }));
 
-    const itemIdByProductId =
-      persist && (userId || sessionId)
-        ? await this.persist({ userId, sessionId, ranked, recommendationType: "SIMILAR_PRODUCTS" })
-        : new Map();
+    const itemIdByProductId = canPersist
+      ? await this.persist({
+          userId,
+          sessionId,
+          ranked,
+          recommendationType: "SIMILAR_PRODUCTS",
+          extraContext: { sourceProductId: productId, limit },
+        })
+      : new Map();
 
     return {
       items: await this.decorate(ranked, { itemIdByProductId }),
       algorithmVersion: ALGORITHM_VERSION,
+      cached: false,
     };
+  }
+
+  // Dải còn hạn bị bỏ qua nếu có sản phẩm đã bị gỡ hoặc ngừng bán, để không hiện thẻ hỏng.
+  async readCachedSimilar({ userId, sessionId, productId, limit }) {
+    try {
+      const result = await recommendationRepository.findFreshSimilarResult({
+        userId,
+        sessionId,
+        sourceProductId: productId,
+        limit,
+      });
+
+      if (!result || result.algorithmVersion !== ALGORITHM_VERSION || !result.items?.length) {
+        return null;
+      }
+
+      const items = await this.decorate(
+        result.items.map((item) => ({
+          productId: item.productId,
+          score: Number(item.score),
+          reasonCode: item.reasonCode,
+          reasonMetadata: item.reasonMetadata,
+        })),
+        { itemIdByProductId: new Map(result.items.map((item) => [item.productId, item.id])) },
+      );
+
+      if (items.length < result.items.length || items.some((item) => item.product.status !== "ACTIVE")) {
+        return null;
+      }
+
+      return { items, algorithmVersion: result.algorithmVersion, cached: true };
+    } catch (error) {
+      logger.warn("Failed to read a cached similar-products result", { error: logger.serializeError(error) });
+      return null;
+    }
   }
 
   /**
@@ -883,7 +935,7 @@ class RecommendationService {
    * Returns `productId → itemId` so `decorate` can hand each card the id the
    * client will report against.
    */
-  async persist({ userId, sessionId, ranked, recommendationType, weights = HYBRID_WEIGHTS, strategy = null }) {
+  async persist({ userId, sessionId, ranked, recommendationType, weights = HYBRID_WEIGHTS, strategy = null, extraContext = {} }) {
     if (ranked.length === 0) {
       return new Map();
     }
@@ -903,7 +955,7 @@ class RecommendationService {
           // `strategy` ghi cùng chỗ vì `readCachedResult` cần nó để biết dòng này
           // có được dùng lại hay không: một dòng của `?strategy=popularity` là
           // danh sách một thành phần, không phải kết quả của phép ghép.
-          context: { weights, strategy },
+          context: { weights, strategy, ...extraContext },
           expiresAt: new Date(Date.now() + CACHE_MINUTES * 60000),
         },
         ranked.map((entry, index) => ({

@@ -353,25 +353,15 @@ class AiService {
    * `reasonMetadata.explanation` — cột JSON có sẵn, không cần migration, và lời
    * giải thích nằm ngay cạnh chính dòng dữ liệu nó giải thích.
    */
-  async explainRecommendation({ userId = null, sessionId = null, itemId }) {
+  async explainRecommendation({ userId, itemId }) {
     if (!isConfigured()) {
       throw new AppError("AI advisor is not configured on this server", 503);
     }
 
     const item = await recommendationRepository.findItemById(itemId);
 
-    if (!item) {
-      throw new AppError("Recommendation not found", 404);
-    }
-
-    // Chủ sở hữu xác định qua dòng `recommendation_results` cha, giống hệt cách
-    // hội thoại làm: đã đăng nhập thì theo `userId`, khách vãng lai theo
-    // `sessionId`. 404 chứ không 403 để endpoint không thành công cụ dò id.
-    const owner = item.recommendation;
-    const ownedByUser = userId && owner?.userId === userId;
-    const ownedBySession = !owner?.userId && sessionId && owner?.sessionId === sessionId;
-
-    if (!ownedByUser && !ownedBySession) {
+    // Chỉ chủ của dòng gợi ý được hỏi; trả 404 chứ không 403 để không lộ id của người khác.
+    if (!item || !userId || item.recommendation?.userId !== userId) {
       throw new AppError("Recommendation not found", 404);
     }
 

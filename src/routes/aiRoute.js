@@ -3,7 +3,7 @@ const rateLimit = require("express-rate-limit");
 const router = express.Router();
 
 const aiController = require("../controllers/aiController");
-const { optionalAuth } = require("../middlewares/authMiddleware");
+const { authMiddleware, optionalAuth } = require("../middlewares/authMiddleware");
 const { attachSessionId } = require("../middlewares/behaviorValidation");
 const { validateAskAdvisor } = require("../middlewares/aiValidation");
 const { validateIdParam } = require("../middlewares/adminValidation");
@@ -49,8 +49,8 @@ router.post(
 router.post(
   "/ai/recommendations/:itemId/explain",
   advisorLimiter,
-  optionalAuth,
-  attachSessionId,
+  // Chỉ người đã đăng nhập: khách không có tín hiệu cá nhân để giải thích.
+  authMiddleware,
   validateIdParam("itemId"),
   asyncHandler(aiController.explainRecommendation),
 );

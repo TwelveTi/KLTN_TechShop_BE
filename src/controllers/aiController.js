@@ -33,8 +33,7 @@ class AiController {
 
   async explainRecommendation(req, res) {
     const result = await aiService.explainRecommendation({
-      userId: req.user?.id || null,
-      sessionId: req.sessionKey || null,
+      userId: req.user.id,
       itemId: req.params.itemId,
     });
 

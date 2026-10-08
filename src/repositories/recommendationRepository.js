@@ -340,6 +340,31 @@ class RecommendationRepository {
     });
   }
 
+  // Dải "tương tự" còn hạn của đúng người xem và đúng sản phẩm gốc, để F5 không sinh dải mới.
+  findFreshSimilarResult({ userId, sessionId, sourceProductId, limit }) {
+    if (!userId && !sessionId) {
+      return Promise.resolve(null);
+    }
+
+    return db.RecommendationResult.findOne({
+      where: {
+        recommendationType: "SIMILAR_PRODUCTS",
+        expiresAt: { [Op.gt]: new Date() },
+        ...(userId ? { userId } : { sessionId, userId: null }),
+        context: { sourceProductId, limit },
+      },
+      include: [
+        {
+          model: db.RecommendationItem,
+          as: "items",
+          separate: true,
+          order: [["rankPosition", "ASC"]],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+  }
+
   async createResultWithItems(result, items) {
     const transaction = await db.sequelize.transaction();
 
