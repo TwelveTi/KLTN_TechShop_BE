@@ -540,7 +540,10 @@ class RecommendationService {
        */
       asOf
         ? behaviorService.recomputeProfile(userId, { before: asOf, persist: false })
-        : recommendationRepository.findProfile(userId),
+        : persist
+          ? // Đường thật: tính lại hồ sơ từ hành vi mới nhất, chỉ chạy khi cache trượt.
+            behaviorService.recomputeProfile(userId)
+          : recommendationRepository.findProfile(userId),
       recommendationRepository.findRecentBehaviors(userId, { since, before: asOf }),
       recommendationRepository.findRecentKeywords(userId, { before: asOf }),
     ]);
@@ -604,6 +607,11 @@ class RecommendationService {
     // A brand-new shopper produces no signal at all; fall back rather than
     // returning an empty rail.
     let usedStrategy = strategy || "hybrid";
+    // Không thành phần cá nhân nào có tín hiệu thì danh sách chỉ là hàng bán chạy, phải ghi đúng như vậy.
+    const hasPersonalSignal = PERSONAL_KEYS.some((key) => weights[key] > 0);
+    if (!strategy && !hasPersonalSignal) {
+      usedStrategy = "popularity-fallback";
+    }
     if (ranked.length === 0) {
       ranked = this.combine(candidates, { popularity: components.popularity }, { weights: { popularity: 1 } });
       usedStrategy = "popularity-fallback";

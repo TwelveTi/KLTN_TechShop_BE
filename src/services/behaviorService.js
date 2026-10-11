@@ -81,6 +81,11 @@ class BehaviorService {
         await behaviorRepository.incrementProductViewCount(productId);
       }
 
+      // Có tín hiệu mới thì bỏ cache trang chủ. Bấm vào thẻ gợi ý không đổi gu nên không tính.
+      if (userId && behaviorType !== "CLICK_RECOMMENDATION") {
+        await behaviorRepository.expireHomeRecommendations(userId);
+      }
+
       return behavior;
     } catch (error) {
       logger.warn("Failed to record a user behaviour", {

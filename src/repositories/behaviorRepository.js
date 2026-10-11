@@ -85,6 +85,15 @@ class BehaviorRepository {
     return db.Product.increment("viewCount", { by: 1, where: { id: productId } });
   }
 
+  // Cho dải gợi ý trang chủ còn hạn của khách hết hạn ngay, để lần vào sau tính lại theo hành vi mới.
+  expireHomeRecommendations(userId) {
+    const now = new Date();
+    return db.RecommendationResult.update(
+      { expiresAt: now },
+      { where: { userId, recommendationType: "PERSONALIZED_HOME", expiresAt: { [Op.gt]: now } } },
+    );
+  }
+
   // ── Aggregates for the preference profile ─────────────────────────────────
 
   /**
