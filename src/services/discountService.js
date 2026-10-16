@@ -199,7 +199,7 @@ class DiscountService {
 
   assertWindow(startsAt, endsAt) {
     if (new Date(endsAt) <= new Date(startsAt)) {
-      throw new AppError("endsAt must be after startsAt", 400);
+      throw new AppError("End date must be after the start date", 400);
     }
   }
 
@@ -286,7 +286,7 @@ class DiscountService {
     // `usedCount >= usageLimit` permanently true in a confusing way; refuse it
     // rather than silently disabling the code.
     if (changes.usageLimit !== undefined && changes.usageLimit !== null && changes.usageLimit < discount.usedCount) {
-      throw new AppError(`usageLimit cannot be below the ${discount.usedCount} redemption(s) already made`, 409);
+      throw new AppError(`Total usage limit cannot be below the ${discount.usedCount} redemption(s) already made`, 409);
     }
 
     await discountRepository.update(discount, changes);

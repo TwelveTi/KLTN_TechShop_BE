@@ -133,22 +133,23 @@ const validateDiscount =
 
     if (isCreate || req.body.discountType !== undefined) {
       if (!DISCOUNT_TYPES.includes(req.body.discountType)) {
-        errors.push(`discountType must be one of: ${DISCOUNT_TYPES.join(", ")}`);
+        errors.push(`Discount type must be one of: ${DISCOUNT_TYPES.join(", ")}`);
       }
     }
 
+    // Nhãn khớp tên ô trên form admin, vì thông báo lỗi hiện thẳng cho người dùng.
     validateMoney(req.body, "value", "Value", errors, { required: isCreate });
-    validateMoney(req.body, "maxDiscountAmount", "maxDiscountAmount", errors);
-    validateMoney(req.body, "minOrderValue", "minOrderValue", errors);
+    validateMoney(req.body, "maxDiscountAmount", "Max discount", errors);
+    validateMoney(req.body, "minOrderValue", "Min. order value", errors);
 
-    validateNullableInteger(req.body, "usageLimit", "usageLimit", errors);
-    validateNullableInteger(req.body, "usageLimitPerUser", "usageLimitPerUser", errors);
+    validateNullableInteger(req.body, "usageLimit", "Total usage limit", errors);
+    validateNullableInteger(req.body, "usageLimitPerUser", "Limit per customer", errors);
 
-    validateDate(req.body, "startsAt", "startsAt", errors, { required: isCreate });
-    validateDate(req.body, "endsAt", "endsAt", errors, { required: isCreate });
+    validateDate(req.body, "startsAt", "Start date", errors, { required: isCreate });
+    validateDate(req.body, "endsAt", "End date", errors, { required: isCreate });
 
     if (req.body.status !== undefined && !DISCOUNT_STATUSES.includes(req.body.status)) {
-      errors.push(`status must be one of: ${DISCOUNT_STATUSES.join(", ")}`);
+      errors.push(`Status must be one of: ${DISCOUNT_STATUSES.join(", ")}`);
     }
 
     return sendFirstError(errors, next);
