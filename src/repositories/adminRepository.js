@@ -67,6 +67,18 @@ class AdminRepository {
     return brand.destroy();
   }
 
+  // Đếm thứ còn trỏ tới một danh mục/hãng trước khi xoá: xoá mềm không kích hoạt RESTRICT của khoá ngoại.
+  countCategoryDependents(categoryId) {
+    return Promise.all([
+      db.Product.count({ where: { categoryId } }),
+      db.Category.count({ where: { parentId: categoryId } }),
+    ]).then(([products, children]) => ({ products, children }));
+  }
+
+  countBrandProducts(brandId) {
+    return db.Product.count({ where: { brandId } });
+  }
+
   // ---- Đếm sản phẩm, mọi trạng thái, một GROUP BY cho mỗi bảng ----
   countProductsByCategory() {
     return db.Product.findAll({

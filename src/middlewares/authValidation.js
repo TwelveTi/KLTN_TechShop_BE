@@ -2,6 +2,18 @@ const AppError = require("../utils/AppError");
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Số Việt Nam: 0 hoặc +84, rồi 9–10 chữ số (giữ cả số 11 chữ số cũ).
+const PHONE_PATTERN = /^(0|\+84)\d{9,10}$/;
+const PHONE_FIELD = {
+  name: "phone",
+  label: "Phone",
+  required: false,
+  type: "string",
+  maxLength: 20,
+  pattern: PHONE_PATTERN,
+  patternMessage: "Phone must be a Vietnamese number, e.g. 0912345678",
+};
+
 function validate(fields, req, res, next) {
   const errors = [];
 
@@ -61,7 +73,7 @@ const validateRegister = (req, res, next) => {
       { name: "email", label: "Email", required: true, type: "email", maxLength: 255 },
       { name: "password", label: "Password", required: true, type: "string", minLength: 6, maxLength: 72 },
       { name: "fullName", label: "Full name", required: true, type: "string", minLength: 2, maxLength: 150 },
-      { name: "phone", label: "Phone", required: false, type: "string", maxLength: 20 },
+      PHONE_FIELD,
     ],
     req,
     res,
@@ -89,7 +101,7 @@ const validateUpdateProfile = (req, res, next) => {
   return validate(
     [
       { name: "fullName", label: "Full name", required: false, type: "string", minLength: 2, maxLength: 150 },
-      { name: "phone", label: "Phone", required: false, type: "string", maxLength: 20 },
+      PHONE_FIELD,
       { name: "avatarUrl", label: "Avatar URL", required: false, type: "string", maxLength: 1000 },
     ],
     req,
@@ -164,6 +176,7 @@ const validateChangePassword = (req, res, next) => {
 };
 
 module.exports = {
+  PHONE_PATTERN,
   validateRegister,
   validateLogin,
   validateLogout,

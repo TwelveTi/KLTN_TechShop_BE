@@ -85,6 +85,14 @@ class AdminService {
       throw new AppError("Category not found", 404);
     }
 
+    const { products, children } = await adminRepository.countCategoryDependents(category.id);
+    if (products > 0 || children > 0) {
+      throw new AppError(
+        `This category still has ${products} product(s) and ${children} subcategory(ies). Move or delete them first.`,
+        409,
+      );
+    }
+
     await adminRepository.destroyCategory(category);
     return { message: "Category deleted successfully" };
   }
@@ -133,6 +141,11 @@ class AdminService {
 
     if (!brand) {
       throw new AppError("Brand not found", 404);
+    }
+
+    const products = await adminRepository.countBrandProducts(brand.id);
+    if (products > 0) {
+      throw new AppError(`This brand still has ${products} product(s). Move or delete them first.`, 409);
     }
 
     await adminRepository.destroyBrand(brand);

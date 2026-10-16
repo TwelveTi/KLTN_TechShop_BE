@@ -1,4 +1,5 @@
 const AppError = require("../utils/AppError");
+const { PHONE_PATTERN } = require("./authValidation");
 
 // Field-spec validator mirroring authValidation: trims strings, enforces
 // required + maxLength, and writes the normalized values back onto req.body so
@@ -32,6 +33,10 @@ function validate(fields, req, res, next) {
     if (field.maxLength && normalizedValue.length > field.maxLength) {
       errors.push(`${field.label} must be at most ${field.maxLength} characters`);
     }
+
+    if (field.pattern && !field.pattern.test(normalizedValue)) {
+      errors.push(field.patternMessage || `${field.label} is invalid`);
+    }
   });
 
   if (errors.length > 0) {
@@ -45,7 +50,14 @@ const validateCreateAddress = (req, res, next) => {
   return validate(
     [
       { name: "receiverName", label: "Receiver name", required: true, maxLength: 150 },
-      { name: "receiverPhone", label: "Receiver phone", required: true, maxLength: 20 },
+      {
+        name: "receiverPhone",
+        label: "Receiver phone",
+        required: true,
+        maxLength: 20,
+        pattern: PHONE_PATTERN,
+        patternMessage: "Receiver phone must be a Vietnamese number, e.g. 0912345678",
+      },
       { name: "province", label: "Province", required: true, maxLength: 100 },
       { name: "district", label: "District", required: true, maxLength: 100 },
       { name: "ward", label: "Ward", required: true, maxLength: 100 },
