@@ -438,10 +438,10 @@ class ProductService {
         await productRepository.bulkCreateImages(this.mapImageRows(data.images, product.id), { transaction });
       }
 
-      if (Array.isArray(data.variants)) {
-        await productRepository.destroyVariantsByProduct(product.id, { transaction });
-        await productRepository.bulkCreateVariants(this.mapVariantRows(data.variants, product.id), { transaction });
-      }
+      // Không thay biến thể ở đây: xoá cứng rồi tạo lại sẽ đổi id, và giỏ hàng, đơn hàng đang trỏ
+      // tới biến thể cũ mất liên kết. Biến thể sửa từng cái qua /admin/products/:id/variants.
+      // Có biến thể thì tồn kho là tổng của chúng, ô tồn kho gửi lên bị ghi đè lại.
+      await productRepository.syncProductStockFromVariants(product.id, { transaction });
 
       // An empty array means "the client sent no specifications", NOT "delete
       // every specification". A client that saves a product without having
@@ -469,6 +469,142 @@ class ProductService {
       }
 
       return this.getProductById(product.id);
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  // ── Biến thể ──────────────────────────────────────────────────────────────
+
+  async buildUniqueVariantSku(product, requestedSku, excludeId = null) {
+    if (requestedSku) {
+      if (await productRepository.findVariantBySku(requestedSku, { excludeId })) {
+        throw new AppError(`SKU "${requestedSku}" is already used by another variant`, 409);
+      }
+      return requestedSku;
+    }
+
+    const base = (product.sku || product.slug || "VAR").toUpperCase().slice(0, 80);
+    for (let n = 1; n < 1000; n += 1) {
+      const candidate = `${base}-V${n}`;
+      if (!(await productRepository.findVariantBySku(candidate))) return candidate;
+    }
+    throw new AppError("Could not generate a unique SKU, please enter one", 409);
+  }
+
+  assertVariantPrices(price, salePrice) {
+    if (price != null && salePrice != null && Number(salePrice) >= Number(price)) {
+      throw new AppError("Sale price must be lower than the price", 400);
+    }
+  }
+
+  async createVariant(productId, data) {
+    const product = await this.getProductById(productId);
+    this.assertVariantPrices(data.price, data.salePrice);
+    const transaction = await productRepository.beginTransaction();
+
+    try {
+      const existing = await productRepository.findVariantsByProduct(product.id, { transaction });
+      // Biến thể đầu tiên của sản phẩm luôn là mặc định, để trang chi tiết có thứ chọn sẵn.
+      const isDefault = data.isDefault === true || existing.length === 0;
+
+      if (isDefault) {
+        await productRepository.clearDefaultVariants(product.id, { transaction });
+      }
+
+      const variant = await productRepository.createVariant(
+        {
+          productId: product.id,
+          sku: await this.buildUniqueVariantSku(product, data.sku),
+          variantName: data.variantName,
+          attributes: data.attributes || null,
+          price: data.price ?? null,
+          salePrice: data.salePrice ?? null,
+          stockQuantity: data.stockQuantity ?? 0,
+          isDefault,
+          status: data.status || "ACTIVE",
+        },
+        { transaction },
+      );
+
+      await productRepository.syncProductStockFromVariants(product.id, { transaction });
+      await transaction.commit();
+      return variant;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  async updateVariant(productId, variantId, data) {
+    const transaction = await productRepository.beginTransaction();
+
+    try {
+      const variant = await productRepository.findVariant(productId, variantId, { transaction, lock: true });
+      if (!variant) {
+        throw new AppError("Variant not found", 404);
+      }
+
+      const price = data.price !== undefined ? data.price : variant.price;
+      const salePrice = data.salePrice !== undefined ? data.salePrice : variant.salePrice;
+      this.assertVariantPrices(price, salePrice);
+
+      const changes = {};
+      for (const field of ["variantName", "attributes", "price", "salePrice", "stockQuantity", "status"]) {
+        if (data[field] !== undefined) changes[field] = data[field];
+      }
+      if (data.sku !== undefined && data.sku !== variant.sku) {
+        const product = await this.getProductById(productId);
+        changes.sku = await this.buildUniqueVariantSku(product, data.sku, variant.id);
+      }
+
+      if (data.isDefault === true && !variant.isDefault) {
+        await productRepository.clearDefaultVariants(productId, { exceptId: variant.id, transaction });
+        changes.isDefault = true;
+      }
+      // Bỏ cờ mặc định thì phải có biến thể khác nhận lại, nếu không trang chi tiết không có gì chọn sẵn.
+      if (data.isDefault === false && variant.isDefault) {
+        const others = (await productRepository.findVariantsByProduct(productId, { transaction })).filter(
+          (other) => other.id !== variant.id,
+        );
+        if (others.length > 0) {
+          await productRepository.updateVariant(others[0], { isDefault: true }, { transaction });
+          changes.isDefault = false;
+        }
+      }
+
+      await productRepository.updateVariant(variant, changes, { transaction });
+      await productRepository.syncProductStockFromVariants(productId, { transaction });
+      await transaction.commit();
+      return variant;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  async deleteVariant(productId, variantId) {
+    const transaction = await productRepository.beginTransaction();
+
+    try {
+      const variant = await productRepository.findVariant(productId, variantId, { transaction, lock: true });
+      if (!variant) {
+        throw new AppError("Variant not found", 404);
+      }
+
+      // Xoá mềm: dòng đơn hàng cũ vẫn trỏ được tới biến thể. Dòng giỏ hàng thì bỏ, vì không mua được nữa.
+      await productRepository.destroyCartItemsByVariant(variant.id, { transaction });
+      await productRepository.destroyVariant(variant, { transaction });
+
+      if (variant.isDefault) {
+        const [next] = await productRepository.findVariantsByProduct(productId, { transaction });
+        if (next) await productRepository.updateVariant(next, { isDefault: true }, { transaction });
+      }
+
+      await productRepository.syncProductStockFromVariants(productId, { transaction });
+      await transaction.commit();
+      return { message: "Variant deleted successfully" };
     } catch (error) {
       await transaction.rollback();
       throw error;

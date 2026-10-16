@@ -39,6 +39,12 @@ const THINKING_LEVEL = process.env.GEMINI_THINKING_LEVEL || "LOW";
 // billed round trip the shopper waits through.
 const MAX_TOOL_TURNS = num(process.env.GEMINI_MAX_TOOL_TURNS, 3);
 
+// Lúc Google quá tải, một lần gọi treo 50–60 giây rồi mới trả 503; ba model nối nhau
+// thành gần ba phút, quá mốc 120 giây giao diện chờ. Quá hạn thì coi như quá tải và
+// chuyển model sớm; quá tổng thời gian thì dừng hẳn, báo bận.
+const CALL_TIMEOUT_MS = num(process.env.GEMINI_CALL_TIMEOUT_MS, 25000);
+const FALLBACK_BUDGET_MS = num(process.env.GEMINI_FALLBACK_BUDGET_MS, 70000);
+
 /**
  * Chuỗi model dự phòng, thử theo thứ tự khi model chính không dùng được.
  *
@@ -107,6 +113,7 @@ const classifyError = (error) => {
   // chừng. Nó thoáng qua và độc lập giữa các model, nên chuyển sang model khác
   // gần như luôn thành công ngay.
   if (
+    error?.name === "AbortError" ||
     raw.includes("UNAVAILABLE") ||
     raw.includes('"code":503') ||
     raw.includes('"code":500') ||
@@ -168,7 +175,7 @@ const getClient = () => {
   }
 
   if (!client) {
-    client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY, httpOptions: { timeout: CALL_TIMEOUT_MS } });
   }
 
   return client;
@@ -181,6 +188,8 @@ module.exports = {
   MAX_OUTPUT_TOKENS,
   THINKING_LEVEL,
   MAX_TOOL_TURNS,
+  CALL_TIMEOUT_MS,
+  FALLBACK_BUDGET_MS,
   isConfigured,
   getClient,
   classifyError,

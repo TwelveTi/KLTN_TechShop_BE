@@ -442,6 +442,38 @@ const validateUpdateProduct = (req, res, next) => {
   return sendFirstError(errors, next);
 };
 
+// Một biến thể. Giá để trống là "dùng giá của sản phẩm", nên chuỗi rỗng đổi thành null.
+const validateVariantInput =
+  ({ isCreate }) =>
+  (req, res, next) => {
+    const errors = [];
+    const body = req.body;
+
+    if (isCreate || body.variantName !== undefined) {
+      requireString(body, "variantName", "Variant name", errors, 255);
+    }
+    validateOptionalString(body, "sku", "SKU", errors, 100);
+
+    for (const [field, label] of [["price", "Price"], ["salePrice", "Sale price"]]) {
+      if (body[field] === "") body[field] = null;
+      validatePositiveNumber(body, field, label, errors);
+    }
+    validateInteger(body, "stockQuantity", "Stock", errors);
+    validateOptionalEnum(body, "status", "Status", ["ACTIVE", "INACTIVE", "OUT_OF_STOCK"], errors);
+
+    if (body.isDefault !== undefined && typeof body.isDefault !== "boolean") {
+      errors.push("isDefault must be true or false");
+    }
+    if (body.attributes !== undefined && body.attributes !== null && (typeof body.attributes !== "object" || Array.isArray(body.attributes))) {
+      errors.push("Attributes must be an object");
+    }
+
+    return sendFirstError(errors, next);
+  };
+
+const validateCreateVariant = validateVariantInput({ isCreate: true });
+const validateUpdateVariant = validateVariantInput({ isCreate: false });
+
 const validateDeleteUploadedImage = (req, res, next) => {
   req.body.publicId = normalizeString(req.body.publicId);
 
@@ -480,4 +512,6 @@ module.exports = {
   validateDeleteUploadedImage,
   validateRevenueQuery,
   validateUpdateOrderStatus,
+  validateCreateVariant,
+  validateUpdateVariant,
 };

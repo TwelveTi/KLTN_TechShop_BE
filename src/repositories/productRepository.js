@@ -322,6 +322,63 @@ class ProductRepository {
     return db.ProductVariant.bulkCreate(variants, { transaction });
   }
 
+  // ---- Biến thể từng cái một: giữ nguyên id để giỏ hàng và đơn hàng không mất liên kết ----
+  findVariant(productId, variantId, { transaction, lock = false } = {}) {
+    return db.ProductVariant.findOne({
+      where: { id: variantId, productId },
+      transaction,
+      ...(lock ? { lock: transaction.LOCK.UPDATE } : {}),
+    });
+  }
+
+  findVariantsByProduct(productId, { transaction } = {}) {
+    return db.ProductVariant.findAll({ where: { productId }, order: [["createdAt", "ASC"]], transaction });
+  }
+
+  // Tính cả biến thể đã xoá mềm, vì cột sku vẫn giữ ràng buộc duy nhất.
+  findVariantBySku(sku, { excludeId = null, transaction } = {}) {
+    return db.ProductVariant.findOne({
+      where: { sku, ...(excludeId ? { id: { [Op.ne]: excludeId } } : {}) },
+      paranoid: false,
+      transaction,
+    });
+  }
+
+  createVariant(data, { transaction } = {}) {
+    return db.ProductVariant.create(data, { transaction });
+  }
+
+  updateVariant(variant, changes, { transaction } = {}) {
+    return variant.update(changes, { transaction });
+  }
+
+  destroyVariant(variant, { transaction } = {}) {
+    return variant.destroy({ transaction });
+  }
+
+  clearDefaultVariants(productId, { exceptId = null, transaction } = {}) {
+    return db.ProductVariant.update(
+      { isDefault: false },
+      { where: { productId, isDefault: true, ...(exceptId ? { id: { [Op.ne]: exceptId } } : {}) }, transaction },
+    );
+  }
+
+  destroyCartItemsByVariant(variantId, { transaction } = {}) {
+    return db.CartItem.destroy({ where: { variantId }, transaction });
+  }
+
+  // Sản phẩm có biến thể thì tồn kho của nó là tổng tồn kho các biến thể; danh sách và màn admin đọc cột này.
+  async syncProductStockFromVariants(productId, { transaction } = {}) {
+    const variants = await db.ProductVariant.findAll({
+      where: { productId },
+      attributes: ["stockQuantity"],
+      transaction,
+    });
+    if (variants.length === 0) return;
+    const total = variants.reduce((sum, variant) => sum + Number(variant.stockQuantity || 0), 0);
+    await db.Product.update({ stockQuantity: total }, { where: { id: productId }, transaction });
+  }
+
   destroySpecificationsByProduct(productId, { transaction } = {}) {
     return db.ProductSpecification.destroy({ where: { productId }, transaction });
   }

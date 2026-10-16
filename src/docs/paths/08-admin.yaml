@@ -87,6 +87,56 @@
           application/json:
             schema: { $ref: '#/components/schemas/Error' }
 
+/admin/products/{id}/variants:
+  post:
+    tags: [Admin]
+    summary: Thêm biến thể cho sản phẩm
+    description: |
+      Biến thể đầu tiên của sản phẩm tự thành mặc định. Bỏ trống `sku` thì tự sinh.
+      Tồn kho của sản phẩm được tính lại bằng tổng tồn kho các biến thể.
+    parameters: [{ $ref: '#/components/parameters/IdPath' }]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/VariantWrite' }
+    responses:
+      '201': { $ref: '#/components/responses/Created' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+      '409': { $ref: '#/components/responses/Conflict' }
+
+/admin/products/{id}/variants/{variantId}:
+  put:
+    tags: [Admin]
+    summary: Sửa một biến thể, giữ nguyên id
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+      - { name: variantId, in: path, required: true, schema: { type: string, format: uuid } }
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/VariantWrite' }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '400': { $ref: '#/components/responses/BadRequest' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+      '409': { $ref: '#/components/responses/Conflict' }
+  delete:
+    tags: [Admin]
+    summary: Xoá mềm một biến thể
+    description: Dòng đơn hàng cũ vẫn trỏ được tới biến thể; dòng giỏ hàng đang chứa nó bị xoá.
+    parameters:
+      - $ref: '#/components/parameters/IdPath'
+      - { name: variantId, in: path, required: true, schema: { type: string, format: uuid } }
+    responses:
+      '200': { $ref: '#/components/responses/Ok' }
+      '403': { $ref: '#/components/responses/Forbidden' }
+      '404': { $ref: '#/components/responses/NotFound' }
+
 /admin/categories:
   get:
     tags: [Admin]

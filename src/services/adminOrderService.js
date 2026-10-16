@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const AppError = require("../utils/AppError");
 const adminOrderRepository = require("../repositories/adminOrderRepository");
+const productRepository = require("../repositories/productRepository");
 const discountService = require("./discountService");
 
 const ORDER_STATUSES = ["PENDING", "PAID", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED", "REFUNDED"];
@@ -150,6 +151,7 @@ class AdminOrderService {
 
         if (variant) {
           await adminOrderRepository.incrementVariantStock(variant, item.quantity, { transaction });
+          await productRepository.syncProductStockFromVariants(variant.productId, { transaction });
         }
 
         continue;

@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const AppError = require("../utils/AppError");
 const orderRepository = require("../repositories/orderRepository");
+const productRepository = require("../repositories/productRepository");
 const discountService = require("./discountService");
 const behaviorService = require("./behaviorService");
 const pricing = require("../utils/pricing");
@@ -364,6 +365,7 @@ class OrderService {
       for (const line of lines) {
         if (line.variant) {
           await orderRepository.decrementVariantStock(line.variant, line.quantity, { transaction });
+          await productRepository.syncProductStockFromVariants(line.variant.productId, { transaction });
         } else {
           await orderRepository.decrementProductStock(line.product, line.quantity, { transaction });
         }
@@ -512,6 +514,7 @@ class OrderService {
 
         if (variant) {
           await orderRepository.incrementVariantStock(variant, item.quantity, { transaction });
+          await productRepository.syncProductStockFromVariants(variant.productId, { transaction });
         }
 
         continue;

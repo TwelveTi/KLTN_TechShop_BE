@@ -10,6 +10,7 @@ const {
   MAX_OUTPUT_TOKENS,
   THINKING_LEVEL,
   MAX_TOOL_TURNS,
+  FALLBACK_BUDGET_MS,
   isConfigured,
   getClient,
   classifyError,
@@ -278,7 +279,10 @@ class AiService {
       completionTokens: usage.completionTokens,
     });
 
-    await aiRepository.linkRecommendedProducts(assistantMessage.id, products);
+    // Thẻ sản phẩm dưới câu trả lời chỉ gồm những món câu trả lời thật sự nhắc tới; bản đủ vẫn nằm ở structuredData.
+    const shownProducts = pickMentionedProducts(answer, products);
+
+    await aiRepository.linkRecommendedProducts(assistantMessage.id, shownProducts);
 
     const sources = (ragSources || []).map((r) => ({
       content: r.content,
@@ -292,7 +296,7 @@ class AiService {
       messageId: assistantMessage.id,
       userMessageId: userMessage.id,
       answer,
-      products,
+      products: shownProducts,
       sources,
       grounding: {
         toolCalls,
@@ -317,9 +321,16 @@ class AiService {
    */
   async runWithFallback(run) {
     const chain = resolveModelChain();
+    const startedAt = Date.now();
     let lastError = null;
 
     for (const model of chain) {
+      // Đã chờ quá lâu thì dừng: thử thêm model nữa sẽ vượt mốc chờ của giao diện.
+      if (lastError && Date.now() - startedAt > FALLBACK_BUDGET_MS) {
+        logger.warn("Gemini fallback budget spent, giving up", { elapsedMs: Date.now() - startedAt });
+        break;
+      }
+
       try {
         return await run(model);
       } catch (error) {
@@ -756,8 +767,18 @@ class AiService {
       payload = { error: "Product lookup failed", products: [], count: 0 };
     }
 
+    // Tìm không kèm điều kiện nào là model đang dò xem cửa hàng bán gì, không phải đang gợi ý:
+    // vẫn cho model đọc, nhưng không gắn thành thẻ sản phẩm dưới câu trả lời.
+    const unconstrained =
+      !byName &&
+      !args.categorySlug &&
+      args.brandNames.length === 0 &&
+      args.minPrice === null &&
+      args.maxPrice === null &&
+      args.specFilters.length === 0;
+
     return {
-      products,
+      products: unconstrained ? [] : products,
       payload,
       record: {
         role: "TOOL",
@@ -984,6 +1005,36 @@ const tokenOverlap = (query, candidate) => {
   return tokens.filter((token) => haystack.some((word) => word.includes(token))).length / tokens.length;
 };
 
+// Từ chỉ loại hàng, không giúp nhận ra một sản phẩm cụ thể trong câu trả lời.
+const GENERIC_NAME_WORDS = new Set([
+  "laptop", "gaming", "dien", "thoai", "tai", "nghe", "chuot", "ban", "phim", "man", "hinh", "loa",
+  "dong", "ho", "thong", "minh", "khong", "day", "van", "phong", "the", "thao", "chong", "on", "true",
+  "wireless", "may", "tinh", "bang", "cung", "di", "sac", "pin", "du", "cu", "nhanh", "thanh", "de",
+]);
+
+const nameWords = (text) =>
+  String(text || "")
+    .replace(/đ/gi, "d")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .split(/[^a-z0-9]+/)
+    .filter((word) => word.length > 1);
+
+/**
+ * Sản phẩm mà câu trả lời có nhắc tới: phần tên trước ngoặc, bỏ từ chỉ loại hàng, khớp ít nhất 3/4.
+ * Model hay gọi tool tìm rộng rồi chỉ chọn vài món, hoặc tìm rồi trả lời "shop không bán";
+ * hiện cả danh sách tìm được thì người xem thấy thẻ sản phẩm không liên quan tới câu trả lời.
+ */
+const pickMentionedProducts = (answer, products) => {
+  const said = new Set(nameWords(answer));
+  return products.filter((product) => {
+    const core = nameWords(String(product.name).replace(/\(.*?\)/g, " ")).filter((w) => !GENERIC_NAME_WORDS.has(w));
+    if (core.length === 0) return false;
+    return core.filter((word) => said.has(word)).length / core.length >= 0.75;
+  });
+};
+
 const normaliseSearchArgs = (args) => {
   const toNumber = (raw) => {
     const value = Number(raw);
@@ -1019,3 +1070,4 @@ const normaliseSearchArgs = (args) => {
 };
 
 module.exports = new AiService();
+module.exports.pickMentionedProducts = pickMentionedProducts;

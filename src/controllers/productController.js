@@ -44,6 +44,23 @@ class ProductController {
     return APIResponse.success(res, result.message);
   }
 
+  // ── Biến thể (admin) ──────────────────────────────────────────────────────
+
+  async createVariant(req, res) {
+    const variant = await productService.createVariant(req.params.id, req.body);
+    return APIResponse.success(res, "Variant created successfully", variant, 201);
+  }
+
+  async updateVariant(req, res) {
+    const variant = await productService.updateVariant(req.params.id, req.params.variantId, req.body);
+    return APIResponse.success(res, "Variant updated successfully", variant);
+  }
+
+  async deleteVariant(req, res) {
+    const result = await productService.deleteVariant(req.params.id, req.params.variantId);
+    return APIResponse.success(res, result.message);
+  }
+
   // ── Specification definitions (admin) ─────────────────────────────────────
 
   async getSpecificationDefinitions(req, res) {

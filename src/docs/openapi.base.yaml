@@ -452,14 +452,22 @@ components:
                 description: Chữ hiển thị, ví dụ `18GB Unified Memory`. Gửi cả hai khi đã biết con số.
         variants:
           type: array
-          items:
-            type: object
-            properties:
-              name: { type: string }
-              sku: { type: string }
-              price: { type: number }
-              stockQuantity: { type: integer }
-              attributes: { type: object }
+          description: Chỉ dùng khi TẠO sản phẩm. Khi sửa, trường này bị bỏ qua; sửa biến thể qua `/admin/products/{id}/variants`.
+          items: { $ref: '#/components/schemas/VariantWrite' }
+
+    VariantWrite:
+      type: object
+      required: [variantName]
+      description: Khi sửa thì mọi trường đều tuỳ chọn. Giá để trống hoặc `null` là dùng giá của sản phẩm.
+      properties:
+        variantName: { type: string, maxLength: 255, example: '512GB - Titan Tự Nhiên' }
+        sku: { type: string, maxLength: 100, description: Bỏ trống thì tự sinh }
+        price: { type: number, nullable: true }
+        salePrice: { type: number, nullable: true, description: Phải thấp hơn `price` }
+        stockQuantity: { type: integer, minimum: 0 }
+        isDefault: { type: boolean }
+        status: { type: string, enum: [ACTIVE, INACTIVE, OUT_OF_STOCK] }
+        attributes: { type: object, example: { Color: Natural, Storage: 512GB } }
 
     DiscountWrite:
       type: object
