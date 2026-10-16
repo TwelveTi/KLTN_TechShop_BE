@@ -105,6 +105,9 @@ const GUARDS = {
   // nên nó lấy được câu của cả chuột lẫn bàn phím.
   mouse: (f) => /chuột/i.test(f.name),
   keyboard: (f) => /bàn phím/i.test(f.name),
+  // Câu khen "nhẹ, vẩy cổ tay khi chơi game" chỉ đúng với chuột gaming, không đúng với MX Master.
+  gamingMouse: (f) => /chuột/i.test(f.name) && /gaming/i.test(f.name),
+  officeMouse: (f) => /chuột/i.test(f.name) && !/gaming/i.test(f.name),
   wireless: (f) => (specNum(f, "batteryLife") || 0) > 0,
 
   // Sạc, pin dự phòng và hub nằm chung một lá. Chỉ pin dự phòng mới khai
@@ -224,9 +227,9 @@ const CONTENT = {
   headphone: {
     good: [
       ["Chống ồn tốt hơn mong đợi", "Đi xe buýt bật chống ồn là tiếng động cơ giảm hẳn, chỉ còn tiếng nói chuyện mờ mờ. Trong văn phòng gần như không nghe tiếng điều hoà. Đeo hai tiếng liền vẫn không thấy ép tai.", ["anc"]],
-      ["Chất âm cân bằng, nghe thể loại nào cũng hợp", "Dải trầm có lực nhưng không lấn, giọng hát rõ và tách bạch. Nghe nhạc acoustic thấy được tiếng dây đàn. Có ứng dụng chỉnh EQ nên mình kéo lại theo ý một chút."],
+      ["Chất âm cân bằng, nghe thể loại nào cũng hợp", "Dải trầm có lực nhưng không lấn, giọng hát rõ và tách bạch. Nghe nhạc acoustic thấy được tiếng dây đàn. Âm trường đủ rộng để nghe ra vị trí từng nhạc cụ."],
       ["Pin dùng cả tuần mới phải sạc", "Mình nghe khoảng 3 tiếng mỗi ngày, gần một tuần mới cắm sạc lại. Sạc nhanh 10 phút là dùng được thêm mấy tiếng. Kết nối lại với điện thoại nhanh, không phải vào cài đặt ghép lại.", ["hasBattery"]],
-      ["Đàm thoại rõ, đồng nghiệp không phàn nàn", "Gọi ngoài đường có gió mà đầu bên kia vẫn nghe rõ giọng mình. Chuyển giữa laptop và điện thoại nhanh, không phải ghép lại. Micro thu giọng gọn, ít lẫn tiếng nền."],
+      ["Đàm thoại rõ, đồng nghiệp không phàn nàn", "Gọi ngoài đường có gió mà đầu bên kia vẫn nghe rõ giọng mình. Chuyển giữa laptop và điện thoại nhanh, không phải ghép lại. Micro thu giọng gọn, ít lẫn tiếng nền.", ["hasBattery"]],
       ["Nhỏ gọn, bỏ túi rất tiện", "Hộp sạc bỏ vừa túi quần, mang theo cả ngày không vướng. Chất âm vượt kỳ vọng ở kích thước này. Chế độ xuyên âm nghe tự nhiên, ra quầy trả tiền không cần tháo tai nghe.", ["tws"]],
       ["Đệm tai êm, đeo cả buổi làm việc được", "Đệm dày và lực kẹp vừa phải nên đeo ba tiếng liền tai không bị ê. Đai đầu chỉnh nhiều nấc, đội mũ vào vẫn vừa. Cách âm thụ động đã đủ để không nghe tiếng bàn phím cơ của người bên cạnh.", ["notTws"]],
     ],
@@ -234,7 +237,7 @@ const CONTENT = {
       ["Âm hay nhưng chống ồn ở mức khá thôi", "Nghe nhạc thì rất thích, chi tiết và rộng. Chống ồn cắt được tiếng ù đều nhưng tiếng người nói vẫn lọt khá nhiều. Đi máy bay thì đủ dùng, ngồi văn phòng ồn thì chưa đã.", ["anc"]],
       ["Tốt, nhưng đeo lâu hơi nóng tai", "Cách âm tốt một phần vì đệm tai ép khá chặt. Đổi lại đeo quá hai tiếng là tai nóng và phải tháo ra nghỉ. Mùa mát thì không thành vấn đề.", ["notTws"]],
       ["Pin ổn, nhưng hộp sạc to", "Tai nghe nhẹ và đeo thoải mái. Hộp sạc thì dày hơn các mẫu cùng tầm, bỏ túi áo hơi cộm. Bù lại pin tổng dài hơn.", ["tws"]],
-      ["Chất âm ổn, ứng dụng thì hơi rối", "Tai nghe nghe hay và kết nối ổn định. Ứng dụng đi kèm nhiều mục lồng nhau, tìm chỗ chỉnh EQ mất một lúc. Cài xong rồi thì không phải mở lại nữa."],
+      ["Chất âm ổn, ứng dụng thì hơi rối", "Tai nghe nghe hay và kết nối ổn định. Ứng dụng đi kèm nhiều mục lồng nhau, tìm chỗ chỉnh EQ mất một lúc. Cài xong rồi thì không phải mở lại nữa.", ["hasBattery"]],
       ["Hay nhưng dải trầm hơi nhiều", "Mặc định bass khá mạnh, nghe nhạc điện tử thì đã nhưng nghe giọng hát thì bị lấn. Kéo EQ xuống hai bậc là cân bằng lại được. Nếu thích âm trung tính thì phải chỉnh."],
     ],
     critical: [
@@ -318,17 +321,18 @@ const CONTENT = {
   },
   peripheral: {
     good: [
-      ["Dùng cả ngày không mỏi cổ tay", "Mình gõ và rê chuột khoảng tám tiếng mỗi ngày, sau hai tuần thì cảm giác mỏi ở cổ tay giảm rõ so với thiết bị cũ. Bề mặt bám tay, không trơn khi tay có mồ hôi. Kết nối ổn định, không thấy rớt lần nào."],
+      ["Dùng cả ngày không mỏi cổ tay", "Mình dùng khoảng tám tiếng mỗi ngày, sau hai tuần thì cảm giác mỏi ở cổ tay giảm rõ so với thiết bị cũ. Bề mặt bám tay, không trơn khi tay có mồ hôi. Kết nối ổn định, không thấy rớt lần nào."],
       ["Pin lâu ngoài sức tưởng tượng", "Sạc một lần dùng được hàng tháng với cường độ làm việc hằng ngày. Có cảnh báo pin yếu sớm nên không bị hết đột ngột. Sạc nhanh, cắm vài phút là dùng tiếp được.", ["wireless"]],
       ["Chuyển giữa nhiều máy rất tiện", "Mình để máy bàn ở công ty và laptop cá nhân, bấm một nút là đổi, không phải ghép lại từ đầu. Độ trễ gần như không cảm nhận được. Một đầu thu dùng chung cho cả bộ.", ["wireless"]],
       ["Gõ êm, ngồi phòng chung không làm phiền ai", "Tiếng phím nhỏ và đục chứ không lách cách, đồng nghiệp ngồi cạnh không phàn nàn. Hành trình phím vừa đủ, gõ nhanh ít bị sai. Kê tay kèm theo dùng được luôn.", ["keyboard"]],
-      ["Nhẹ và chính xác khi chơi game", "Rê nhanh vẫn bám mục tiêu, không thấy hiện tượng trôi hay nhảy con trỏ. Nhẹ nên vẩy cổ tay không tốn sức, chơi lâu đỡ mỏi. Phần mềm lưu được cấu hình vào bộ nhớ trong.", ["mouse"]],
+      ["Nhẹ và chính xác khi chơi game", "Rê nhanh vẫn bám mục tiêu, không thấy hiện tượng trôi hay nhảy con trỏ. Nhẹ nên vẩy cổ tay không tốn sức, chơi lâu đỡ mỏi. Phần mềm lưu được cấu hình vào bộ nhớ trong.", ["gamingMouse"]],
+      ["Cuộn nhanh và êm khi làm việc", "Lăn chuột vuốt một cái là chạy hết bảng tính dài, dừng lại cũng chính xác. Nút phụ bên hông gán được lệnh chuyển tab, đỡ phải dùng tổ hợp phím. Rê trên mặt bàn gỗ không cần lót vẫn nhận tốt.", ["officeMouse"]],
     ],
     mixed: [
       ["Tốt nhưng phần mềm đi kèm nặng", "Thiết bị dùng rất ổn. Phần mềm quản lý thì chiếm nhiều bộ nhớ và tự khởi động cùng máy. Mình lưu cấu hình vào thiết bị rồi gỡ hẳn phần mềm."],
       ["Ổn, nhưng hơi to với tay nhỏ", "Cầm chắc và các nút đặt hợp lý. Tay mình nhỏ nên với tới nút phụ hơi khó, phải đổi cách cầm. Ai tay to thì sẽ vừa.", ["mouse"]],
       ["Gõ tốt nhưng đèn nền tốn pin", "Cảm giác phím rất thích. Bật đèn nền thì pin chỉ được hơn một tuần, tắt đi thì hàng tháng. Mình tắt đèn và dùng thoải mái.", ["keyboard","wireless"]],
-      ["Chắc chắn nhưng nặng", "Khung kim loại làm thiết bị rất vững, không xê dịch khi gõ mạnh. Đổi lại nặng, mang đi lại thì bất tiện. Để cố định trên bàn thì đây là điểm cộng."],
+      ["Chắc chắn nhưng nặng", "Khung kim loại làm thiết bị rất vững, không xê dịch khi gõ mạnh. Đổi lại nặng, mang đi lại thì bất tiện. Để cố định trên bàn thì đây là điểm cộng.", ["keyboard"]],
       ["Tốt, nhưng thiếu cụm phím số", "Bố cục gọn nên chuột kê gần hơn, vai đỡ mỏi. Làm kế toán nhập số nhiều thì lại thiếu, phải mua bàn phím số rời. Tuỳ nhu cầu mà chọn.", ["keyboard"]],
     ],
     critical: [
@@ -336,7 +340,7 @@ const CONTENT = {
       ["Độ trễ rõ khi dùng Bluetooth", "Qua đầu thu riêng thì mượt, nhưng chuyển sang Bluetooth là thấy con trỏ hơi khựng lúc bắt đầu di chuyển. Làm việc thì chịu được, chơi game thì không. Nên dùng đầu thu kèm theo.", ["wireless"]],
       ["Nút cuộn bị nhảy ngược", "Cuộn xuống đôi khi trang nhảy ngược lên một đoạn, nhất là khi cuộn nhanh. Vệ sinh và cài lại phần mềm vẫn còn. Các nút khác thì bình thường.", ["mouse"]],
       ["Phím gõ ồn hơn mô tả", "Hãng ghi là êm nhưng thực tế gõ nhanh vẫn nghe lách cách rõ, họp online phải tắt mic. Thay đệm lót bên trong thì đỡ được một phần. Cảm giác gõ thì tốt.", ["keyboard"]],
-      ["Chân đế nghiêng dễ gãy", "Chân gạt phía sau bằng nhựa mỏng, mình gạt ra gạt vào vài lần là thấy lỏng và một bên nứt. Phải kê tạm. Phần còn lại dùng vẫn tốt."],
+      ["Chân đế nghiêng dễ gãy", "Chân gạt phía sau bằng nhựa mỏng, mình gạt ra gạt vào vài lần là thấy lỏng và một bên nứt. Phải kê tạm. Phần còn lại dùng vẫn tốt.", ["keyboard"]],
     ],
   },
   charging: {
@@ -422,7 +426,7 @@ const TAIL = {
   ],
   headphone: [
     (f) => `Thông số pin ghi là ${specValue(f, "batteryLife")}.`,
-    (f) => `Kết nối qua ${specValue(f, "bluetoothVersion")}.`,
+    (f) => `Kết nối: ${specValue(f, "bluetoothVersion")}.`,
     (f) => `Màng loa ${specValue(f, "driverSize")}, chuẩn kháng nước ${specValue(f, "waterproofRating")}.`,
   ],
   speaker: [
@@ -442,7 +446,7 @@ const TAIL = {
   ],
   peripheral: [
     (f) => `Thiết bị nặng ${specValue(f, "weight")}.`,
-    (f) => `Pin công bố ${specValue(f, "batteryLife")}, kết nối ${specValue(f, "connectivity")}.`,
+    (f) => `Pin: ${specValue(f, "batteryLife")}; kết nối: ${specValue(f, "connectivity")}.`,
     (f) => `Cơ chế bên trong là ${specValue(f, "panelType")}.`,
   ],
   charging: [
@@ -488,6 +492,9 @@ function buildFamilyReviews(families) {
     const group = REVIEW_GROUP[family.cat];
     const pool = CONTENT[group];
 
+    // Câu đã dùng cho sản phẩm này: hai bài cùng bậc sao không được ra cùng một câu.
+    const used = new Set();
+
     plan.forEach((rating, index) => {
       const tier = tierOf(rating);
 
@@ -502,7 +509,13 @@ function buildFamilyReviews(families) {
         );
       }
 
-      const [title, body] = eligible[(seed + index * 3) % eligible.length];
+      // Giữ đúng câu đã chọn như trước; chỉ khi trùng câu đã dùng mới nhảy sang câu kế tiếp chưa dùng.
+      let pick = (seed + index * 3) % eligible.length;
+      for (let step = 0; step < eligible.length && used.has(eligible[pick][0]); step += 1) {
+        pick = (pick + 1) % eligible.length;
+      }
+      const [title, body] = eligible[pick];
+      used.add(title);
       const tail = TAIL[group][(seed + index * 5) % TAIL[group].length](family);
       const content = `${body} ${tail}`;
 
