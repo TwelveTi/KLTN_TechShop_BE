@@ -34,8 +34,9 @@ class UserRepository {
     });
   }
 
-  findAndCountUsers({ limit, offset } = {}) {
+  findAndCountUsers({ limit, offset, where = {} } = {}) {
     return db.User.findAndCountAll({
+      where,
       attributes: { exclude: ["deletedAt"] },
       order: [["createdAt", "DESC"]],
       limit,

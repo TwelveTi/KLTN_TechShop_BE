@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const AppError = require("../utils/AppError");
 const { hashPassword } = require("../utils/passwordCrypto");
 const { toSafeUser } = require("../utils/userSerializer");
@@ -146,7 +147,20 @@ class UserService {
   async getAllUsers(query = {}) {
     const { page, limit, offset } = this.buildPagination(query);
 
-    const { rows, count } = await userRepository.findAndCountUsers({ limit, offset });
+    // Ô tìm kiếm của FE gửi `q`, Swagger ghi `keyword`; nhận cả hai.
+    const keyword = String(query.q ?? query.keyword ?? "").trim();
+    const where = {};
+    if (keyword) {
+      where[Op.or] = ["email", "fullName", "phone"].map((field) => ({ [field]: { [Op.like]: `%${keyword}%` } }));
+    }
+    if (["ADMIN", "CUSTOMER"].includes(query.role)) {
+      where.role = query.role;
+    }
+    if (["ACTIVE", "INACTIVE", "BLOCKED"].includes(query.status)) {
+      where.status = query.status;
+    }
+
+    const { rows, count } = await userRepository.findAndCountUsers({ limit, offset, where });
 
     return this.buildPagedResult(rows, count, page, limit);
   }

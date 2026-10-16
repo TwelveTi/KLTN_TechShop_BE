@@ -145,7 +145,7 @@ components:
         phone: { type: string, nullable: true }
         avatarUrl: { type: string, nullable: true }
         role: { type: string, enum: [ADMIN, CUSTOMER] }
-        status: { type: string, enum: [ACTIVE, INACTIVE, BANNED] }
+        status: { type: string, enum: [ACTIVE, INACTIVE, BLOCKED] }
         emailVerifiedAt: { type: string, format: date-time, nullable: true }
         lastLoginAt: { type: string, format: date-time, nullable: true }
 

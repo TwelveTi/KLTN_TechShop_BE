@@ -438,15 +438,16 @@
     parameters:
       - $ref: '#/components/parameters/Page'
       - $ref: '#/components/parameters/Limit'
-      - name: keyword
+      - name: q
         in: query
+        description: Tìm theo email, họ tên hoặc số điện thoại. Nhận cả tên cũ `keyword`.
         schema: { type: string }
       - name: role
         in: query
         schema: { type: string, enum: [ADMIN, CUSTOMER] }
       - name: status
         in: query
-        schema: { type: string, enum: [ACTIVE, INACTIVE, BANNED] }
+        schema: { type: string, enum: [ACTIVE, INACTIVE, BLOCKED] }
     responses:
       '200': { $ref: '#/components/responses/Ok' }
       '403': { $ref: '#/components/responses/Forbidden' }
@@ -466,7 +467,7 @@
               fullName: { type: string }
               phone: { type: string }
               role: { type: string, enum: [ADMIN, CUSTOMER] }
-              status: { type: string, enum: [ACTIVE, INACTIVE, BANNED] }
+              status: { type: string, enum: [ACTIVE, INACTIVE, BLOCKED] }
     responses:
       '201': { $ref: '#/components/responses/Created' }
       '400': { $ref: '#/components/responses/BadRequest' }
@@ -495,7 +496,7 @@
     tags: [Admin]
     summary: Sửa người dùng
     description: |
-      Đổi `status` sang `BANNED` có hiệu lực **ngay lần request kế tiếp** —
+      Đổi `status` sang `BLOCKED` có hiệu lực **ngay lần request kế tiếp** —
       `authMiddleware` đọc user từ database mỗi request, không chờ token hết hạn.
     parameters: [{ $ref: '#/components/parameters/IdPath' }]
     requestBody:
@@ -508,7 +509,7 @@
               fullName: { type: string }
               phone: { type: string }
               role: { type: string, enum: [ADMIN, CUSTOMER] }
-              status: { type: string, enum: [ACTIVE, INACTIVE, BANNED] }
+              status: { type: string, enum: [ACTIVE, INACTIVE, BLOCKED] }
     responses:
       '200': { $ref: '#/components/responses/Ok' }
       '400': { $ref: '#/components/responses/BadRequest' }

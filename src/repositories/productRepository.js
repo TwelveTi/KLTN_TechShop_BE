@@ -1,5 +1,6 @@
 const { Op, Sequelize } = require("sequelize");
 const db = require("../models");
+const { foldDiacritics } = require("../utils/textTokens");
 
 // Giá khách thực trả, cùng luật với pricing.resolveUnitPrice và thẻ sản phẩm ở FE:
 // giá sale chỉ tính khi > 0 và nhỏ hơn giá gốc. Lọc và sắp xếp theo giá đều dùng nó.
@@ -142,6 +143,44 @@ class ProductRepository {
     return resolved;
   }
 
+  // Mỗi từ trong ô tìm kiếm phải khớp tên sản phẩm, tên hãng hoặc tên danh mục (gồm danh mục con),
+  // nên "tai nghe sony", "gaming laptop" hay "điện thoại" đều ra kết quả dù không trùng nguyên văn tên.
+  async buildKeywordConditions(keyword) {
+    const tokens = [...new Set(keyword.trim().toLowerCase().split(/\s+/).filter(Boolean))].slice(0, 6);
+    if (tokens.length === 0) return [];
+
+    const [brands, categories] = await Promise.all([
+      db.Brand.findAll({ attributes: ["id", "name"], raw: true }),
+      db.Category.findAll({ attributes: ["id", "name"], raw: true }),
+    ]);
+    const matches = (name, token) => foldDiacritics(name).includes(foldDiacritics(token));
+
+    return Promise.all(
+      tokens.map(async (token) => {
+        const brandIds = brands.filter((b) => matches(b.name, token)).map((b) => b.id);
+        const matched = categories.filter((c) => matches(c.name, token)).map((c) => c.id);
+        const subtrees = await Promise.all(matched.map((id) => this.expandCategorySubtree(id)));
+        // Cha và con cùng khớp thì chỉ lấy con: "tai" khớp cả "Âm Thanh & Tai Nghe" lẫn "Tai Nghe",
+        // lấy cả nhánh cha sẽ kéo loa vào kết quả tìm tai nghe.
+        const categoryIds = [
+          ...new Set(
+            subtrees
+              .filter((tree, i) => !tree.some((id) => id !== matched[i] && matched.includes(id)))
+              .flat(),
+          ),
+        ];
+
+        return {
+          [Op.or]: [
+            { name: { [Op.like]: `%${token}%` } },
+            ...(brandIds.length ? [{ brandId: { [Op.in]: brandIds } }] : []),
+            ...(categoryIds.length ? [{ categoryId: { [Op.in]: categoryIds } }] : []),
+          ],
+        };
+      }),
+    );
+  }
+
   async buildWhere(query) {
     const where = {};
 
@@ -175,11 +214,9 @@ class ProductRepository {
       }
     }
 
-    if (query.keyword && query.keyword.trim()) {
-      where.name = { [Op.like]: `%${query.keyword.trim()}%` };
-    }
+    const keywordConditions = query.keyword ? await this.buildKeywordConditions(String(query.keyword)) : [];
 
-    const priceConditions = [];
+    const priceConditions = [...keywordConditions];
     if (Number(query.minPrice) > 0) {
       priceConditions.push(Sequelize.where(EFFECTIVE_PRICE, Op.gte, Number(query.minPrice)));
     }
