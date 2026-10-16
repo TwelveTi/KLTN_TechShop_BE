@@ -150,12 +150,32 @@ jobs:
 
       # Chưa cấu hình token thì bỏ qua chứ không báo đỏ: đường ống vẫn phải dùng
       # được trước khi tài khoản Railway sẵn sàng.
+      # `--ci` chờ Railway build xong và báo đỏ nếu build hỏng; `--service` vì project có cả MySQL.
       - name: Đẩy lên Railway
+        id: railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE: ${{ vars.RAILWAY_SERVICE }}
         run: |
           if [ -z "$RAILWAY_TOKEN" ]; then
             echo "::warning::Chưa có RAILWAY_TOKEN trong secrets, bỏ qua bước triển khai."
             exit 0
           fi
-          npx -y @railway/cli@latest up --detach
+          npx -y @railway/cli@latest up --ci --service "${RAILWAY_SERVICE:-techshop-be}"
+          echo "deployed=true" >> "$GITHUB_OUTPUT"
+
+      # Gọi thử API sau khi deploy: chặng này chỉ xanh khi staging thật sự trả lời.
+      - name: Kiểm tra staging còn sống
+        if: steps.railway.outputs.deployed == 'true' && vars.STAGING_API_URL != ''
+        env:
+          STAGING_API_URL: ${{ vars.STAGING_API_URL }}
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS "$STAGING_API_URL/api/v1/products?limit=1" > /dev/null; then
+              echo "Staging trả lời sau $i lần thử."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::Staging không trả lời sau 5 phút."
+          exit 1
