@@ -59,7 +59,7 @@ class DiscountService {
     const minOrderValue = pricing.toNumber(discount.minOrderValue);
     if (subtotal < minOrderValue) {
       throw new AppError(
-        `This code requires an order of at least ${Math.round(minOrderValue).toLocaleString("vi-VN")} d`,
+        `This code requires an order of at least ${Math.round(minOrderValue).toLocaleString("vi-VN")}₫`,
         409,
       );
     }
