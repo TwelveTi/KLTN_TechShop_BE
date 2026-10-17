@@ -11,6 +11,7 @@ db.AuthProvider = require("./authProviderModel")(sequelize, Sequelize.DataTypes)
 db.RefreshToken = require("./refreshTokenModel")(sequelize, Sequelize.DataTypes);
 db.OtpVerification = require("./otpVerificationModel")(sequelize, Sequelize.DataTypes);
 db.UserAddress = require("./userAddressModel")(sequelize, Sequelize.DataTypes);
+db.LoginLockout = require("./loginLockoutModel")(sequelize, Sequelize.DataTypes);
 
 db.Category = require("./categoryModel")(sequelize, Sequelize.DataTypes);
 db.Brand = require("./brandModel")(sequelize, Sequelize.DataTypes);

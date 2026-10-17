@@ -267,6 +267,8 @@ class PasswordService {
       await passwordRepository.updateProviderPassword(provider, await hashPassword(newPassword), { transaction });
       await passwordRepository.markOtpUsed(record, { transaction });
       await passwordRepository.revokeAllActiveSessions(record.userId, { transaction });
+      // Đã chứng minh sở hữu email, nên gỡ khoá đăng nhập do nhập sai nhiều lần.
+      await passwordRepository.clearLoginLockout(record.userId, { transaction });
 
       await transaction.commit();
 

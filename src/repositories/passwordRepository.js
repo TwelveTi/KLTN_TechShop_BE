@@ -141,6 +141,10 @@ class PasswordRepository {
     );
     return count;
   }
+
+  clearLoginLockout(userId, { transaction } = {}) {
+    return db.LoginLockout.destroy({ where: { userId }, transaction });
+  }
 }
 
 module.exports = new PasswordRepository();

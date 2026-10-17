@@ -32,6 +32,11 @@
 
       Hai limiter chạy cùng lúc: 8 lần **sai** / 15 phút cho mỗi cặp (IP, email),
       và 30 lần sai / 15 phút cho mỗi IP. Đăng nhập thành công không bị tính.
+
+      Thêm một lớp theo **tài khoản**, không phụ thuộc IP: sai 5 lần liên tiếp thì
+      tài khoản bị khoá 15 phút (`LOGIN_MAX_FAILED`, `LOGIN_LOCK_MINUTES`). Đang khoá
+      thì mật khẩu đúng cũng nhận 429. Đăng nhập thành công hoặc đặt lại mật khẩu
+      qua email thì xoá bộ đếm.
     requestBody:
       required: true
       content:

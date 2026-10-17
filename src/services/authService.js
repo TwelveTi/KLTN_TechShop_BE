@@ -17,6 +17,15 @@ const REFRESH_TOKEN_EXPIRES_IN_DAYS = 7;
 const REFRESH_TOKEN_REUSE_GRACE_MS = 30 * 1000;
 const REFRESH_TOKEN_ROTATE_WITHIN_MS = 24 * 60 * 60 * 1000;
 
+// Khoá theo TÀI KHOẢN, bổ sung cho limiter theo IP: kẻ dò mật khẩu đổi IP liên tục vẫn bị chặn.
+const LOGIN_MAX_FAILED = Number(process.env.LOGIN_MAX_FAILED) || 5;
+const LOGIN_LOCK_MINUTES = Number(process.env.LOGIN_LOCK_MINUTES) || 15;
+
+const lockedError = (lockedUntil, now) => {
+  const minutes = Math.max(1, Math.ceil((lockedUntil.getTime() - now.getTime()) / 60000));
+  return new AppError(`Too many failed sign-in attempts. Try again in ${minutes} minute(s) or reset your password.`, 429);
+};
+
 class AuthService {
   hashToken(token) {
     return crypto.createHash("sha256").update(token).digest("hex");
@@ -337,14 +346,28 @@ class AuthService {
       throw new AppError("Invalid email or password", 401);
     }
 
+    // Đang khoá thì chặn trước khi so mật khẩu: nhập đúng cũng không vào được, nên không dò tiếp được.
+    const now = new Date();
+    const lockout = await authRepository.findLoginLockout(user.id);
+    if (lockout?.lockedUntil && lockout.lockedUntil > now) {
+      throw lockedError(lockout.lockedUntil, now);
+    }
+
     const localProvider = user.authProviders?.[0];
     const isPasswordValid = await bcrypt.compare(password, localProvider.passwordHash);
 
     if (!isPasswordValid) {
+      const { lockedUntil } = await authRepository.recordFailedLogin(user.id, {
+        now,
+        maxAttempts: LOGIN_MAX_FAILED,
+        lockMs: LOGIN_LOCK_MINUTES * 60000,
+      });
+      if (lockedUntil && lockedUntil > now) throw lockedError(lockedUntil, now);
       throw new AppError("Invalid email or password", 401);
     }
 
     await Promise.all([
+      authRepository.clearLoginLockout(user.id),
       authRepository.updateUser(user, { lastLoginAt: new Date() }),
       authRepository.updateAuthProvider(localProvider, { lastUsedAt: new Date() }),
     ]);

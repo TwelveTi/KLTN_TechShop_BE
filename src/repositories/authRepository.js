@@ -92,6 +92,25 @@ class AuthRepository {
     });
   }
 
+  // ---- Khoá tài khoản khi đăng nhập sai nhiều lần ----
+  findLoginLockout(userId, { transaction } = {}) {
+    return db.LoginLockout.findByPk(userId, { transaction });
+  }
+
+  async recordFailedLogin(userId, { now, maxAttempts, lockMs }) {
+    const [row] = await db.LoginLockout.findOrCreate({ where: { userId }, defaults: { userId, failedCount: 0 } });
+    // Lần khoá trước đã hết hạn thì đếm lại từ đầu, không cộng dồn vào lần khoá cũ.
+    const expired = row.lockedUntil && row.lockedUntil <= now;
+    const failedCount = (expired ? 0 : row.failedCount) + 1;
+    const lockedUntil = failedCount >= maxAttempts ? new Date(now.getTime() + lockMs) : expired ? null : row.lockedUntil;
+    await row.update({ failedCount: failedCount >= maxAttempts ? 0 : failedCount, lockedUntil, lastFailedAt: now });
+    return { failedCount, lockedUntil };
+  }
+
+  clearLoginLockout(userId, { transaction } = {}) {
+    return db.LoginLockout.destroy({ where: { userId }, transaction });
+  }
+
   updateRefreshToken(token, changes, { transaction } = {}) {
     return token.update(changes, { transaction });
   }
