@@ -692,7 +692,10 @@ class AiService {
 
       for (const call of calls) {
         const result = await this.runTool(call);
-        products = result.products.length > 0 ? result.products : products;
+        // Gom sản phẩm của mọi lượt tìm, bỏ trùng: câu trả lời có thể giới thiệu món tìm được ở lượt trước.
+        // Bước lọc theo tên được nhắc trong câu trả lời ở `ask()` sẽ loại những món không dùng tới.
+        const known = new Set(products.map((product) => product.id));
+        products = [...products, ...result.products.filter((product) => !known.has(product.id))];
         if (result.ragSources?.length > 0) ragSources = result.ragSources;
         toolCalls.push({
           name: call.name,
