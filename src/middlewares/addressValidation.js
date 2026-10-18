@@ -59,7 +59,8 @@ const validateCreateAddress = (req, res, next) => {
         patternMessage: "Receiver phone must be a Vietnamese number, e.g. 0912345678",
       },
       { name: "province", label: "Province", required: true, maxLength: 100 },
-      { name: "district", label: "District", required: true, maxLength: 100 },
+      // Từ 7/2025 Việt Nam bỏ cấp quận/huyện; chỉ địa chỉ cũ còn giá trị này.
+      { name: "district", label: "District", required: false, maxLength: 100 },
       { name: "ward", label: "Ward", required: true, maxLength: 100 },
       { name: "addressLine", label: "Address line", required: true, maxLength: 255 },
       { name: "postalCode", label: "Postal code", required: false, maxLength: 20 },

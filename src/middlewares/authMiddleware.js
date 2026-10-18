@@ -1,6 +1,7 @@
 const db = require("../models");
 const AppError = require("../utils/AppError");
 const jwtUtils = require("../utils/jwt");
+const authRepository = require("../repositories/authRepository");
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -12,6 +13,12 @@ const authMiddleware = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
     const decoded = jwtUtils.verifyAccess(token);
+
+    // Access token phải thuộc một phiên còn sống. Thiếu bước này thì máy bị thu hồi phiên
+    // vẫn dùng token cũ thêm tối đa 15 phút cho tới khi token hết hạn.
+    if (!decoded.sid || !(await authRepository.findLiveSession(decoded.sid, decoded.id))) {
+      return next(new AppError("Session has been revoked", 401));
+    }
 
     const user = await db.User.findByPk(decoded.id, {
       attributes: ["id", "email", "fullName", "phone", "avatarUrl", "avatarPublicId", "role", "status", "emailVerifiedAt"],
@@ -69,6 +76,10 @@ const optionalAuth = async (req, res, next) => {
 
   try {
     const decoded = jwtUtils.verifyAccess(authHeader.split(" ")[1]);
+    // Phiên đã thu hồi thì coi như khách, giống authMiddleware.
+    if (!decoded.sid || !(await authRepository.findLiveSession(decoded.sid, decoded.id))) {
+      return next();
+    }
     const user = await db.User.findByPk(decoded.id, {
       attributes: ["id", "email", "role", "status"],
     });

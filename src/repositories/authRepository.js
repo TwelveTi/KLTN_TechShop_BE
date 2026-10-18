@@ -1,6 +1,9 @@
 const { Op } = require("sequelize");
 const db = require("../models");
 
+// Refresh token vừa xoay vòng vẫn dùng được thêm 30 giây cho các request đang bay.
+const REFRESH_TOKEN_REUSE_GRACE_MS = 30 * 1000;
+
 // Data-access for authentication: session-scoped reads of users, auth providers
 // and refresh tokens. Creating an account is userRepository's job.
 class AuthRepository {
@@ -77,6 +80,24 @@ class AuthRepository {
 
   // A refresh token that is still usable: not expired, and either not revoked or
   // revoked within the reuse-grace window.
+  // Phiên còn sống: chưa hết hạn, chưa bị thu hồi, hoặc vừa được xoay vòng trong 30 giây
+  // (request song song còn cầm token cũ). Đăng xuất, thu hồi, đổi mật khẩu đều đặt expiresAt = now
+  // nên bị chặn ngay, không có 30 giây đó.
+  findLiveSession(sessionId, userId, now = new Date()) {
+    return db.RefreshToken.findOne({
+      where: {
+        id: sessionId,
+        userId,
+        expiresAt: { [Op.gt]: now },
+        [Op.or]: [
+          { revokedAt: null },
+          { revokedAt: { [Op.gt]: new Date(now.getTime() - REFRESH_TOKEN_REUSE_GRACE_MS) } },
+        ],
+      },
+      attributes: ["id"],
+    });
+  }
+
   findRefreshTokenForRotation(tokenHash, { now, graceStartedAt, transaction, lock } = {}) {
     return db.RefreshToken.findOne({
       where: {
@@ -117,3 +138,4 @@ class AuthRepository {
 }
 
 module.exports = new AuthRepository();
+module.exports.REFRESH_TOKEN_REUSE_GRACE_MS = REFRESH_TOKEN_REUSE_GRACE_MS;

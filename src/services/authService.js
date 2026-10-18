@@ -14,7 +14,7 @@ const userService = require("./userService");
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const REFRESH_TOKEN_EXPIRES_IN_DAYS = 7;
-const REFRESH_TOKEN_REUSE_GRACE_MS = 30 * 1000;
+const { REFRESH_TOKEN_REUSE_GRACE_MS } = authRepository;
 const REFRESH_TOKEN_ROTATE_WITHIN_MS = 24 * 60 * 60 * 1000;
 
 // Khoá theo TÀI KHOẢN, bổ sung cho limiter theo IP: kẻ dò mật khẩu đổi IP liên tục vẫn bị chặn.
@@ -37,11 +37,14 @@ class AuthService {
     return expiresAt;
   }
 
-  createAccessToken(user) {
+  // `sid` là id phiên (dòng refresh_tokens). authMiddleware kiểm phiên này mỗi request,
+  // nên thu hồi phiên hay đăng xuất là access token đi kèm hết hiệu lực ngay.
+  createAccessToken(user, sessionId) {
     return jwtUtils.signAccess({
       id: user.id,
       email: user.email,
       role: user.role,
+      sid: sessionId,
     });
   }
 
@@ -52,13 +55,12 @@ class AuthService {
       role: user.role,
     };
 
-    const accessToken = this.createAccessToken(user);
     const refreshToken = jwtUtils.signRefresh({
       ...payload,
       tokenId: crypto.randomUUID(),
     });
 
-    await authRepository.createRefreshToken(
+    const session = await authRepository.createRefreshToken(
       {
         userId: user.id,
         tokenHash: this.hashToken(refreshToken),
@@ -68,6 +70,7 @@ class AuthService {
       },
       { transaction },
     );
+    const accessToken = this.createAccessToken(user, session.id);
 
     return { accessToken, refreshToken };
   }
@@ -432,7 +435,7 @@ class AuthService {
         storedRefreshToken.expiresAt.getTime() - now.getTime() <= REFRESH_TOKEN_ROTATE_WITHIN_MS;
 
       if (!shouldRotateRefreshToken) {
-        const accessToken = this.createAccessToken(user);
+        const accessToken = this.createAccessToken(user, storedRefreshToken.id);
 
         await transaction.commit();
 

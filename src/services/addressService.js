@@ -26,7 +26,7 @@ class AddressService {
           receiverName: data.receiverName,
           receiverPhone: data.receiverPhone,
           province: data.province,
-          district: data.district,
+          district: data.district || "",
           ward: data.ward,
           addressLine: data.addressLine,
           postalCode: data.postalCode || null,

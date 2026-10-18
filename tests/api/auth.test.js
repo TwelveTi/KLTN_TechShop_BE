@@ -144,3 +144,37 @@ test("đăng xuất thiết bị khác: phiên kia mất quyền, phiên hiện 
   assert.equal(phoneRefresh.status, 401);
   assert.equal(laptopRefresh.status, 200);
 });
+
+test("thu hồi một phiên: access token của máy đó bị chặn ngay, không đợi 15 phút", async () => {
+  const login = () =>
+    request(app).post("/api/v1/auth/login").send({ email: "an@example.com", password: PASSWORD });
+  const laptop = await login();
+  const phone = await login();
+  const me = (token) => request(app).get("/api/v1/users/me").set("Authorization", `Bearer ${token}`);
+
+  assert.equal((await me(phone.body.data.accessToken)).status, 200);
+
+  // Id phiên của máy kia nằm sẵn trong access token (claim `sid`).
+  const phoneSessionId = JSON.parse(Buffer.from(phone.body.data.accessToken.split(".")[1], "base64url")).sid;
+
+  const revoke = await request(app)
+    .delete(`/api/v1/auth/sessions/${phoneSessionId}`)
+    .set("Authorization", `Bearer ${laptop.body.data.accessToken}`)
+    .set("Cookie", refreshCookieOf(laptop));
+  assert.equal(revoke.status, 200);
+
+  assert.equal((await me(phone.body.data.accessToken)).status, 401);
+  assert.equal((await me(laptop.body.data.accessToken)).status, 200);
+});
+
+test("đăng xuất xong thì access token vừa dùng cũng hết hiệu lực", async () => {
+  const login = await request(app)
+    .post("/api/v1/auth/login")
+    .send({ email: "an@example.com", password: PASSWORD });
+  const token = login.body.data.accessToken;
+
+  await request(app).post("/api/v1/auth/logout").set("Cookie", refreshCookieOf(login));
+
+  const me = await request(app).get("/api/v1/users/me").set("Authorization", `Bearer ${token}`);
+  assert.equal(me.status, 401);
+});

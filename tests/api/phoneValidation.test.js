@@ -51,3 +51,16 @@ test("địa chỉ giao hàng từ chối số điện thoại người nhận s
   assert.equal((await create("not-a-phone")).status, 400);
   assert.equal((await create("0987654321")).status, 201);
 });
+
+test("địa chỉ theo đơn vị hành chính mới không cần quận/huyện", async () => {
+  const { district, ...withoutDistrict } = address("0912345678");
+  assert.ok(district);
+
+  const res = await request(app)
+    .post("/api/v1/addresses/me")
+    .set("Authorization", `Bearer ${customer.token}`)
+    .send({ ...withoutDistrict, province: "Thành phố Hồ Chí Minh", ward: "Phường Sài Gòn" });
+
+  assert.equal(res.status, 201);
+  assert.equal(res.body.data.district, "");
+});
