@@ -30,7 +30,7 @@ after(async () => {
 test("đăng ký với số điện thoại sai định dạng bị từ chối", async () => {
   const res = await request(app)
     .post("/api/v1/auth/register")
-    .send({ email: "new@example.com", password: "secret123", fullName: "Nguoi Moi", phone: "abc" });
+    .send({ email: "new@example.com", password: "Secret123", fullName: "Nguoi Moi", phone: "abc" });
 
   assert.equal(res.status, 400);
 });

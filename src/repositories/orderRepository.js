@@ -17,6 +17,7 @@ class OrderRepository {
           as: "items",
           attributes: [
             "id",
+            "productId",
             "productName",
             "productSku",
             "productImageUrl",
@@ -32,6 +33,8 @@ class OrderRepository {
           attributes: ["id", "receiverName", "receiverPhone", "province", "district", "ward", "addressLine"],
           required: false,
         },
+        // Cho trang "Đơn của tôi" biết đơn nào trả qua VNPay để hiện nút thanh toán lại.
+        { model: db.Payment, as: "payments", attributes: ["id", "paymentMethod"], required: false },
       ],
       order: [["createdAt", "DESC"]],
       transaction,

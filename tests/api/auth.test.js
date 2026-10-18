@@ -8,7 +8,7 @@ const { startTestApi } = require("./setup");
 let app;
 let db;
 
-const PASSWORD = "secret123";
+const PASSWORD = "Secret123";
 
 // Lấy cookie refreshToken từ header Set-Cookie để gửi lại ở request sau.
 const refreshCookieOf = (res) =>

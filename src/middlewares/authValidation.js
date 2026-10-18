@@ -4,6 +4,12 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Số Việt Nam: 0 hoặc +84, rồi 9–10 chữ số (giữ cả số 11 chữ số cũ).
 const PHONE_PATTERN = /^(0|\+84)\d{9,10}$/;
+// Mật khẩu mới: ít nhất 8 ký tự, có chữ hoa, chữ thường và chữ số. Khớp danh sách tick ở
+// trang đăng ký. Đăng nhập không áp luật này để tài khoản cũ vẫn vào được.
+const STRONG_PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+const STRONG_PASSWORD_MESSAGE =
+  "Password must be at least 8 characters and include upper case, lower case and a digit";
+
 const PHONE_FIELD = {
   name: "phone",
   label: "Phone",
@@ -71,7 +77,15 @@ const validateRegister = (req, res, next) => {
   return validate(
     [
       { name: "email", label: "Email", required: true, type: "email", maxLength: 255 },
-      { name: "password", label: "Password", required: true, type: "string", minLength: 6, maxLength: 72 },
+      {
+        name: "password",
+        label: "Password",
+        required: true,
+        type: "string",
+        maxLength: 72,
+        pattern: STRONG_PASSWORD_PATTERN,
+        patternMessage: STRONG_PASSWORD_MESSAGE,
+      },
       { name: "fullName", label: "Full name", required: true, type: "string", minLength: 2, maxLength: 150 },
       PHONE_FIELD,
     ],
@@ -121,6 +135,13 @@ const PASSWORD_FIELD = (name, label) => ({
   maxLength: 72,
 });
 
+// Mật khẩu đặt mới (đặt lại, đổi mật khẩu) theo cùng luật với lúc đăng ký.
+const NEW_PASSWORD_FIELD = (name, label) => ({
+  ...PASSWORD_FIELD(name, label),
+  pattern: STRONG_PASSWORD_PATTERN,
+  patternMessage: STRONG_PASSWORD_MESSAGE,
+});
+
 const OTP_PATTERN = /^\d{6}$/;
 
 const validateForgotPassword = (req, res, next) => {
@@ -155,7 +176,7 @@ const validateResetPassword = (req, res, next) => {
   return validate(
     [
       { name: "resetToken", label: "Reset token", required: true, type: "string", maxLength: 255 },
-      PASSWORD_FIELD("newPassword", "New password"),
+      NEW_PASSWORD_FIELD("newPassword", "New password"),
     ],
     req,
     res,
@@ -167,7 +188,7 @@ const validateChangePassword = (req, res, next) => {
   return validate(
     [
       PASSWORD_FIELD("currentPassword", "Current password"),
-      PASSWORD_FIELD("newPassword", "New password"),
+      NEW_PASSWORD_FIELD("newPassword", "New password"),
     ],
     req,
     res,

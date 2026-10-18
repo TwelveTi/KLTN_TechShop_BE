@@ -141,6 +141,20 @@ class AdminOrderRepository {
   incrementVariantStock(variant, quantity, { transaction }) {
     return variant.increment("stockQuantity", { by: quantity, transaction });
   }
+
+  // Số âm khi hoàn tiền; không để soldCount xuống dưới 0 với dữ liệu seed cũ.
+  async incrementSoldCount(product, quantity, { transaction }) {
+    const next = Math.max(0, Number(product.soldCount || 0) + quantity);
+    return product.update({ soldCount: next }, { transaction });
+  }
+
+  // Đơn COD có sẵn một dòng payment PENDING từ lúc đặt; thu tiền xong thì chốt nó.
+  settlePendingPayments(orderId, paidAt, { transaction }) {
+    return db.Payment.update(
+      { status: "SUCCESS", paidAt },
+      { where: { orderId, status: "PENDING", paymentMethod: "COD" }, transaction },
+    );
+  }
 }
 
 module.exports = new AdminOrderRepository();

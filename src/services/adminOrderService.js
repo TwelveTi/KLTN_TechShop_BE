@@ -6,8 +6,17 @@ const discountService = require("./discountService");
 
 const ORDER_STATUSES = ["PENDING", "PAID", "PROCESSING", "SHIPPING", "DELIVERED", "CANCELLED", "REFUNDED"];
 const PAYMENT_STATUSES = ["UNPAID", "PAID", "FAILED", "REFUNDED"];
-// Once an order reaches one of these, its status is frozen for the admin console.
-const TERMINAL_STATUSES = ["DELIVERED", "CANCELLED", "REFUNDED"];
+// Trạng thái chỉ đi tới, không lùi. Đơn đã giao, đã huỷ, đã hoàn tiền thì đóng băng.
+// FE giữ một bản sao ở AdminOrdersPage, sửa ở đây phải sửa kèm bên đó.
+const ALLOWED_TRANSITIONS = {
+  PENDING: ["PAID", "PROCESSING", "CANCELLED"],
+  PAID: ["PROCESSING", "REFUNDED"],
+  PROCESSING: ["SHIPPING", "CANCELLED", "REFUNDED"],
+  SHIPPING: ["DELIVERED", "CANCELLED", "REFUNDED"],
+  DELIVERED: [],
+  CANCELLED: [],
+  REFUNDED: [],
+};
 
 class AdminOrderService {
   buildPagination(query) {
@@ -95,24 +104,43 @@ class AdminOrderService {
         throw new AppError(`Order is already ${status}`, 409);
       }
 
-      if (TERMINAL_STATUSES.includes(fromStatus)) {
-        throw new AppError(`A ${fromStatus} order can no longer change status`, 409);
+      if (!ALLOWED_TRANSITIONS[fromStatus].includes(status)) {
+        throw new AppError(`A ${fromStatus} order cannot be moved to ${status}`, 409);
+      }
+
+      // Đơn đã thu tiền thì phải hoàn tiền chứ không huỷ; đơn chưa thu thì không có gì để hoàn.
+      const isPaid = order.paymentStatus === "PAID";
+      if (status === "CANCELLED" && isPaid) {
+        throw new AppError("This order has been paid. Refund it instead of cancelling", 409);
+      }
+      if (status === "REFUNDED" && !isPaid) {
+        throw new AppError("Only a paid order can be refunded", 409);
       }
 
       const updates = { status };
-      // Keep the payment/timestamp side-effects consistent with the lifecycle.
-      if (status === "CANCELLED" && !order.cancelledAt) {
-        updates.cancelledAt = new Date();
-        // Stock was reserved when the order was placed, so cancelling has to
-        // give it back — otherwise every cancelled order permanently shrinks
-        // the sellable inventory.
+
+      if (status === "CANCELLED" || status === "REFUNDED") {
+        // Kho đã giữ từ lúc đặt hàng nên huỷ hay hoàn tiền đều phải trả lại.
         await this.restoreStock(order.id, transaction);
+      }
+      if (status === "CANCELLED") {
+        updates.cancelledAt = order.cancelledAt || new Date();
         // Cùng thứ tự khoá với lúc khách tự huỷ: sản phẩm trước, voucher sau.
         await discountService.releaseForOrder(order.id, transaction);
       }
-      if (status === "PAID" && !order.paidAt) {
-        updates.paidAt = new Date();
+      if (status === "REFUNDED") {
+        updates.paymentStatus = "REFUNDED";
+        await this.adjustSoldCount(order.id, -1, transaction);
+      }
+
+      // Admin xác nhận đã thu tiền, hoặc giao xong đơn COD (shipper thu tiền khi giao).
+      // Thiếu bước này thì đơn COD giao xong vẫn "Chưa thanh toán", không vào doanh thu.
+      if ((status === "PAID" || status === "DELIVERED") && !isPaid) {
+        const paidAt = new Date();
+        updates.paidAt = paidAt;
         updates.paymentStatus = "PAID";
+        await adminOrderRepository.settlePendingPayments(order.id, paidAt, { transaction });
+        await this.adjustSoldCount(order.id, 1, transaction);
       }
 
       await adminOrderRepository.updateOrder(order, updates, { transaction });
@@ -166,6 +194,20 @@ class AdminOrderService {
       }
     }
   }
+
+  // soldCount chỉ đổi theo tiền thật: cộng khi đơn được thu tiền, trừ khi hoàn tiền.
+  async adjustSoldCount(orderId, sign, transaction) {
+    const items = await adminOrderRepository.findOrderItems(orderId, { transaction });
+
+    for (const item of items) {
+      if (!item.productId) continue;
+      const product = await adminOrderRepository.findProductForUpdate(item.productId, { transaction });
+      if (product) {
+        await adminOrderRepository.incrementSoldCount(product, sign * item.quantity, { transaction });
+      }
+    }
+  }
 }
 
 module.exports = new AdminOrderService();
+module.exports.ALLOWED_TRANSITIONS = ALLOWED_TRANSITIONS;

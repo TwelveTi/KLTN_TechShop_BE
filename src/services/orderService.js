@@ -40,7 +40,13 @@ class OrderService {
 
     return {
       statusSummary,
-      orders,
+      // COD có dòng payment ngay lúc đặt; VNPay chỉ có khi đã xin link, nên không có dòng
+      // COD nào nghĩa là đơn VNPay. FE dùng để hiện nút thanh toán lại.
+      orders: orders.map((order) => {
+        const { payments, ...plain } = order.toJSON();
+        const isCod = (payments || []).some((payment) => payment.paymentMethod === "COD");
+        return { ...plain, paymentMethod: isCod ? "COD" : "VNPAY" };
+      }),
     };
   }
 

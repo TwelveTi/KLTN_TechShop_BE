@@ -122,3 +122,28 @@ test("huỷ lần hai bị từ chối, kho và lượt dùng mã không bị tr
   assert.equal(await stockOf(), stockBefore + 1);
   assert.equal((await discount.reload()).usedCount, 0);
 });
+
+test("trạng thái chỉ đi tới; giao xong đơn COD thì thành đã thanh toán và cộng soldCount", async () => {
+  const order = await placeOrder();
+  assert.equal(order.status, 201);
+  const id = order.body.data.id;
+  const soldBefore = (await laptop.reload()).soldCount;
+
+  // Chưa qua xử lý thì không nhảy thẳng sang giao.
+  assert.equal((await setStatus(id, "DELIVERED")).status, 409);
+  assert.equal((await setStatus(id, "PROCESSING")).status, 200);
+  assert.equal((await setStatus(id, "SHIPPING")).status, 200);
+  // Không lùi về chờ xác nhận, nếu không khách lại tự huỷ được đơn đang giao.
+  assert.equal((await setStatus(id, "PENDING")).status, 409);
+
+  const delivered = await setStatus(id, "DELIVERED");
+  assert.equal(delivered.status, 200);
+  assert.equal(delivered.body.data.paymentStatus, "PAID");
+  assert.ok(delivered.body.data.paidAt);
+  assert.equal((await laptop.reload()).soldCount, soldBefore + 1);
+
+  const payment = await db.Payment.findOne({ where: { orderId: id } });
+  assert.equal(payment.status, "SUCCESS");
+
+  assert.equal((await setStatus(id, "CANCELLED")).status, 409);
+});
