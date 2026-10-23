@@ -126,6 +126,57 @@ class DiscountService {
   }
 
   /**
+   * Mã khách đang dùng được, cho danh sách chọn mã ở trang thanh toán.
+   *
+   * Bỏ những mã khách đã dùng hết lượt của mình. Mã chưa đủ giá trị đơn tối thiểu vẫn
+   * hiện kèm số tiền còn thiếu, để khách biết mua thêm bao nhiêu thì dùng được.
+   */
+  async listAvailableForUser(userId, subtotal = null, now = new Date()) {
+    const discounts = await discountRepository.findAvailable(now);
+    const usesByDiscount = await discountRepository.countActiveUsagesByUserForDiscounts(
+      discounts.filter((discount) => discount.usageLimitPerUser !== null).map((discount) => discount.id),
+      userId,
+    );
+    const amount = subtotal === null ? null : pricing.roundMoney(subtotal);
+
+    const items = discounts
+      .filter(
+        (discount) =>
+          discount.usageLimitPerUser === null ||
+          (usesByDiscount.get(discount.id) || 0) < discount.usageLimitPerUser,
+      )
+      .map((discount) => {
+        const minOrderValue = pricing.toNumber(discount.minOrderValue);
+        const eligible = amount === null ? null : amount >= minOrderValue;
+
+        return {
+          code: discount.code,
+          name: discount.name,
+          description: discount.description,
+          discountType: discount.discountType,
+          value: pricing.toNumber(discount.value),
+          maxDiscountAmount:
+            discount.maxDiscountAmount === null ? null : pricing.toNumber(discount.maxDiscountAmount),
+          minOrderValue,
+          endsAt: discount.endsAt,
+          eligible,
+          shortfall: eligible === false ? pricing.roundMoney(minOrderValue - amount) : 0,
+          discountAmount: eligible ? this.computeAmount(discount, amount) : 0,
+        };
+      });
+
+    // Mã dùng được và giảm nhiều nhất lên đầu, rồi tới mã cần ít tiền mua thêm nhất.
+    items.sort(
+      (a, b) =>
+        Number(b.eligible === true) - Number(a.eligible === true) ||
+        b.discountAmount - a.discountAmount ||
+        a.minOrderValue - b.minOrderValue,
+    );
+
+    return { items };
+  }
+
+  /**
    * Apply a code inside the order-creation transaction.
    *
    * Called by orderService with its own transaction so the voucher row lock,

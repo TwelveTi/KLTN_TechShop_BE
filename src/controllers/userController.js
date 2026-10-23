@@ -48,13 +48,13 @@ class UserController {
   }
 
   async updateUser(req, res) {
-    const user = await userService.updateUser(req.params.id, req.body);
+    const user = await userService.updateUser(req.params.id, req.body, req.user.id);
 
     return APIResponse.success(res, "User updated successfully", user);
   }
 
   async deleteUser(req, res) {
-    const result = await userService.deleteUser(req.params.id);
+    const result = await userService.deleteUser(req.params.id, req.user.id);
 
     return APIResponse.success(res, result.message);
   }

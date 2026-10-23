@@ -15,6 +15,15 @@ test("lỗi quá hạn của SDK được coi là quá tải và chuyển sang m
   assert.deepEqual(classifyError(aborted), { kind: "overloaded", tryNextModel: true });
 });
 
+test("504 DEADLINE_EXCEEDED của Google được coi là quá tải và chuyển sang model khác", () => {
+  // Nguyên văn lỗi Gemini trả về lúc kiểm thử 23/10.
+  const deadline = Object.assign(
+    new Error('{"error":{"code":504,"message":"Deadline expired before operation could complete.","status":"DEADLINE_EXCEEDED"}}'),
+    { name: "ApiError" },
+  );
+  assert.deepEqual(classifyError(deadline), { kind: "overloaded", tryNextModel: true });
+});
+
 // Câu trả lời thật lấy từ lượt test tay 16/10.
 const { pickMentionedProducts } = aiService;
 const laptops = [

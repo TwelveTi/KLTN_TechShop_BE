@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const AppError = require("../utils/AppError");
+const { likeContains } = require("../utils/sqlLike");
 const adminOrderRepository = require("../repositories/adminOrderRepository");
 const productRepository = require("../repositories/productRepository");
 const discountService = require("./discountService");
@@ -55,9 +56,9 @@ class AdminOrderService {
     const search = typeof query.search === "string" ? query.search.trim() : "";
     if (search) {
       where[Op.or] = [
-        { orderCode: { [Op.like]: `%${search}%` } },
-        { receiverName: { [Op.like]: `%${search}%` } },
-        { receiverPhone: { [Op.like]: `%${search}%` } },
+        { orderCode: { [Op.like]: likeContains(search) } },
+        { receiverName: { [Op.like]: likeContains(search) } },
+        { receiverPhone: { [Op.like]: likeContains(search) } },
       ];
     }
 

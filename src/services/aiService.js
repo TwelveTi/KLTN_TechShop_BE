@@ -5,6 +5,7 @@ const recommendationRepository = require("../repositories/recommendationReposito
 const ragService = require("./ragService");
 const { getAgent } = require("./ai/prompts");
 const explanationPrompt = require("./ai/prompts/explanation");
+const { LANGUAGES, DEFAULT_LANGUAGE } = require("./ai/prompts/guardrails");
 const {
   TEMPERATURE,
   MAX_OUTPUT_TOKENS,
@@ -100,8 +101,8 @@ const SEARCH_PRODUCTS_TOOL = {
 const FIND_BY_NAME_TOOL = {
   name: "find_products_by_name",
   description:
-    "Tra sản phẩm theo TÊN mà người dùng nhắc tới. Dùng khi người dùng muốn so sánh những " +
-    "sản phẩm cụ thể. Chỉ trả về sản phẩm có thật trong kho, kèm thông số để so sánh.",
+    "Tra sản phẩm theo TÊN mà người dùng nhắc tới. Dùng khi người dùng hỏi về hoặc muốn so sánh " +
+    "những sản phẩm cụ thể. Chỉ trả về sản phẩm có thật trong kho, kèm giá và thông số.",
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -143,8 +144,8 @@ const SEARCH_KNOWLEDGE_BASE_TOOL = {
  * Tool khả dụng, tra theo tên.
  *
  * Mỗi agent tự khai dùng những tool nào (`toolNames`) thay vì service gắn cứng
- * một tool cho mọi agent. Advisor chỉ cần tìm theo ràng buộc; Comparison phải
- * tra theo tên trước rồi mới so được. Tách vậy nên thêm agent thứ ba là viết
+ * một tool cho mọi agent. Advisor tìm theo ràng buộc và tra theo tên khi khách gọi
+ * tên sản phẩm; Comparison phải tra theo tên trước rồi mới so được. Tách vậy nên thêm agent thứ ba là viết
  * thêm một file prompt, không phải sửa vòng lặp gọi model.
  */
 const TOOLS = {
@@ -166,6 +167,14 @@ const DESCRIPTION_MAX_CHARS = 900;
 // Cửa sổ hành vi dùng làm bằng chứng cho lời giải thích. Ngắn hơn hẳn 90 ngày
 // của bộ gợi ý: "bạn từng xem cái này ba tháng trước" không thuyết phục ai.
 const EXPLANATION_WINDOW_DAYS = 30;
+
+// Cache lời giải thích theo ngôn ngữ trong `reasonMetadata`. `explanation` giữ cho tiếng Việt như bản cũ.
+const EXPLANATION_FIELDS = { vi: "explanation", en: "explanationEn" };
+
+const NO_ANSWER = {
+  vi: "Xin lỗi, hiện tại tôi chưa trả lời được câu hỏi này.",
+  en: "Sorry, I can't answer this question right now.",
+};
 
 /** `["laptop", "phone"]` hoặc `[{name}]` → danh sách tên. Cột JSON nên phải phòng cả hai. */
 const toNameList = (value) => {
@@ -218,6 +227,7 @@ class AiService {
     conversationId = null,
     message,
     conversationType = "PRODUCT_ADVISOR",
+    language = DEFAULT_LANGUAGE,
   }) {
     if (!isConfigured()) {
       throw new AppError("AI advisor is not configured on this server", 503);
@@ -255,6 +265,7 @@ class AiService {
           contents: [...contents],
           conversationType: conversation.conversationType,
           model,
+          language,
         }),
     );
 
@@ -270,7 +281,7 @@ class AiService {
       content: answer,
       // The product ids are stored beside the text so a later evaluation can ask
       // what the answer was built from without re-parsing Vietnamese prose.
-      structuredData: { productIds: products.map((product) => product.id), toolCalls },
+      structuredData: { productIds: products.map((product) => product.id), toolCalls, language },
       // Model THỰC SỰ đã trả lời, không phải model được cấu hình. Có fallback
       // rồi mà vẫn ghi hằng số là nói dối về chính phép chạy — và đây là cột
       // chương Đánh giá đọc để biết số đo thuộc về model nào.
@@ -364,7 +375,7 @@ class AiService {
    * `reasonMetadata.explanation` — cột JSON có sẵn, không cần migration, và lời
    * giải thích nằm ngay cạnh chính dòng dữ liệu nó giải thích.
    */
-  async explainRecommendation({ userId, itemId }) {
+  async explainRecommendation({ userId, itemId, language = DEFAULT_LANGUAGE }) {
     if (!isConfigured()) {
       throw new AppError("AI advisor is not configured on this server", 503);
     }
@@ -377,9 +388,10 @@ class AiService {
     }
 
     const metadata = item.reasonMetadata || {};
+    const field = EXPLANATION_FIELDS[language];
 
-    if (metadata.explanation) {
-      return { itemId: item.id, explanation: metadata.explanation, cached: true };
+    if (metadata[field]) {
+      return { itemId: item.id, explanation: metadata[field], cached: true, language };
     }
 
     const signals = await this.collectExplanationSignals({ userId, item });
@@ -400,7 +412,7 @@ class AiService {
     const { text, model } = await this.runWithFallback((candidate) =>
       this.generateText({
         model: candidate,
-        system: explanationPrompt.SYSTEM,
+        system: explanationPrompt.buildSystem(language),
         prompt: explanationPrompt.buildUserPrompt({
           product,
           dominant: metadata.dominant,
@@ -412,10 +424,10 @@ class AiService {
     const explanation = text.trim();
 
     await recommendationRepository.updateItem(item, {
-      reasonMetadata: { ...metadata, explanation, explainedAt: new Date().toISOString(), model },
+      reasonMetadata: { ...metadata, [field]: explanation, explainedAt: new Date().toISOString(), model },
     });
 
-    return { itemId: item.id, explanation, cached: false, model };
+    return { itemId: item.id, explanation, cached: false, model, language };
   }
 
   /**
@@ -597,10 +609,10 @@ class AiService {
    * the shopper always gets prose instead of a turn that silently ends on an
    * unanswered tool call.
    */
-  async runToolLoop({ contents, conversationType, model }) {
+  async runToolLoop({ contents, conversationType, model, language = DEFAULT_LANGUAGE }) {
     const client = getClient();
     const agent = getAgent(conversationType);
-    const systemInstruction = agent.buildSystemInstruction(await loadVocabulary());
+    const systemInstruction = agent.buildSystemInstruction(await loadVocabulary(), language);
 
     // Agent nào chỉ thấy tool của agent đó. Comparison không nên vô tình dùng
     // được một tool chỉ Advisor mới có ngữ cảnh để dùng đúng.
@@ -635,7 +647,7 @@ class AiService {
           role: "user",
           parts: [
             {
-              text: "Đã tìm xong. Hãy trả lời ngay bây giờ bằng dữ liệu đã có ở trên, không gọi thêm tool nữa.",
+              text: `Đã tìm xong. Hãy trả lời ngay bây giờ bằng ${LANGUAGES[language]}, dùng dữ liệu đã có ở trên, không gọi thêm tool nữa.`,
             },
           ],
         });
@@ -672,7 +684,7 @@ class AiService {
 
       if (calls.length === 0 || toolsExhausted) {
         return {
-          answer: response.text || "Xin lỗi, hiện tại tôi chưa trả lời được câu hỏi này.",
+          answer: response.text || NO_ANSWER[language],
           products,
           ragSources,
           toolCalls,
@@ -933,20 +945,21 @@ const toModelView = (product, { verbose = false } = {}) => ({
  * chỉ dịch phân loại thành câu chữ và mã HTTP, nên hai nơi không thể lệch nhau
  * khi Google đổi định dạng lỗi.
  */
+// Viết tiếng Anh như mọi lỗi khác của API; FE dịch sang tiếng Việt qua vi.js theo ngôn ngữ đang chọn.
 const ERROR_MESSAGES = {
   quotaDaily: [
-    "Trợ lý đã dùng hết lượt hỏi miễn phí trong ngày hôm nay. Bạn quay lại vào ngày mai nhé.",
+    "The advisor has used up today's free questions. Please come back tomorrow.",
     429,
   ],
   quotaMinute: [
-    "Trợ lý đang nhận quá nhiều câu hỏi. Bạn đợi khoảng một phút rồi hỏi lại nhé.",
+    "The advisor is receiving too many questions. Please wait about a minute and try again.",
     429,
   ],
-  modelMissing: ["Trợ lý chưa được cấu hình đúng trên máy chủ này", 503],
-  auth: ["Trợ lý chưa được cấu hình đúng trên máy chủ này", 503],
+  modelMissing: ["The advisor is not configured correctly on this server", 503],
+  auth: ["The advisor is not configured correctly on this server", 503],
   // Chỉ tới được đây khi MỌI model dự phòng đều quá tải cùng lúc — hiếm, và
   // khác hẳn "chưa cấu hình": lần này thử lại thật sự có ích.
-  overloaded: ["Trợ lý đang quá tải. Bạn thử lại sau một chút nhé.", 503],
+  overloaded: ["The advisor is overloaded. Please try again in a moment.", 503],
 };
 
 /**

@@ -1,5 +1,6 @@
 const { Op, Sequelize } = require("sequelize");
 const db = require("../models");
+const { likeContains } = require("../utils/sqlLike");
 const { foldDiacritics } = require("../utils/textTokens");
 
 // Giá khách thực trả, cùng luật với pricing.resolveUnitPrice và thẻ sản phẩm ở FE:
@@ -74,7 +75,7 @@ class ProductRepository {
         [Op.or]: [
           { slug: `seed-${catParam}` },
           { slug: catParam.replace(/^seed-/, "") },
-          { name: { [Op.like]: `%${catParam}%` } },
+          { name: { [Op.like]: likeContains(catParam) } },
         ],
       },
       attributes: ["id"],
@@ -172,7 +173,7 @@ class ProductRepository {
 
         return {
           [Op.or]: [
-            { name: { [Op.like]: `%${token}%` } },
+            { name: { [Op.like]: likeContains(token) } },
             ...(brandIds.length ? [{ brandId: { [Op.in]: brandIds } }] : []),
             ...(categoryIds.length ? [{ categoryId: { [Op.in]: categoryIds } }] : []),
           ],
@@ -311,7 +312,8 @@ class ProductRepository {
   }
 
   bulkCreateImages(images, { transaction } = {}) {
-    return db.ProductImage.bulkCreate(images, { transaction });
+    // validate: true để bulkCreate chạy luật của model như create, mặc định nó bỏ qua.
+    return db.ProductImage.bulkCreate(images, { transaction, validate: true });
   }
 
   destroyVariantsByProduct(productId, { transaction } = {}) {
@@ -319,7 +321,7 @@ class ProductRepository {
   }
 
   bulkCreateVariants(variants, { transaction } = {}) {
-    return db.ProductVariant.bulkCreate(variants, { transaction });
+    return db.ProductVariant.bulkCreate(variants, { transaction, validate: true });
   }
 
   // ---- Biến thể từng cái một: giữ nguyên id để giỏ hàng và đơn hàng không mất liên kết ----

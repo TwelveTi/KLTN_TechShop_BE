@@ -11,6 +11,7 @@ class AiController {
       sessionId: req.sessionKey || null,
       conversationId: req.body.conversationId,
       message: req.body.message,
+      language: req.body.language,
     });
 
     return APIResponse.success(res, "Advisor answered successfully", result);
@@ -26,6 +27,7 @@ class AiController {
       conversationId: req.body.conversationId,
       message: req.body.message,
       conversationType: "PRODUCT_COMPARISON",
+      language: req.body.language,
     });
 
     return APIResponse.success(res, "Comparison answered successfully", result);
@@ -35,6 +37,7 @@ class AiController {
     const result = await aiService.explainRecommendation({
       userId: req.user.id,
       itemId: req.params.itemId,
+      language: req.body?.language,
     });
 
     return APIResponse.success(res, "Explanation ready", result);

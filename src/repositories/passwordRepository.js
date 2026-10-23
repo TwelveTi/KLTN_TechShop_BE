@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const db = require("../models");
 const { PASSWORD_RESET_PURPOSE } = require("../configs/passwordConfig");
+const { loginLockoutKey } = require("../utils/tokenHash");
 
 // Data-access for the password-management flow: the user + LOCAL provider it
 // resets, the OTP records, and the session (refresh token) revocation on
@@ -142,8 +143,11 @@ class PasswordRepository {
     return count;
   }
 
-  clearLoginLockout(userId, { transaction } = {}) {
-    return db.LoginLockout.destroy({ where: { userId }, transaction });
+  // Khoá đăng nhập tính theo email, nên tra email của tài khoản rồi mới xoá.
+  async clearLoginLockout(userId, { transaction } = {}) {
+    const user = await db.User.findByPk(userId, { attributes: ["email"], transaction });
+    if (!user) return 0;
+    return db.LoginLockout.destroy({ where: { emailKey: loginLockoutKey(user.email) }, transaction });
   }
 }
 

@@ -1,4 +1,4 @@
-const { IDENTITY } = require("./guardrails");
+const { IDENTITY, buildLanguageRule } = require("./guardrails");
 
 // RECOMMENDATION_EXPLANATION — "vì sao tôi được gợi ý sản phẩm này?".
 //
@@ -40,6 +40,9 @@ const SYSTEM = [
   "6. Nếu dữ liệu chỉ có mức độ phổ biến, hãy nói thật là sản phẩm này đang được nhiều",
   "   người mua — đừng giả vờ đó là gợi ý cá nhân hoá.",
 ].join("\n");
+
+// Thêm quy tắc ngôn ngữ vào cuối, để lời giải thích theo ngôn ngữ giao diện của khách.
+const buildSystem = (language) => [SYSTEM, "", "NGÔN NGỮ:", buildLanguageRule(language)].join("\n");
 
 /** Nhãn tiếng Việt cho từng thành phần, dùng khi mô tả tín hiệu nào mạnh nhất. */
 const SIGNAL_LABELS = {
@@ -86,4 +89,4 @@ function buildUserPrompt({ product, dominant, signals }) {
   return lines.join("\n");
 }
 
-module.exports = { SYSTEM, SIGNAL_LABELS, buildUserPrompt };
+module.exports = { SYSTEM, SIGNAL_LABELS, buildSystem, buildUserPrompt };

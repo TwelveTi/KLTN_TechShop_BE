@@ -38,7 +38,12 @@ function readCookie(req, cookieName) {
 
     const name = cookie.slice(0, separatorIndex).trim();
     const value = cookie.slice(separatorIndex + 1).trim();
-    acc[name] = decodeURIComponent(value);
+    // Cookie mã hoá hỏng thì bỏ qua cookie đó, không để decodeURIComponent ném lỗi thành 500.
+    try {
+      acc[name] = decodeURIComponent(value);
+    } catch {
+      // Bỏ qua.
+    }
     return acc;
   }, {});
 
@@ -52,5 +57,6 @@ function getRefreshTokenFromCookie(req) {
 module.exports = {
   clearRefreshTokenCookie,
   getRefreshTokenFromCookie,
+  readCookie,
   setRefreshTokenCookie,
 };

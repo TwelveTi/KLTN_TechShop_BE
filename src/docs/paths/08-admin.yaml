@@ -548,6 +548,7 @@
     description: |
       Đổi `status` sang `BLOCKED` có hiệu lực **ngay lần request kế tiếp** —
       `authMiddleware` đọc user từ database mỗi request, không chờ token hết hạn.
+      Admin không được tự đổi `role` của mình khỏi `ADMIN` hay tự đổi `status` khỏi `ACTIVE`, trả 409.
     parameters: [{ $ref: '#/components/parameters/IdPath' }]
     requestBody:
       required: true
@@ -565,14 +566,17 @@
       '400': { $ref: '#/components/responses/BadRequest' }
       '403': { $ref: '#/components/responses/Forbidden' }
       '404': { $ref: '#/components/responses/NotFound' }
+      '409': { $ref: '#/components/responses/Conflict' }
   delete:
     tags: [Admin]
     summary: Xoá người dùng
+    description: Admin không được tự xoá tài khoản của mình, trả 409.
     parameters: [{ $ref: '#/components/parameters/IdPath' }]
     responses:
       '200': { $ref: '#/components/responses/Ok' }
       '403': { $ref: '#/components/responses/Forbidden' }
       '404': { $ref: '#/components/responses/NotFound' }
+      '409': { $ref: '#/components/responses/Conflict' }
 
 /admin/uploads/products/images:
   post:

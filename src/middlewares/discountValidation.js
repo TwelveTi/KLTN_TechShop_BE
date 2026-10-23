@@ -42,6 +42,26 @@ const validateApplyDiscount = (req, res, next) => {
   return sendFirstError(errors, next);
 };
 
+// `subtotal` tuỳ chọn: có thì server tính luôn mã nào dùng được và giảm bao nhiêu.
+const validateAvailableDiscounts = (req, res, next) => {
+  const raw = req.query.subtotal;
+
+  // Express 5 đọc lại req.query mỗi lần truy cập, nên giá trị đã kiểm tra để ở trường riêng.
+  if (raw === undefined || raw === "") {
+    req.discountSubtotal = null;
+    return next();
+  }
+
+  const subtotal = Number(raw);
+
+  if (!Number.isFinite(subtotal) || subtotal < 0) {
+    return next(new AppError("subtotal must be a number greater than or equal to 0", 400));
+  }
+
+  req.discountSubtotal = subtotal;
+  return next();
+};
+
 const validateMoney = (body, field, label, errors, { required = false } = {}) => {
   if (body[field] === undefined || body[field] === null || body[field] === "") {
     if (required) {
@@ -159,5 +179,6 @@ module.exports = {
   DISCOUNT_TYPES,
   DISCOUNT_STATUSES,
   validateApplyDiscount,
+  validateAvailableDiscounts,
   validateDiscount,
 };

@@ -66,7 +66,7 @@ const RULES = [
  * và model chọn nhánh khác nhau giữa các lượt.
  */
 const LENGTH_RULE = [
-  "- Trả lời bằng tiếng Việt. Đây là câu trả lời SO SÁNH nên được dài hơn bình thường,",
+  "- Đây là câu trả lời SO SÁNH nên được dài hơn bình thường,",
   "  nhưng mỗi ý một dòng ngắn, không viết thành đoạn văn dài.",
 ].join("\n");
 
@@ -82,12 +82,13 @@ const LENGTH_RULE = [
  * Quy tắc rút ra: agent nào khai `search_products` thì phải nhận vocabulary.
  * Một tool không dùng đúng được tệ hơn hẳn vài trăm token tiết kiệm.
  */
-const buildSystemInstruction = (vocabulary) =>
+const buildSystemInstruction = (vocabulary, language) =>
   composeSystemInstruction({
     role: ROLE,
     rules: RULES,
     vocabulary: renderVocabulary(vocabulary),
     lengthRule: LENGTH_RULE,
+    language,
   });
 
 module.exports = {

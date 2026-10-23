@@ -4,7 +4,19 @@ const cloudinary = require("../configs/cloudinary");
 const AppError = require("../utils/AppError");
 const logger = require("../utils/logger");
 
+const PRODUCT_IMAGE_FOLDER = "techshop/products";
+
 class UploadService {
+  // Chỉ ảnh trong thư mục sản phẩm mới được xoá theo danh sách; avatar và ảnh khác không bao giờ bị đụng tới.
+  isProductImagePublicId(publicId) {
+    return (
+      typeof publicId === "string" &&
+      publicId.startsWith(`${PRODUCT_IMAGE_FOLDER}/`) &&
+      !publicId.includes("..") &&
+      publicId.length <= 255
+    );
+  }
+
   assertCloudinaryConfigured(meta = {}) {
     if (
       !process.env.CLOUDINARY_CLOUD_NAME ||
@@ -115,7 +127,7 @@ class UploadService {
         const result = await this.uploadBuffer(
           optimizedBuffer,
           {
-            folder: "techshop/products",
+            folder: PRODUCT_IMAGE_FOLDER,
             resource_type: "image",
             format: "webp",
             quality: "auto:best",
@@ -227,7 +239,7 @@ class UploadService {
   }
 
   async deleteMany(publicIds = [], meta = {}) {
-    const validPublicIds = publicIds.filter(Boolean);
+    const validPublicIds = publicIds.filter((publicId) => this.isProductImagePublicId(publicId));
 
     if (!validPublicIds.length) {
       return [];
@@ -237,4 +249,9 @@ class UploadService {
   }
 }
 
-module.exports = new UploadService();
+const uploadService = new UploadService();
+// Bind để truyền thẳng vào Array.filter được.
+uploadService.isProductImagePublicId = uploadService.isProductImagePublicId.bind(uploadService);
+
+module.exports = uploadService;
+module.exports.PRODUCT_IMAGE_FOLDER = PRODUCT_IMAGE_FOLDER;

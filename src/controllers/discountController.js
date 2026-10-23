@@ -11,6 +11,12 @@ class DiscountController {
     return APIResponse.success(res, "Discount code applied successfully", result);
   }
 
+  async getAvailableDiscounts(req, res) {
+    const result = await discountService.listAvailableForUser(req.user.id, req.discountSubtotal);
+
+    return APIResponse.success(res, "Get available discounts successfully", result);
+  }
+
   // ── Admin ─────────────────────────────────────────────────────────────────
 
   async getAllDiscounts(req, res) {

@@ -69,10 +69,25 @@ const IDENTITY = "Bạn là trợ lý tư vấn của TechShop, một cửa hàn
  * prompt tự mâu thuẫn thì model chọn nhánh nào cũng được, và nó chọn khác nhau
  * giữa các lượt — thứ tệ nhất có thể xảy ra với một tính năng đang được đo đạc.
  */
-const DEFAULT_LENGTH_RULE = "- Trả lời bằng tiếng Việt, ngắn gọn, tối đa 4-5 câu.";
+const DEFAULT_LENGTH_RULE = "- Ngắn gọn, tối đa 4-5 câu.";
 
-const buildTone = (lengthRule = DEFAULT_LENGTH_RULE) =>
-  ["CÁCH TRẢ LỜI:", lengthRule, "- Xưng hô lịch sự, tự nhiên, không rập khuôn."].join("\n");
+// Ngôn ngữ trả lời theo ngôn ngữ giao diện khách đang chọn, không theo ngôn ngữ của câu hỏi.
+const LANGUAGES = { vi: "tiếng Việt", en: "tiếng Anh (English)" };
+const DEFAULT_LANGUAGE = "vi";
+
+const buildLanguageRule = (language = DEFAULT_LANGUAGE) =>
+  [
+    `- Luôn trả lời bằng ${LANGUAGES[language] || LANGUAGES[DEFAULT_LANGUAGE]}, kể cả khi câu hỏi`,
+    "  hoặc các lượt trước trong hội thoại dùng ngôn ngữ khác. Tên sản phẩm giữ nguyên như dữ liệu.",
+  ].join("\n");
+
+const buildTone = (lengthRule = DEFAULT_LENGTH_RULE, language = DEFAULT_LANGUAGE) =>
+  [
+    "CÁCH TRẢ LỜI:",
+    buildLanguageRule(language),
+    lengthRule,
+    "- Xưng hô lịch sự, tự nhiên, không rập khuôn.",
+  ].join("\n");
 
 const TONE = buildTone();
 
@@ -84,8 +99,8 @@ const TONE = buildTone();
  * is the longest and most disposable part, so it sits where it is easiest to
  * trim when a context budget gets tight.
  */
-const composeSystemInstruction = ({ role = "", rules = "", vocabulary = "", lengthRule }) =>
-  [IDENTITY, GROUNDING, SCOPE, buildTone(lengthRule), role, rules, vocabulary]
+const composeSystemInstruction = ({ role = "", rules = "", vocabulary = "", lengthRule, language }) =>
+  [IDENTITY, GROUNDING, SCOPE, buildTone(lengthRule, language), role, rules, vocabulary]
     .map((block) => block.trim())
     .filter((block) => block !== "")
     // A blank line between blocks, not a bare newline: the sections are
@@ -98,6 +113,9 @@ module.exports = {
   GROUNDING,
   SCOPE,
   TONE,
+  LANGUAGES,
+  DEFAULT_LANGUAGE,
+  buildLanguageRule,
   buildTone,
   composeSystemInstruction,
 };

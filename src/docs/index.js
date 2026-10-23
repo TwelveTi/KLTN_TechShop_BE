@@ -41,7 +41,19 @@ function countOperations(spec) {
   );
 }
 
+// Production mặc định tắt docs để không phơi toàn bộ bản đồ API; cần thì đặt API_DOCS_ENABLED=true.
+function docsEnabled(env = process.env) {
+  if (env.API_DOCS_ENABLED !== undefined && env.API_DOCS_ENABLED !== "") {
+    return env.API_DOCS_ENABLED === "true";
+  }
+  return env.NODE_ENV !== "production";
+}
+
 function mountDocs(app, { route = "/api/docs" } = {}) {
+  if (!docsEnabled()) {
+    return null;
+  }
+
   const spec = buildSpec();
 
   // JSON thô để import vào Postman / sinh client.
@@ -59,4 +71,4 @@ function mountDocs(app, { route = "/api/docs" } = {}) {
   return spec;
 }
 
-module.exports = { buildSpec, countOperations, mountDocs };
+module.exports = { buildSpec, countOperations, docsEnabled, mountDocs };

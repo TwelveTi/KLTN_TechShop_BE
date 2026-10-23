@@ -9,7 +9,6 @@ const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const APIResponse = require("./utils/ApiResponse");
 const logger = require("./utils/logger");
-const uploadService = require("./services/uploadService");
 const { passport } = require("./configs/passport");
 const { configureTrustProxy } = require("./utils/trustProxy");
 
@@ -40,28 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 // Passport (stateless: we use session:false and JWT, so only initialize()).
 app.use(passport.initialize());
 
-async function cleanupProductImagesFromBody(req, reason) {
-  if (req.method !== "POST" || req.originalUrl !== "/api/v1/admin/products") {
-    return;
-  }
-
-  const publicIds = Array.isArray(req.body?.images)
-    ? req.body.images.map((image) => image?.publicId).filter(Boolean)
-    : [];
-
-  if (!publicIds.length) {
-    return;
-  }
-
-  logger.warn("Cleaning up uploaded images after rejected product create", {
-    requestId: req.requestId,
-    reason,
-    publicIds,
-  });
-
-  await uploadService.deleteMany(publicIds, { requestId: req.requestId });
-}
-
+// Limiter chung chạy trước bước xác thực nên không dọn ảnh ở đây: chưa biết người gửi có phải admin không.
 app.use(rateLimit({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
   max: Number(process.env.RATE_LIMIT_MAX) || (process.env.NODE_ENV === "production" ? 300 : 1000),
@@ -74,15 +52,6 @@ app.use(rateLimit({
       path: req.originalUrl,
       ip: req.ip,
     });
-
-    try {
-      await cleanupProductImagesFromBody(req, "rate limit");
-    } catch (cleanupError) {
-      logger.error("Failed to clean up uploaded images after rate limit", {
-        requestId: req.requestId,
-        error: logger.serializeError(cleanupError),
-      });
-    }
 
     return APIResponse.error(res, "Too many requests. Please try again later.", 429, {
       requestId: req.requestId,

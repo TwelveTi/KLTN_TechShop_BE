@@ -16,6 +16,7 @@ const { validateIdParam } = require("../middlewares/adminValidation");
 const asyncHandler = require("../utils/asyncHandler");
 const sessionController = require("../controllers/sessionController");
 const { passport, googleEnabled } = require("../configs/passport");
+const { issueOAuthState, verifyOAuthState } = require("../middlewares/oauthState");
 const { createRateLimiter, byIpAndEmail, MINUTE, HOUR } = require("../utils/rateLimit");
 
 // Same fallback as authController: an unset FRONTEND_URL would otherwise make the
@@ -128,13 +129,17 @@ router.delete("/auth/sessions/:id", authMiddleware, validateIdParam(), asyncHand
 
 // Google OAuth (only mounted when GOOGLE_* env is configured).
 if (googleEnabled) {
-  router.get(
-    "/auth/google",
-    passport.authenticate("google", { scope: ["profile", "email"], session: false }),
+  router.get("/auth/google", issueOAuthState, (req, res, next) =>
+    passport.authenticate("google", {
+      scope: ["profile", "email"],
+      session: false,
+      state: req.oauthState,
+    })(req, res, next),
   );
 
   router.get(
     "/auth/google/callback",
+    verifyOAuthState,
     passport.authenticate("google", {
       session: false,
       failureRedirect: `${FRONTEND_URL}/login?oauth=error`,

@@ -1,33 +1,12 @@
 const APIResponse = require("../utils/ApiResponse");
 const { getErrorConfig } = require("../utils/errorMap");
 const logger = require("../utils/logger");
-const uploadService = require("../services/uploadService");
+const { cleanupRejectedProductCreate } = require("./productUploadCleanup");
 
 const notFoundHandler = (req, res, next) => {
   const error = new Error(`Route not found: ${req.originalUrl}`);
   error.statusCode = 404;
   next(error);
-};
-
-const cleanupFailedProductCreateUploads = async (req) => {
-  if (req.method !== "POST" || req.originalUrl !== "/api/v1/admin/products") {
-    return;
-  }
-
-  const publicIds = Array.isArray(req.body?.images)
-    ? req.body.images.map((image) => image?.publicId).filter(Boolean)
-    : [];
-
-  if (!publicIds.length) {
-    return;
-  }
-
-  logger.warn("Cleaning up uploaded images after failed product create", {
-    requestId: req.requestId,
-    publicIds,
-  });
-
-  await uploadService.deleteMany(publicIds, { requestId: req.requestId });
 };
 
 const errorHandler = async (error, req, res, next) => {
@@ -50,7 +29,7 @@ const errorHandler = async (error, req, res, next) => {
   });
 
   try {
-    await cleanupFailedProductCreateUploads(req);
+    await cleanupRejectedProductCreate(req, "request failed");
   } catch (cleanupError) {
     logger.error("Failed to clean up uploaded images after product create error", {
       requestId: req.requestId,

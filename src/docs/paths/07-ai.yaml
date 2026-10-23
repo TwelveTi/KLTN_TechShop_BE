@@ -30,6 +30,11 @@
                 format: uuid
                 nullable: true
                 description: Bỏ trống để mở hội thoại mới.
+              language:
+                type: string
+                enum: [vi, en]
+                default: vi
+                description: Ngôn ngữ trả lời, theo ngôn ngữ giao diện.
     responses:
       '200':
         description: Câu trả lời kèm hàng thật và bằng chứng grounding
@@ -70,6 +75,7 @@
             properties:
               message: { type: string, example: So sánh iPhone 15 Pro Max với Galaxy S24 Ultra }
               conversationId: { type: string, format: uuid, nullable: true }
+              language: { type: string, enum: [vi, en], default: vi }
     responses:
       '200':
         description: Bài so sánh kèm thẻ sản phẩm

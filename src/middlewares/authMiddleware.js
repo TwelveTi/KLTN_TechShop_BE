@@ -65,8 +65,9 @@ const requireVerifiedEmail = (req, res, next) => {
 // behaviour tracking is the case that needs it, because the browsing that
 // matters most to recommendations happens before anyone signs in.
 //
-// Never fails the request: a bad or expired token is treated as "no user", not
-// as an error, otherwise a stale token in localStorage would break browsing.
+// A bad token is treated as "no user". An EXPIRED one answers 401 so the client
+// refreshes and retries; treating it as a guest would file the user's data under
+// the guest session (e.g. AI history vanishing after F5).
 const optionalAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -87,7 +88,10 @@ const optionalAuth = async (req, res, next) => {
     if (user && user.status === "ACTIVE") {
       req.user = user;
     }
-  } catch {
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return next(new AppError("Access token expired", 401));
+    }
     // Anonymous is a valid outcome here.
   }
 

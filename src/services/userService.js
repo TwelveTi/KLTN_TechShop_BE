@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const AppError = require("../utils/AppError");
+const { likeContains } = require("../utils/sqlLike");
 const { hashPassword } = require("../utils/passwordCrypto");
 const { toSafeUser } = require("../utils/userSerializer");
 const userRepository = require("../repositories/userRepository");
@@ -119,10 +120,7 @@ class UserService {
       updates.phone = data.phone ? data.phone.trim() : null;
     }
 
-    if (data.avatarUrl !== undefined) {
-      updates.avatarUrl = data.avatarUrl ? data.avatarUrl.trim() : null;
-    }
-
+    // avatarUrl chỉ đổi qua POST /users/me/avatar, không nhận URL tự do từ client.
     await userRepository.updateUser(user, updates);
 
     return toSafeUser(user);
@@ -151,7 +149,7 @@ class UserService {
     const keyword = String(query.q ?? query.keyword ?? "").trim();
     const where = {};
     if (keyword) {
-      where[Op.or] = ["email", "fullName", "phone"].map((field) => ({ [field]: { [Op.like]: `%${keyword}%` } }));
+      where[Op.or] = ["email", "fullName", "phone"].map((field) => ({ [field]: { [Op.like]: likeContains(keyword) } }));
     }
     if (["ADMIN", "CUSTOMER"].includes(query.role)) {
       where.role = query.role;
@@ -190,7 +188,22 @@ class UserService {
     }
   }
 
-  async updateUser(id, data) {
+  // Admin không được tự hạ quyền, tự khoá hay tự xoá mình. Vì người thao tác luôn là một admin
+  // đang hoạt động, luật này cũng đủ bảo đảm hệ thống không bao giờ mất admin cuối cùng.
+  assertNotSelfLockout(targetId, actorId, data = {}) {
+    if (!actorId || targetId !== actorId) {
+      return;
+    }
+    if (data.role !== undefined && data.role !== "ADMIN") {
+      throw new AppError("You cannot remove your own admin role", 409);
+    }
+    if (data.status !== undefined && data.status !== "ACTIVE") {
+      throw new AppError("You cannot deactivate or block your own account", 409);
+    }
+  }
+
+  async updateUser(id, data, actorId = null) {
+    this.assertNotSelfLockout(id, actorId, data);
     const user = await this.getUserById(id);
 
     await userRepository.updateUser(user, {
@@ -206,7 +219,10 @@ class UserService {
     return user;
   }
 
-  async deleteUser(id) {
+  async deleteUser(id, actorId = null) {
+    if (actorId && id === actorId) {
+      throw new AppError("You cannot delete your own account", 409);
+    }
     const user = await this.getUserById(id);
     await userRepository.destroyUser(user);
 

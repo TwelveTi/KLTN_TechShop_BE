@@ -6,6 +6,7 @@ const emailProducer = require("../kafkas/producers/emailProducer");
 const { isDisposableEmail } = require("../utils/disposableEmail");
 const { toSafeUser } = require("../utils/userSerializer");
 const authRepository = require("../repositories/authRepository");
+const { BCRYPT_ROUNDS } = require("../configs/passwordConfig");
 // Account creation belongs to the user module; auth only drives the session on
 // top of it. This is the one place a service reaches for another service, and
 // it is deliberately one-way (userService never calls authService).
@@ -17,9 +18,12 @@ const REFRESH_TOKEN_EXPIRES_IN_DAYS = 7;
 const { REFRESH_TOKEN_REUSE_GRACE_MS } = authRepository;
 const REFRESH_TOKEN_ROTATE_WITHIN_MS = 24 * 60 * 60 * 1000;
 
-// Khoá theo TÀI KHOẢN, bổ sung cho limiter theo IP: kẻ dò mật khẩu đổi IP liên tục vẫn bị chặn.
+// Khoá theo EMAIL, bổ sung cho limiter theo IP: kẻ dò mật khẩu đổi IP liên tục vẫn bị chặn.
 const LOGIN_MAX_FAILED = Number(process.env.LOGIN_MAX_FAILED) || 5;
 const LOGIN_LOCK_MINUTES = Number(process.env.LOGIN_LOCK_MINUTES) || 15;
+
+// Email không tồn tại vẫn so với hash giả cùng độ khó, để thời gian phản hồi không lộ email nào đã đăng ký.
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString("hex"), BCRYPT_ROUNDS);
 
 const lockedError = (lockedUntil, now) => {
   const minutes = Math.max(1, Math.ceil((lockedUntil.getTime() - now.getTime()) / 60000));
@@ -297,6 +301,10 @@ class AuthService {
         // Google has verified this email, so trust it.
         if (!user.emailVerifiedAt) {
           updates.emailVerifiedAt = new Date();
+          // Mật khẩu của tài khoản chưa xác thực có thể do người khác đặt bằng email này
+          // (chiếm trước tài khoản), nên xoá nó và đăng xuất mọi phiên cũ.
+          await authRepository.removeLocalProvider(user.id, { transaction });
+          await authRepository.revokeAllSessions(user.id, { transaction });
         }
         if (!user.avatarUrl && avatarUrl) {
           updates.avatarUrl = avatarUrl;
@@ -343,24 +351,23 @@ class AuthService {
     const { email, password } = credentials;
     const normalizedEmail = email.toLowerCase().trim();
 
+    // Email có hay không có tài khoản đều đi cùng một đường: cùng khoá, cùng bcrypt, cùng thông báo lỗi.
     const user = await authRepository.findUserWithLocalProviderByEmail(normalizedEmail);
-
-    if (!user || user.status !== "ACTIVE") {
-      throw new AppError("Invalid email or password", 401);
-    }
+    const canSignIn = Boolean(user) && user.status === "ACTIVE";
+    const localProvider = canSignIn ? user.authProviders?.[0] : null;
 
     // Đang khoá thì chặn trước khi so mật khẩu: nhập đúng cũng không vào được, nên không dò tiếp được.
     const now = new Date();
-    const lockout = await authRepository.findLoginLockout(user.id);
+    const lockout = await authRepository.findLoginLockout(normalizedEmail);
     if (lockout?.lockedUntil && lockout.lockedUntil > now) {
       throw lockedError(lockout.lockedUntil, now);
     }
 
-    const localProvider = user.authProviders?.[0];
-    const isPasswordValid = await bcrypt.compare(password, localProvider.passwordHash);
+    const passwordMatches = await bcrypt.compare(password, localProvider?.passwordHash || DUMMY_PASSWORD_HASH);
+    const isPasswordValid = Boolean(localProvider) && passwordMatches;
 
     if (!isPasswordValid) {
-      const { lockedUntil } = await authRepository.recordFailedLogin(user.id, {
+      const { lockedUntil } = await authRepository.recordFailedLogin(normalizedEmail, {
         now,
         maxAttempts: LOGIN_MAX_FAILED,
         lockMs: LOGIN_LOCK_MINUTES * 60000,
@@ -370,7 +377,7 @@ class AuthService {
     }
 
     await Promise.all([
-      authRepository.clearLoginLockout(user.id),
+      authRepository.clearLoginLockout(normalizedEmail),
       authRepository.updateUser(user, { lastLoginAt: new Date() }),
       authRepository.updateAuthProvider(localProvider, { lastUsedAt: new Date() }),
     ]);
@@ -430,8 +437,11 @@ class AuthService {
         throw new AppError("Unauthorized", 401);
       }
 
+      // Token vừa bị xoay (còn trong 30 giây ân hạn) chỉ được đổi lấy access token gắn với phiên cũ,
+      // phiên đó tự chết khi hết ân hạn; không phát thêm phiên 7 ngày, để token lộ không đẻ ra phiên mới.
+      const reusedWithinGrace = Boolean(storedRefreshToken.revokedAt);
       const shouldRotateRefreshToken =
-        Boolean(storedRefreshToken.revokedAt) ||
+        !reusedWithinGrace &&
         storedRefreshToken.expiresAt.getTime() - now.getTime() <= REFRESH_TOKEN_ROTATE_WITHIN_MS;
 
       if (!shouldRotateRefreshToken) {
@@ -446,9 +456,7 @@ class AuthService {
         };
       }
 
-      if (!storedRefreshToken.revokedAt) {
-        await authRepository.updateRefreshToken(storedRefreshToken, { revokedAt: now }, { transaction });
-      }
+      await authRepository.updateRefreshToken(storedRefreshToken, { revokedAt: now }, { transaction });
 
       const tokens = await this.createTokens(
         user,

@@ -112,10 +112,13 @@ const classifyError = (error) => {
   // trong buổi kiểm thử: `gemini-3.7-flash` trả "experiencing high demand" giữa
   // chừng. Nó thoáng qua và độc lập giữa các model, nên chuyển sang model khác
   // gần như luôn thành công ngay.
+  // 504 DEADLINE_EXCEEDED cũng thuộc nhóm này: Google xử lý quá hạn, gặp thật lúc kiểm thử 23/10.
   if (
     error?.name === "AbortError" ||
     raw.includes("UNAVAILABLE") ||
+    raw.includes("DEADLINE_EXCEEDED") ||
     raw.includes('"code":503') ||
+    raw.includes('"code":504') ||
     raw.includes('"code":500') ||
     raw.includes("INTERNAL")
   ) {

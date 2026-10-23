@@ -5,7 +5,7 @@ const router = express.Router();
 const aiController = require("../controllers/aiController");
 const { authMiddleware, optionalAuth } = require("../middlewares/authMiddleware");
 const { attachSessionId } = require("../middlewares/behaviorValidation");
-const { validateAskAdvisor } = require("../middlewares/aiValidation");
+const { validateAskAdvisor, validateLanguage } = require("../middlewares/aiValidation");
 const { validateIdParam } = require("../middlewares/adminValidation");
 const asyncHandler = require("../utils/asyncHandler");
 
@@ -52,6 +52,7 @@ router.post(
   // Chỉ người đã đăng nhập: khách không có tín hiệu cá nhân để giải thích.
   authMiddleware,
   validateIdParam("itemId"),
+  validateLanguage,
   asyncHandler(aiController.explainRecommendation),
 );
 

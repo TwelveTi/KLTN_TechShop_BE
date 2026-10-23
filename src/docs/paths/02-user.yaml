@@ -17,6 +17,7 @@
   put:
     tags: [User]
     summary: Cập nhật hồ sơ
+    description: Chỉ đổi họ tên và số điện thoại. Ảnh đại diện đổi qua POST /users/me/avatar.
     requestBody:
       required: true
       content:
@@ -26,7 +27,6 @@
             properties:
               fullName: { type: string, minLength: 2, maxLength: 150 }
               phone: { type: string, maxLength: 20 }
-              avatarUrl: { type: string, maxLength: 1000 }
     responses:
       '200':
         description: Hồ sơ sau khi cập nhật

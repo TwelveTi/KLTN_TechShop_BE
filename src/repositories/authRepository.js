@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const db = require("../models");
+const { loginLockoutKey } = require("../utils/tokenHash");
 
 // Refresh token vừa xoay vòng vẫn dùng được thêm 30 giây cho các request đang bay.
 const REFRESH_TOKEN_REUSE_GRACE_MS = 30 * 1000;
@@ -62,6 +63,10 @@ class AuthRepository {
     return provider.update(changes, { transaction });
   }
 
+  removeLocalProvider(userId, { transaction } = {}) {
+    return db.AuthProvider.destroy({ where: { userId, provider: "LOCAL" }, transaction });
+  }
+
   // ---- Refresh tokens ----
   createRefreshToken(data, { transaction } = {}) {
     return db.RefreshToken.create(data, { transaction });
@@ -74,6 +79,15 @@ class AuthRepository {
     const [count] = await db.RefreshToken.update(
       { revokedAt: now, expiresAt: now },
       { where: { tokenHash, revokedAt: null }, transaction },
+    );
+    return count;
+  }
+
+  async revokeAllSessions(userId, { transaction } = {}) {
+    const now = new Date();
+    const [count] = await db.RefreshToken.update(
+      { revokedAt: now, expiresAt: now },
+      { where: { userId, expiresAt: { [Op.gt]: now } }, transaction },
     );
     return count;
   }
@@ -113,13 +127,14 @@ class AuthRepository {
     });
   }
 
-  // ---- Khoá tài khoản khi đăng nhập sai nhiều lần ----
-  findLoginLockout(userId, { transaction } = {}) {
-    return db.LoginLockout.findByPk(userId, { transaction });
+  // ---- Khoá đăng nhập theo email khi sai nhiều lần ----
+  findLoginLockout(email, { transaction } = {}) {
+    return db.LoginLockout.findByPk(loginLockoutKey(email), { transaction });
   }
 
-  async recordFailedLogin(userId, { now, maxAttempts, lockMs }) {
-    const [row] = await db.LoginLockout.findOrCreate({ where: { userId }, defaults: { userId, failedCount: 0 } });
+  async recordFailedLogin(email, { now, maxAttempts, lockMs }) {
+    const emailKey = loginLockoutKey(email);
+    const [row] = await db.LoginLockout.findOrCreate({ where: { emailKey }, defaults: { emailKey, failedCount: 0 } });
     // Lần khoá trước đã hết hạn thì đếm lại từ đầu, không cộng dồn vào lần khoá cũ.
     const expired = row.lockedUntil && row.lockedUntil <= now;
     const failedCount = (expired ? 0 : row.failedCount) + 1;
@@ -128,8 +143,8 @@ class AuthRepository {
     return { failedCount, lockedUntil };
   }
 
-  clearLoginLockout(userId, { transaction } = {}) {
-    return db.LoginLockout.destroy({ where: { userId }, transaction });
+  clearLoginLockout(email, { transaction } = {}) {
+    return db.LoginLockout.destroy({ where: { emailKey: loginLockoutKey(email) }, transaction });
   }
 
   updateRefreshToken(token, changes, { transaction } = {}) {

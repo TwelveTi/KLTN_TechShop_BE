@@ -6,4 +6,9 @@ function hashToken(token) {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
-module.exports = { hashToken };
+// Khoá của bảng login_email_lockouts: cùng một email luôn ra cùng một khoá, dù hoa thường hay thừa khoảng trắng.
+function loginLockoutKey(email) {
+  return hashToken(String(email || "").trim().toLowerCase());
+}
+
+module.exports = { hashToken, loginLockoutKey };

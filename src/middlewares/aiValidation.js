@@ -1,4 +1,5 @@
 const AppError = require("../utils/AppError");
+const { LANGUAGES, DEFAULT_LANGUAGE } = require("../services/ai/prompts/guardrails");
 
 // A shopper's question, not a prompt. The cap is what keeps someone from
 // pasting a novel into a billed context window; it is generous enough that no
@@ -31,10 +32,27 @@ const validateAskAdvisor = (req, res, next) => {
     req.body.conversationId = null;
   }
 
+  return validateLanguage(req, res, next);
+};
+
+// Ngôn ngữ trả lời, theo ngôn ngữ giao diện. Không gửi thì mặc định tiếng Việt.
+const validateLanguage = (req, res, next) => {
+  const language = req.body?.language;
+
+  if (language === undefined || language === null || language === "") {
+    req.body = { ...req.body, language: DEFAULT_LANGUAGE };
+    return next();
+  }
+
+  if (!Object.hasOwn(LANGUAGES, language)) {
+    return next(new AppError(`language must be one of: ${Object.keys(LANGUAGES).join(", ")}`, 400));
+  }
+
   return next();
 };
 
 module.exports = {
   MAX_MESSAGE_LENGTH,
   validateAskAdvisor,
+  validateLanguage,
 };

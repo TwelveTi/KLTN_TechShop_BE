@@ -116,7 +116,6 @@ const validateUpdateProfile = (req, res, next) => {
     [
       { name: "fullName", label: "Full name", required: false, type: "string", minLength: 2, maxLength: 150 },
       PHONE_FIELD,
-      { name: "avatarUrl", label: "Avatar URL", required: false, type: "string", maxLength: 1000 },
     ],
     req,
     res,

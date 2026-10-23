@@ -110,17 +110,45 @@ test("lưu sản phẩm chỉ xoá trên Cloudinary ảnh đã bị bỏ, ảnh 
     productBody({
       name: "Two images",
       images: [
-        { imageUrl: "https://res.cloudinary.com/demo/a.jpg", publicId: "keep-me", isPrimary: true },
-        { imageUrl: "https://res.cloudinary.com/demo/b.jpg", publicId: "drop-me" },
+        { imageUrl: "https://res.cloudinary.com/demo/a.jpg", publicId: "techshop/products/keep-me", isPrimary: true },
+        { imageUrl: "https://res.cloudinary.com/demo/b.jpg", publicId: "techshop/products/drop-me" },
       ],
     }),
   );
   deletedPublicIds.length = 0;
 
   const res = await asAdmin(request(app).put(`/api/v1/admin/products/${created.body.data.id}`)).send({
-    images: [{ imageUrl: "https://res.cloudinary.com/demo/a.jpg", publicId: "keep-me", isPrimary: true }],
+    images: [{ imageUrl: "https://res.cloudinary.com/demo/a.jpg", publicId: "techshop/products/keep-me", isPrimary: true }],
   });
 
   assert.equal(res.status, 200);
-  assert.deepEqual(deletedPublicIds, ["drop-me"]);
+  assert.deepEqual(deletedPublicIds, ["techshop/products/drop-me"]);
+});
+
+test("tạo sản phẩm kèm biến thể giá âm hoặc tồn kho âm bị chặn 400", async () => {
+  for (const variant of [
+    { sku: "NEG-PRICE", variantName: "Âm giá", price: -1000000, stockQuantity: 5 },
+    { sku: "NEG-SALE", variantName: "Âm giá sale", price: 1000000, salePrice: -1, stockQuantity: 5 },
+    { sku: "NEG-STOCK", variantName: "Âm kho", price: 1000000, stockQuantity: -5 },
+    { sku: "NAN-PRICE", variantName: "Giá chữ", price: "abc", stockQuantity: 5 },
+    { sku: "BAD-STATUS", variantName: "Sai trạng thái", status: "HACKED" },
+  ]) {
+    const res = await asAdmin(request(app).post("/api/v1/admin/products")).send(
+      productBody({ name: `Variant ${variant.sku}`, variants: [variant] }),
+    );
+    assert.equal(res.status, 400, variant.sku);
+  }
+
+  assert.equal(await db.ProductVariant.count({ where: { sku: ["NEG-PRICE", "NEG-SALE", "NEG-STOCK", "NAN-PRICE", "BAD-STATUS"] } }), 0);
+});
+
+test("bulkCreate biến thể vẫn chạy validation của model khi lọt qua lớp validate request", async () => {
+  const productService = require("../../src/services/productService");
+  await assert.rejects(
+    productService.createProduct({
+      ...productBody({ name: "Bypass validation" }),
+      variants: [{ sku: "BYPASS", variantName: "Bypass", price: -5, stockQuantity: 1 }],
+    }),
+  );
+  assert.equal(await db.ProductVariant.count({ where: { sku: "BYPASS" } }), 0);
 });

@@ -25,6 +25,19 @@ class DiscountRepository {
     });
   }
 
+  // Mã đang chạy và còn lượt: ACTIVE, trong khung thời gian, chưa hết tổng lượt dùng.
+  findAvailable(now = new Date()) {
+    return db.Discount.findAll({
+      where: {
+        status: "ACTIVE",
+        startsAt: { [Op.lte]: now },
+        endsAt: { [Op.gte]: now },
+        [Op.or]: [{ usageLimit: null }, { usedCount: { [Op.lt]: db.sequelize.col("usage_limit") } }],
+      },
+      order: [["endsAt", "ASC"]],
+    });
+  }
+
   findAndCountAll({ where, limit, offset }) {
     return db.Discount.findAndCountAll({
       where,
@@ -63,6 +76,22 @@ class DiscountRepository {
       where: { discountId, userId, releasedAt: { [Op.is]: null } },
       transaction,
     });
+  }
+
+  // Số lượt còn hiệu lực của một khách trên nhiều mã cùng lúc, khoá theo discountId.
+  async countActiveUsagesByUserForDiscounts(discountIds, userId) {
+    if (discountIds.length === 0) {
+      return new Map();
+    }
+
+    const rows = await db.DiscountUsage.findAll({
+      where: { discountId: discountIds, userId, releasedAt: { [Op.is]: null } },
+      attributes: ["discountId", [db.sequelize.fn("COUNT", db.sequelize.col("id")), "total"]],
+      group: ["discountId"],
+      raw: true,
+    });
+
+    return new Map(rows.map((row) => [row.discountId, Number(row.total)]));
   }
 
   createUsage(data, { transaction } = {}) {

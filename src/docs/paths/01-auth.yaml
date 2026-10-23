@@ -332,7 +332,7 @@
     tags: [Auth]
     summary: Bắt đầu đăng nhập bằng Google
     security: []
-    description: Chỉ được mount khi đã cấu hình `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`.
+    description: Chỉ được mount khi đã cấu hình `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`. Phát `state` ngẫu nhiên, gửi sang Google và lưu vào cookie HttpOnly `oauthState` sống 10 phút.
     responses:
       '302': { description: Chuyển hướng sang trang đồng ý của Google }
 
@@ -341,5 +341,6 @@
     tags: [Auth]
     summary: Google gọi lại sau khi người dùng đồng ý
     security: []
+    description: Tham số `state` phải khớp cookie `oauthState`, lệch hoặc thiếu thì chuyển về `/login?oauth=error` mà không đăng nhập.
     responses:
-      '302': { description: Đặt refresh cookie rồi chuyển hướng về frontend }
+      '302': { description: Đặt refresh cookie rồi chuyển hướng về frontend, hoặc về trang đăng nhập báo lỗi }

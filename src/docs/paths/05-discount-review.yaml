@@ -1,3 +1,24 @@
+/discounts/available:
+  get:
+    tags: [Discount]
+    summary: Mã giảm giá khách đang dùng được
+    description: |
+      Mã ACTIVE, trong khung thời gian, còn tổng lượt và khách chưa dùng hết lượt
+      của mình. Có `subtotal` thì kèm `eligible`, `shortfall` và `discountAmount`;
+      mã dùng được và giảm nhiều nhất đứng đầu.
+    parameters:
+      - in: query
+        name: subtotal
+        required: false
+        schema: { type: number, minimum: 0 }
+    responses:
+      '200':
+        description: Danh sách mã
+      '400':
+        description: subtotal không hợp lệ
+      '401':
+        description: Chưa đăng nhập
+
 /discounts/validate:
   post:
     tags: [Discount]

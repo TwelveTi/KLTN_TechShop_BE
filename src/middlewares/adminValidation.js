@@ -1,4 +1,5 @@
 const AppError = require("../utils/AppError");
+const uploadService = require("../services/uploadService");
 const { DATA_TYPES: SPEC_DATA_TYPES } = require("../utils/specValue");
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -170,6 +171,12 @@ const validateVariants = (variants, errors) => {
     if (!variant.variantName) {
       errors.push(`Variant ${index + 1} name is required`);
     }
+
+    // Cùng luật với route sửa từng biến thể: giá và tồn kho không âm, trạng thái trong danh sách.
+    validatePositiveNumber(variant, "price", `Variant ${index + 1} price`, errors);
+    validatePositiveNumber(variant, "salePrice", `Variant ${index + 1} sale price`, errors);
+    validateInteger(variant, "stockQuantity", `Variant ${index + 1} stock`, errors);
+    validateOptionalEnum(variant, "status", `Variant ${index + 1} status`, ["ACTIVE", "INACTIVE", "OUT_OF_STOCK"], errors);
   });
 };
 
@@ -479,6 +486,11 @@ const validateDeleteUploadedImage = (req, res, next) => {
 
   if (!req.body.publicId) {
     return next(new AppError("Public id is required", 400));
+  }
+
+  // Endpoint này chỉ để gỡ ảnh sản phẩm vừa tải lên, không xoá được avatar hay ảnh khác.
+  if (!uploadService.isProductImagePublicId(req.body.publicId)) {
+    return next(new AppError("Only product images can be deleted here", 400));
   }
 
   return next();

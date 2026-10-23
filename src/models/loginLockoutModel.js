@@ -1,15 +1,14 @@
-// Đếm lần đăng nhập sai của từng tài khoản và thời điểm hết khoá.
-// Để ở bảng riêng chứ không thêm cột vào `users`: app tạo bảng bằng `sync()` thường,
-// nên bảng mới tự có trên DB đang chạy, còn cột mới thì không.
+// Đếm lần đăng nhập sai theo email và thời điểm hết khoá. Khoá theo email chứ không theo tài khoản,
+// để email không tồn tại cũng bị khoá y hệt, không ai dò được email nào đã đăng ký.
+// Bảng mới thay cho `login_lockouts` cũ (khoá theo userId) vì `sync()` không đổi được khoá chính bảng đã có.
 module.exports = (sequelize, DataTypes) => {
   const LoginLockout = sequelize.define(
     "LoginLockout",
     {
-      userId: {
-        type: DataTypes.UUID,
+      // SHA-256 của email đã chuẩn hoá, không lưu email thô của những lần thử.
+      emailKey: {
+        type: DataTypes.STRING(64),
         primaryKey: true,
-        references: { model: "users", key: "id" },
-        onDelete: "CASCADE",
       },
       failedCount: {
         type: DataTypes.INTEGER,
@@ -26,15 +25,11 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-      tableName: "login_lockouts",
+      tableName: "login_email_lockouts",
       timestamps: true,
       underscored: true,
     },
   );
-
-  LoginLockout.associate = (models) => {
-    LoginLockout.belongsTo(models.User, { foreignKey: "userId", as: "user" });
-  };
 
   return LoginLockout;
 };
